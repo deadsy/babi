@@ -24,26 +24,24 @@ const COS_LUT_SIZE = 1 << COS_LUT_BITS
 const COS_FRAC_BITS = 32 - COS_LUT_BITS
 const COS_FRAC_MASK = (1 << COS_FRAC_BITS) - 1
 
-var COS_LUT_data [COS_LUT_SIZE << 1]float32
+var COS_LUT_y [COS_LUT_SIZE]float32
+var COS_LUT_dy [COS_LUT_SIZE]float32
 
-// cos_lut_init creates a y/dy cos lookup table for TAU radians.
+// cos_lut_init creates y/dy cosine lookup tables for TAU radians.
 func cos_lut_init() {
 	dx := TAU / COS_LUT_SIZE
 	for i := 0; i < COS_LUT_SIZE; i++ {
 		y0 := math.Cos(float64(i) * dx)
 		y1 := math.Cos(float64(i+1) * dx)
-		COS_LUT_data[2*i] = float32(y0)
-		COS_LUT_data[(2*i)+1] = float32((y1 - y0) / (1 << COS_FRAC_BITS))
+		COS_LUT_y[i] = float32(y0)
+		COS_LUT_dy[i] = float32((y1 - y0) / (1 << COS_FRAC_BITS))
 	}
 }
 
 // CosLookup returns the cosine of x (32 bit unsigned phase value).
 func CosLookup(x uint32) float32 {
-	idx := (x >> COS_FRAC_BITS) << 1
-	frac := x & COS_FRAC_MASK
-	y := COS_LUT_data[idx]
-	dy := COS_LUT_data[idx+1]
-	return y + float32(frac)*dy
+	idx := x >> COS_FRAC_BITS
+	return COS_LUT_y[idx] + float32(x&COS_FRAC_MASK)*COS_LUT_dy[idx]
 }
 
 const PHASE_SCALE = (1 << 32) / TAU

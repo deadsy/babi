@@ -48,10 +48,10 @@ func Test_Sin(t *testing.T) {
 }
 
 //-----------------------------------------------------------------------------
+// benchmarking
 
 // LUT based babi.Cos
 func benchmark_babi_Cos(theta float32, b *testing.B) {
-	// run the Fib function b.N times
 	for n := 0; n < b.N; n++ {
 		Cos(theta)
 	}
@@ -64,7 +64,6 @@ func Benchmark_babi_Cos100(b *testing.B) { benchmark_babi_Cos(100, b) }
 
 // standard math.Cos
 func benchmark_math_Cos(theta float32, b *testing.B) {
-	// run the Fib function b.N times
 	for n := 0; n < b.N; n++ {
 		math.Cos(float64(theta))
 	}
