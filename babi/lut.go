@@ -59,4 +59,48 @@ func Sin(x float32) float32 {
 
 //-----------------------------------------------------------------------------
 
+// return powf(2.f, x) where x is an integer [-126,127]
+func pow2_int(x int) float32 {
+
+	/*
+	   float f;
+	   // make a float32 per IEEE754
+	   *(uint32_t *) & f = (127 + x) << 23;
+	   return f;
+	*/
+
+	return 0
+}
+
+// return powf(2.f, x) where x = [0,1)
+func pow2_frac(x float32) float32 {
+
+	/*
+	   int n = (int)(x * (float)(1U << 12));
+	   uint16_t x0 = exp0_table[(n >> 6) & 0x3f];
+	   uint16_t x1 = exp1_table[n & 0x3f];
+	   return (float)(x0 * x1) * (1.f / (float)(1U << 30));
+	*/
+
+	return 0
+}
+
+// Pow2 returns 2 to the x.
+func Pow2_x(x float32) float32 {
+	nf := int(math.Trunc(float64(x)))
+	ff := x - float32(nf)
+	if ff < 0 {
+		nf -= 1
+		ff += 1
+	}
+	return pow2_frac(ff) * pow2_int(nf)
+}
+
+const LOG_E2 = 1.4426950408889634 // 1.0 / math.log(2)
+
+// PowE returns e to the x.
+func PowE(x float32) float32 {
+	return Pow2(LOG_E2 * x)
+}
+
 //-----------------------------------------------------------------------------
