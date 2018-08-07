@@ -3,6 +3,8 @@
 
 Lookup Table Based Math Functions
 
+Faster than standard math package functions, but less accurate.
+
 */
 //-----------------------------------------------------------------------------
 
@@ -59,17 +61,9 @@ func Sin(x float32) float32 {
 
 //-----------------------------------------------------------------------------
 
-// return powf(2.f, x) where x is an integer [-126,127]
+// pow2_int returns 2 to the x where x is an integer [-126,127]
 func pow2_int(x int) float32 {
-
-	/*
-	   float f;
-	   // make a float32 per IEEE754
-	   *(uint32_t *) & f = (127 + x) << 23;
-	   return f;
-	*/
-
-	return 0
+	return math.Float32frombits((127 + uint32(x)) << 23)
 }
 
 // return powf(2.f, x) where x = [0,1)
