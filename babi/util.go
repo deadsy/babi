@@ -8,7 +8,25 @@ Common Utility Functions
 
 package babi
 
+import "math"
+
 //-----------------------------------------------------------------------------
+
+const PI = math.Pi
+const TAU = 2 * math.Pi
+
+//-----------------------------------------------------------------------------
+
+// absolute value of x
+func Abs(x float32) float32 {
+	if x < 0 {
+		return -x
+	}
+	if x == 0 {
+		return 0 // return correctly abs(-0)
+	}
+	return x
+}
 
 // Clamp x between a and b
 func Clamp(x, a, b float32) float32 {
