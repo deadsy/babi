@@ -16,6 +16,7 @@ import "math"
 
 func init() {
 	cos_lut_init()
+	pow_lut_init()
 }
 
 //-----------------------------------------------------------------------------
@@ -60,34 +61,49 @@ func Sin(x float32) float32 {
 }
 
 //-----------------------------------------------------------------------------
+// Power Function
+
+const POW_LUT_BITS = 7
+const POW_LUT_SIZE = 1 << POW_LUT_BITS
+const POW_LUT_MASK = POW_LUT_SIZE - 1
+
+var POW_LUT0 [POW_LUT_SIZE]float32
+var POW_LUT1 [POW_LUT_SIZE]float32
+
+func pow_lut_init() {
+	for i := 0; i < POW_LUT_SIZE; i++ {
+		x := float64(i) / POW_LUT_SIZE
+		POW_LUT0[i] = float32(math.Pow(2, x))
+		x = float64(i) / (POW_LUT_SIZE * POW_LUT_SIZE)
+		POW_LUT1[i] = float32(math.Pow(2, x))
+	}
+}
 
 // pow2_int returns 2 to the x where x is an integer [-126,127]
 func pow2_int(x int) float32 {
 	return math.Float32frombits((127 + uint32(x)) << 23)
 }
 
-// return powf(2.f, x) where x = [0,1)
+// pow2_frac returns 2 to the x where x is a fraction [0,1)
 func pow2_frac(x float32) float32 {
-
-	/*
-	   int n = (int)(x * (float)(1U << 12));
-	   uint16_t x0 = exp0_table[(n >> 6) & 0x3f];
-	   uint16_t x1 = exp1_table[n & 0x3f];
-	   return (float)(x0 * x1) * (1.f / (float)(1U << 30));
-	*/
-
-	return 0
+	n := int(x * (1 << (POW_LUT_BITS * 2)))
+	x0 := POW_LUT0[(n>>POW_LUT_BITS)&POW_LUT_MASK]
+	x1 := POW_LUT1[n&POW_LUT_MASK]
+	return x0 * x1
 }
 
 // Pow2 returns 2 to the x.
-func Pow2_x(x float32) float32 {
+func Pow2(x float32) float32 {
+	if x == 0 {
+		return 1
+	}
 	nf := int(math.Trunc(float64(x)))
 	ff := x - float32(nf)
 	if ff < 0 {
 		nf -= 1
 		ff += 1
 	}
-	return pow2_frac(ff) * pow2_int(nf)
+	return pow2_int(nf) * pow2_frac(ff)
 }
 
 const LOG_E2 = 1.4426950408889634 // 1.0 / math.log(2)
