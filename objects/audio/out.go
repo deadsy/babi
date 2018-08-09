@@ -11,19 +11,6 @@ package audio
 import "github.com/deadsy/babi/core"
 
 //-----------------------------------------------------------------------------
-// stereo output
-
-type OutStereo struct {
-}
-
-func NewOutStereo() *OutStereo {
-	return &OutStereo{}
-}
-
-func (o *OutStereo) Process(l, r *core.SBuf) {
-}
-
-//-----------------------------------------------------------------------------
 // left/right panning
 
 type Pan struct {

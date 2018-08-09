@@ -17,25 +17,32 @@ import (
 
 //-----------------------------------------------------------------------------
 
+var SimpleInfo = core.PatchInfo{
+	Name:   "simple",
+	Create: NewSimple,
+}
+
 type Simple struct {
 	adsr *env.ADSR
 	sine *osc.Sine
 	pan  *audio.Pan
-	out  *audio.OutStereo
 }
 
-func NewSimple() *Simple {
+func NewSimple() core.Patch {
 	s := &Simple{
 		adsr: env.NewADSR(),
 		sine: osc.NewSine(),
 		pan:  audio.NewPan(),
-		out:  audio.NewOutStereo(),
 	}
 	return s
 }
 
-func (p *Simple) Process() {
-	var env, out, out_l, out_r core.SBuf
+func (p *Simple) Active() bool {
+	return p.adsr.Active()
+}
+
+func (p *Simple) Process(in_l, in_r, out_l, out_r *core.SBuf) {
+	var env, out core.SBuf
 	// generate the envelope
 	p.adsr.Process(&env)
 	// generate the sine wave
@@ -43,9 +50,7 @@ func (p *Simple) Process() {
 	// apply the envelope
 	core.Mul_SS(&out, &env)
 	// pan to left/right channels
-	p.pan.Process(&out, &out_l, &out_r)
-	// stereo output
-	p.out.Process(&out_l, &out_r)
+	p.pan.Process(&out, out_l, out_r)
 }
 
 //-----------------------------------------------------------------------------

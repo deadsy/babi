@@ -19,6 +19,10 @@ func NewADSR() *ADSR {
 	return &ADSR{}
 }
 
+func (e *ADSR) Active() bool {
+	return true
+}
+
 func (e *ADSR) Process(out *core.SBuf) {
 }
 
