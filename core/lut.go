@@ -8,7 +8,7 @@ Faster than standard math package functions, but less accurate.
 */
 //-----------------------------------------------------------------------------
 
-package babi
+package core
 
 import "math"
 

@@ -6,7 +6,7 @@ Common Utility Functions
 */
 //-----------------------------------------------------------------------------
 
-package babi
+package core
 
 import "math"
 

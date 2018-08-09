@@ -6,7 +6,7 @@ Lookup Table Testing
 */
 //-----------------------------------------------------------------------------
 
-package babi
+package core
 
 import (
 	"math"

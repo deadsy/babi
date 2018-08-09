@@ -8,7 +8,7 @@ Audio Output Objects
 
 package audio
 
-import "github.com/deadsy/babi/babi"
+import "github.com/deadsy/babi/core"
 
 //-----------------------------------------------------------------------------
 // stereo output
@@ -20,7 +20,7 @@ func NewOutStereo() *OutStereo {
 	return &OutStereo{}
 }
 
-func (o *OutStereo) Process(l, r *babi.SBuf) {
+func (o *OutStereo) Process(l, r *core.SBuf) {
 }
 
 //-----------------------------------------------------------------------------
@@ -34,9 +34,9 @@ func NewPan() *Pan {
 	return &Pan{}
 }
 
-func (p *Pan) Process(in, out_l, out_r *babi.SBuf) {
-	babi.Copy_SK(out_l, in, p.vol_l)
-	babi.Copy_SK(out_r, in, p.vol_r)
+func (p *Pan) Process(in, out_l, out_r *core.SBuf) {
+	core.Copy_SK(out_l, in, p.vol_l)
+	core.Copy_SK(out_r, in, p.vol_r)
 }
 
 //-----------------------------------------------------------------------------

@@ -6,7 +6,7 @@ Random Functions
 */
 //-----------------------------------------------------------------------------
 
-package babi
+package core
 
 import "math"
 

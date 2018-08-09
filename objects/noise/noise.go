@@ -14,22 +14,22 @@ https://en.wikipedia.org/wiki/Brownian_noise
 
 package noise
 
-import "github.com/deadsy/babi/babi"
+import "github.com/deadsy/babi/core"
 
 //-----------------------------------------------------------------------------
 
 type White struct {
-	r *babi.Rand
+	r *core.Rand
 }
 
 func NewWhite() *White {
 	return &White{
-		r: babi.NewRand(0),
+		r: core.NewRand(0),
 	}
 }
 
 // white noise (spectral density = k)
-func (n *White) Process(out *babi.SBuf) {
+func (n *White) Process(out *core.SBuf) {
 	for i := 0; i < len(out); i++ {
 		out[i] = n.r.Float()
 	}
@@ -38,18 +38,18 @@ func (n *White) Process(out *babi.SBuf) {
 //-----------------------------------------------------------------------------
 
 type Brown struct {
-	r  *babi.Rand
+	r  *core.Rand
 	b0 float32
 }
 
 func NewBrown() *Brown {
 	return &Brown{
-		r: babi.NewRand(0),
+		r: core.NewRand(0),
 	}
 }
 
 // brown noise (spectral density = k/f*f)
-func (n *Brown) Process(out *babi.SBuf) {
+func (n *Brown) Process(out *core.SBuf) {
 	b0 := n.b0
 	for i := 0; i < len(out); i++ {
 		white := n.r.Float()
@@ -62,18 +62,18 @@ func (n *Brown) Process(out *babi.SBuf) {
 //-----------------------------------------------------------------------------
 
 type Pink1 struct {
-	r          *babi.Rand
+	r          *core.Rand
 	b0, b1, b2 float32
 }
 
 func NewPink1() *Pink1 {
 	return &Pink1{
-		r: babi.NewRand(0),
+		r: core.NewRand(0),
 	}
 }
 
 // pink noise (spectral density = k/f): fast, inaccurate version
-func (n *Pink1) Process(out *babi.SBuf) {
+func (n *Pink1) Process(out *core.SBuf) {
 	b0 := n.b0
 	b1 := n.b1
 	b2 := n.b2
@@ -93,18 +93,18 @@ func (n *Pink1) Process(out *babi.SBuf) {
 //-----------------------------------------------------------------------------
 
 type Pink2 struct {
-	r                          *babi.Rand
+	r                          *core.Rand
 	b0, b1, b2, b3, b4, b5, b6 float32
 }
 
 func NewPink2() *Pink2 {
 	return &Pink2{
-		r: babi.NewRand(0),
+		r: core.NewRand(0),
 	}
 }
 
 // pink noise (spectral density = k/f): slow, accurate version
-func (n *Pink2) Process(out *babi.SBuf) {
+func (n *Pink2) Process(out *core.SBuf) {
 	b0 := n.b0
 	b1 := n.b1
 	b2 := n.b2
