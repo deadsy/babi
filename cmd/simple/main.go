@@ -3,7 +3,9 @@ package main
 import (
 	"fmt"
 
+	"github.com/deadsy/babi/core"
 	"github.com/deadsy/babi/jack"
+	"github.com/deadsy/babi/patches"
 )
 
 var channels int = 2
@@ -23,6 +25,9 @@ func process(nframes uint32) int {
 }
 
 func main() {
+
+	core.RegisterPatch(&patches.SimpleInfo, 0)
+
 	client, status := jack.ClientOpen("Go Passthrough", jack.NoStartServer)
 	if status != 0 {
 		fmt.Println("Status:", jack.StrError(status))

@@ -39,9 +39,9 @@ int jack_set_port_registration_callback_go(jack_client_t * client) {
 	return jack_set_port_registration_callback(client, goPortRegistration, client);
 }
 
-//int jack_set_port_rename_callback_go(jack_client_t * client) {
-//	return jack_set_port_rename_callback(client, goPortRename, client);
-//}
+int jack_set_port_rename_callback_go(jack_client_t * client) {
+	return jack_set_port_rename_callback(client, goPortRename, client);
+}
 
 int jack_set_port_connect_callback_go(jack_client_t * client) {
 	return jack_set_port_connect_callback(client, goPortConnect, client);
@@ -193,10 +193,10 @@ func (client *Client) SetPortRegistrationCallback(callback PortRegistrationCallb
 	return int(C.jack_set_port_registration_callback_go(client.handler))
 }
 
-//func (client *Client) SetPortRenameCallback(callback PortRenameCallback) int {
-//	client.portRenameCallback = callback
-//	return int(C.jack_set_port_rename_callback_go(client.handler))
-//}
+func (client *Client) SetPortRenameCallback(callback PortRenameCallback) int {
+	client.portRenameCallback = callback
+	return int(C.jack_set_port_rename_callback_go(client.handler))
+}
 
 func (client *Client) SetPortConnectCallback(callback PortConnectCallback) int {
 	client.portConnectCallback = callback

@@ -29,7 +29,7 @@ func NewWhite() *White {
 }
 
 // white noise (spectral density = k)
-func (n *White) Process(out *core.SBuf) {
+func (n *White) Process(out *core.Buf) {
 	for i := 0; i < len(out); i++ {
 		out[i] = n.r.Float()
 	}
@@ -49,7 +49,7 @@ func NewBrown() *Brown {
 }
 
 // brown noise (spectral density = k/f*f)
-func (n *Brown) Process(out *core.SBuf) {
+func (n *Brown) Process(out *core.Buf) {
 	b0 := n.b0
 	for i := 0; i < len(out); i++ {
 		white := n.r.Float()
@@ -73,7 +73,7 @@ func NewPink1() *Pink1 {
 }
 
 // pink noise (spectral density = k/f): fast, inaccurate version
-func (n *Pink1) Process(out *core.SBuf) {
+func (n *Pink1) Process(out *core.Buf) {
 	b0 := n.b0
 	b1 := n.b1
 	b2 := n.b2
@@ -104,7 +104,7 @@ func NewPink2() *Pink2 {
 }
 
 // pink noise (spectral density = k/f): slow, accurate version
-func (n *Pink2) Process(out *core.SBuf) {
+func (n *Pink2) Process(out *core.Buf) {
 	b0 := n.b0
 	b1 := n.b1
 	b2 := n.b2

@@ -16,17 +16,13 @@ import (
 
 func Test_Mul_SS(t *testing.T) {
 
-	a := &SBuf{}
-	b := &SBuf{}
-	c := &SBuf{}
+	a := NewBuf(3)
+	b := NewBuf(4)
+	c := NewBuf(12)
 
-	Set_SK(a, 3)
-	Set_SK(b, 4)
-	Set_SK(c, 12)
+	a.Mul(b)
 
-	Mul_SS(a, b)
-
-	if !Equal_SS(a, c) {
+	if !a.Equals(c) {
 		t.Error("FAIL")
 	}
 

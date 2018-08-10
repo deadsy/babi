@@ -19,7 +19,7 @@ func NewSine() *Sine {
 	return &Sine{}
 }
 
-func (o *Sine) Process(out *core.SBuf) {
+func (o *Sine) Process(out *core.Buf) {
 }
 
 //-----------------------------------------------------------------------------

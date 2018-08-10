@@ -15,13 +15,13 @@ import (
 //-----------------------------------------------------------------------------
 
 type Patch interface {
-	Process(in_l, in_r, out_l, out_r *SBuf)
+	Process()
 	Active() bool
 }
 
 type PatchInfo struct {
-	Name   string
-	Create func() Patch
+	Name string
+	New  func() Patch
 }
 
 //-----------------------------------------------------------------------------
