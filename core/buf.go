@@ -11,8 +11,6 @@ package core
 //-----------------------------------------------------------------------------
 // Sample Buffers (at audio sample rate)
 
-const SAMPLES_PER_BUF = 64
-
 // Sample buffer
 type Buf [SAMPLES_PER_BUF]float32
 

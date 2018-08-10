@@ -31,7 +31,7 @@ type Simple struct {
 
 func NewSimple() core.Patch {
 	s := &Simple{
-		adsr: env.NewADSR(),
+		adsr: env.NewADSR(0.1, 1.0, 0.5, 1.0),
 		sine: osc.NewSine(),
 		pan:  audio.NewPan(),
 		out:  audio.NewOutLR(),

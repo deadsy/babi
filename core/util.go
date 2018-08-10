@@ -8,13 +8,6 @@ Common Utility Functions
 
 package core
 
-import "math"
-
-//-----------------------------------------------------------------------------
-
-const PI = math.Pi
-const TAU = 2 * math.Pi
-
 //-----------------------------------------------------------------------------
 
 // absolute value of x
