@@ -1,22 +1,40 @@
 //-----------------------------------------------------------------------------
 /*
 
-Constants
+Audio
 
 */
 //-----------------------------------------------------------------------------
 
 package core
 
-import "math"
+import "fmt"
 
 //-----------------------------------------------------------------------------
 
-const AUDIO_FS = 48000
-const AUDIO_TS = 1 / AUDIO_FS
-const AUDIO_BUFSIZE = 16
+var lbuf, rbuf Buf
 
-const PI = math.Pi
-const TAU = 2 * math.Pi
+func AudioOutLR(l, r *Buf) {
+	lbuf.Add(l)
+	rbuf.Add(r)
+}
+
+func AudioOutL(l *Buf) {
+	lbuf.Add(l)
+}
+
+func AudioOutR(r *Buf) {
+	rbuf.Add(r)
+}
+
+func AudioClear() {
+	lbuf.Zero()
+	rbuf.Zero()
+}
+
+func AudioDump() {
+	fmt.Printf("lbuf %s\n", &lbuf)
+	fmt.Printf("rbuf %s\n", &rbuf)
+}
 
 //-----------------------------------------------------------------------------

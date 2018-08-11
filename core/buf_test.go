@@ -16,13 +16,15 @@ import (
 
 func Test_Mul_SS(t *testing.T) {
 
-	a := NewBuf(3)
-	b := NewBuf(4)
-	c := NewBuf(12)
+	var a, b, c Buf
 
-	a.Mul(b)
+	a.Set(3)
+	b.Set(4)
+	c.Set(12)
 
-	if !a.Equals(c) {
+	a.Mul(&b)
+
+	if !a.Equals(&c) {
 		t.Error("FAIL")
 	}
 

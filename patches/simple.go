@@ -36,6 +36,12 @@ func NewSimple() core.Patch {
 		pan:  audio.NewPan(),
 		out:  audio.NewOutLR(),
 	}
+
+	s.sine.SetFrequency(440.0)
+	s.pan.SetPan(0.5)
+	s.pan.SetVol(1.0)
+	s.adsr.Attack()
+
 	return s
 }
 

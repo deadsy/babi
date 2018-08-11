@@ -89,9 +89,9 @@ func NewADSR(
 
 	return &ADSR{
 		s:         s,
-		ka:        get_k(a, core.SAMPLES_PER_SEC),
-		kd:        get_k(d, core.SAMPLES_PER_SEC),
-		kr:        get_k(r, core.SAMPLES_PER_SEC),
+		ka:        get_k(a, core.AUDIO_FS),
+		kd:        get_k(d, core.AUDIO_FS),
+		kr:        get_k(r, core.AUDIO_FS),
 		d_trigger: 1.0 - level_epsilon,
 		s_trigger: s + (1.0-s)*level_epsilon,
 		i_trigger: s * level_epsilon,

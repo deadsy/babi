@@ -21,6 +21,7 @@ func NewOutLR() *OutLR {
 }
 
 func (o *OutLR) Process(l, r *core.Buf) {
+	core.AudioOutLR(l, r)
 }
 
 //-----------------------------------------------------------------------------

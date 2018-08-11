@@ -1,3 +1,7 @@
+//-----------------------------------------------------------------------------
+
+//-----------------------------------------------------------------------------
+
 package main
 
 import (
@@ -7,6 +11,8 @@ import (
 	"github.com/deadsy/babi/jack"
 	"github.com/deadsy/babi/patches"
 )
+
+//-----------------------------------------------------------------------------
 
 var channels int = 2
 
@@ -24,9 +30,9 @@ func process(nframes uint32) int {
 	return 0
 }
 
-func main() {
+//-----------------------------------------------------------------------------
 
-	core.RegisterPatch(&patches.SimpleInfo, 0)
+func main_x() {
 
 	client, status := jack.ClientOpen("Go Passthrough", jack.NoStartServer)
 	if status != 0 {
@@ -62,3 +68,13 @@ func main() {
 	fmt.Println(client.GetName())
 	<-shutdown
 }
+
+//-----------------------------------------------------------------------------
+
+func main() {
+	p := patches.NewSimple()
+	p.Process()
+	core.AudioDump()
+}
+
+//-----------------------------------------------------------------------------
