@@ -29,12 +29,13 @@ type Simple struct {
 	out  *audio.OutLR
 }
 
-func NewSimple() core.Patch {
+func NewSimple(b *core.Babi) core.Patch {
 	s := &Simple{
-		adsr: env.NewADSR(0.1, 1.0, 0.5, 1.0),
+		//adsr: env.NewADSR(0.1, 1.0, 0.5, 1.0),
+		adsr: env.NewAD(0.1, 1.0),
 		sine: osc.NewSine(),
 		pan:  audio.NewPan(),
-		out:  audio.NewOutLR(),
+		out:  audio.NewOutLR(b),
 	}
 
 	s.sine.SetFrequency(440.0)

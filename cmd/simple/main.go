@@ -8,11 +8,12 @@ import (
 	"fmt"
 
 	"github.com/deadsy/babi/core"
-	"github.com/deadsy/babi/jack"
 	"github.com/deadsy/babi/patches"
 )
 
 //-----------------------------------------------------------------------------
+
+/*
 
 var channels int = 2
 
@@ -29,8 +30,6 @@ func process(nframes uint32) int {
 	}
 	return 0
 }
-
-//-----------------------------------------------------------------------------
 
 func main_x() {
 
@@ -69,12 +68,52 @@ func main_x() {
 	<-shutdown
 }
 
+*/
+
 //-----------------------------------------------------------------------------
 
-func main() {
+/*
+
+func simple(pa *pulse.PulseMainLoop) {
+
+	ctx := pa.NewContext("default", 0)
+	if ctx == nil {
+		fmt.Println("Failed to create a new context")
+		return
+	}
+	defer ctx.Dispose()
+	st := ctx.NewStream("default", &pulse.PulseSampleSpec{Format: pulse.SAMPLE_FLOAT32LE, Rate: core.AUDIO_FS, Channels: 1})
+	if st == nil {
+		fmt.Println("Failed to create a new stream")
+		return
+	}
+	defer st.Dispose()
+	st.ConnectToSink()
+
 	p := patches.NewSimple()
-	p.Process()
-	core.AudioDump()
+
+	for {
+		core.AudioClear()
+		p.Process()
+		st.Write(core.AudioGetL(), pulse.SEEK_RELATIVE)
+	}
+
+}
+
+*/
+
+func main() {
+
+	audio, err := core.NewPulse()
+	if err != nil {
+		fmt.Printf("%s\n", err)
+		return
+	}
+	defer audio.Close()
+
+	b := core.NewBabi(audio)
+	b.AddPatch(patches.NewSimple(b))
+	b.Run()
 }
 
 //-----------------------------------------------------------------------------

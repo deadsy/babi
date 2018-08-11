@@ -14,7 +14,7 @@ import "math"
 
 const AUDIO_FS = 48000
 const AUDIO_TS = 1 / AUDIO_FS
-const AUDIO_BUFSIZE = 16
+const AUDIO_BUFSIZE = 64
 
 const PI = math.Pi
 const TAU = 2 * math.Pi

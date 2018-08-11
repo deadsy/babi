@@ -8,9 +8,7 @@ Patch Operations
 
 package core
 
-import (
-	"errors"
-)
+import "errors"
 
 //-----------------------------------------------------------------------------
 
@@ -21,7 +19,7 @@ type Patch interface {
 
 type PatchInfo struct {
 	Name string
-	New  func() Patch
+	New  func(b *Babi) Patch
 }
 
 //-----------------------------------------------------------------------------

@@ -14,14 +14,17 @@ import "github.com/deadsy/babi/core"
 // stereo output
 
 type OutLR struct {
+	babi *core.Babi
 }
 
-func NewOutLR() *OutLR {
-	return &OutLR{}
+func NewOutLR(b *core.Babi) *OutLR {
+	return &OutLR{
+		babi: b,
+	}
 }
 
 func (o *OutLR) Process(l, r *core.Buf) {
-	core.AudioOutLR(l, r)
+	o.babi.OutLR(l, r)
 }
 
 //-----------------------------------------------------------------------------
