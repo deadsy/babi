@@ -72,36 +72,6 @@ func main_x() {
 
 //-----------------------------------------------------------------------------
 
-/*
-
-func simple(pa *pulse.PulseMainLoop) {
-
-	ctx := pa.NewContext("default", 0)
-	if ctx == nil {
-		fmt.Println("Failed to create a new context")
-		return
-	}
-	defer ctx.Dispose()
-	st := ctx.NewStream("default", &pulse.PulseSampleSpec{Format: pulse.SAMPLE_FLOAT32LE, Rate: core.AUDIO_FS, Channels: 1})
-	if st == nil {
-		fmt.Println("Failed to create a new stream")
-		return
-	}
-	defer st.Dispose()
-	st.ConnectToSink()
-
-	p := patches.NewSimple()
-
-	for {
-		core.AudioClear()
-		p.Process()
-		st.Write(core.AudioGetL(), pulse.SEEK_RELATIVE)
-	}
-
-}
-
-*/
-
 func main() {
 
 	audio, err := core.NewPulse()

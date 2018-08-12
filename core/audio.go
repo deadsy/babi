@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
 /*
 
-Audio
+Audio Interface Objects
 
 */
 //-----------------------------------------------------------------------------
@@ -11,6 +11,7 @@ package core
 import (
 	"errors"
 
+	"github.com/deadsy/babi/log"
 	"github.com/deadsy/babi/pulse"
 )
 
@@ -22,6 +23,7 @@ type Audio interface {
 }
 
 //-----------------------------------------------------------------------------
+// pulse audio
 
 type Pulse struct {
 	pa  *pulse.PulseMainLoop
@@ -30,6 +32,7 @@ type Pulse struct {
 }
 
 func NewPulse() (Audio, error) {
+	log.Info.Printf("")
 
 	pa := pulse.NewPulseMainLoop()
 	pa.Start()
@@ -40,7 +43,7 @@ func NewPulse() (Audio, error) {
 		return nil, errors.New("failed to create a new context")
 	}
 
-	st := ctx.NewStream("default", &pulse.PulseSampleSpec{Format: pulse.SAMPLE_FLOAT32LE, Rate: AUDIO_FS, Channels: 1})
+	st := ctx.NewStream("default", &pulse.PulseSampleSpec{Format: pulse.SAMPLE_FLOAT32LE, Rate: AUDIO_FS, Channels: 2})
 	if st == nil {
 		ctx.Dispose()
 		pa.Dispose()
@@ -52,49 +55,20 @@ func NewPulse() (Audio, error) {
 }
 
 func (p *Pulse) Close() {
+	log.Info.Printf("")
 	p.st.Dispose()
 	p.ctx.Dispose()
 	p.pa.Dispose()
 }
 
 func (p *Pulse) Write(l, r *Buf) {
-	p.st.Write(l[:], pulse.SEEK_RELATIVE)
-}
-
-//-----------------------------------------------------------------------------
-
-type Babi struct {
-	patch        Patch
-	audio        Audio
-	out_l, out_r Buf
-}
-
-func NewBabi(audio Audio) *Babi {
-	return &Babi{
-		audio: audio,
+	// combine left/right channels into a single slice.
+	buf := make([]float32, 2*AUDIO_BUFSIZE)
+	for i := 0; i < AUDIO_BUFSIZE; i += 1 {
+		buf[2*i] = l[i]
+		buf[(2*i)+1] = r[i]
 	}
-}
-
-func (b *Babi) AddPatch(patch Patch) {
-	b.patch = patch
-}
-
-func (b *Babi) Run() {
-	for {
-		b.OutZero()
-		b.patch.Process()
-		b.audio.Write(&b.out_l, &b.out_r)
-	}
-}
-
-func (b *Babi) OutZero() {
-	b.out_l.Zero()
-	b.out_r.Zero()
-}
-
-func (b *Babi) OutLR(l, r *Buf) {
-	b.out_l.Add(l)
-	b.out_r.Add(r)
+	p.st.Write(buf, pulse.SEEK_RELATIVE)
 }
 
 //-----------------------------------------------------------------------------
