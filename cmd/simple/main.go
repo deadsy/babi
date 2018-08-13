@@ -83,6 +83,7 @@ func main() {
 
 	b := core.NewBabi(audio)
 	b.AddPatch(patches.NewSimple(b))
+	//b.AddPatch(patches.NewKarplusStrong(b))
 	b.Run()
 }
 
