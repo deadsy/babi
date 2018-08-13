@@ -27,11 +27,11 @@ type KarplusStrong struct {
 	out *audio.OutLR
 }
 
-func NewKarplusStrong(b *core.Babi) core.Patch {
+func NewKarplusStrong(s *core.Synth) core.Patch {
 	p := &KarplusStrong{
 		ks:  osc.NewKarplusStrong(),
 		pan: audio.NewPan(),
-		out: audio.NewOutLR(b),
+		out: audio.NewOutLR(s),
 	}
 
 	p.ks.SetFrequency(440.0)
@@ -43,6 +43,12 @@ func NewKarplusStrong(b *core.Babi) core.Patch {
 	return p
 }
 
+func (p *KarplusStrong) Start() {
+}
+
+func (p *KarplusStrong) Stop() {
+}
+
 func (p *KarplusStrong) Active() bool {
 	return true
 }
@@ -51,7 +57,6 @@ func (p *KarplusStrong) Process() {
 	var out, out_l, out_r core.Buf
 	// generate the ks wave
 	p.ks.Process(&out)
-	//fmt.Printf("%s\n", out.String())
 	// pan to left/right channels
 	p.pan.Process(&out, &out_l, &out_r)
 	// stereo output

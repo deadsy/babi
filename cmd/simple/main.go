@@ -73,7 +73,7 @@ func main_x() {
 //-----------------------------------------------------------------------------
 
 func main() {
-
+	// setup audio output
 	audio, err := core.NewPulse()
 	if err != nil {
 		fmt.Printf("%s\n", err)
@@ -81,10 +81,13 @@ func main() {
 	}
 	defer audio.Close()
 
-	b := core.NewBabi(audio)
-	//b.AddPatch(patches.NewSimple(b))
-	b.AddPatch(patches.NewKarplusStrong(b))
-	b.Run()
+	// setup synth and add patches
+	s := core.NewSynth(audio)
+	s.AddPatch(&patches.KarplusStrongInfo, 0)
+	s.AddPatch(&patches.SimpleInfo, 1)
+
+	// run the synth
+	s.Run()
 }
 
 //-----------------------------------------------------------------------------
