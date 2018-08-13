@@ -30,6 +30,7 @@ func (r *Rand) Uint32() uint32 {
 }
 
 // Return a random float from -1..1
+// TODO this is broken, fix it.
 func (r *Rand) Float() float32 {
 	i := r.Uint32()
 	i |= (i << 1) & 0x80000000

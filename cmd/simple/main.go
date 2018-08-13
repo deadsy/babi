@@ -82,8 +82,8 @@ func main() {
 	defer audio.Close()
 
 	b := core.NewBabi(audio)
-	b.AddPatch(patches.NewSimple(b))
-	//b.AddPatch(patches.NewKarplusStrong(b))
+	//b.AddPatch(patches.NewSimple(b))
+	b.AddPatch(patches.NewKarplusStrong(b))
 	b.Run()
 }
 

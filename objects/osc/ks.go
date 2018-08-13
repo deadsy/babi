@@ -50,7 +50,7 @@ func NewKarplusStrong() *KarplusStrong {
 }
 
 func (ks *KarplusStrong) SetAttenuate(attenuate float32) {
-	ks.k = 0.5 * attenuate
+	ks.k = 0.5 * core.Clamp(attenuate, 0, 1)
 }
 
 func (ks *KarplusStrong) SetFrequency(freq float32) {

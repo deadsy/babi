@@ -35,6 +35,7 @@ func NewKarplusStrong(b *core.Babi) core.Patch {
 	}
 
 	p.ks.SetFrequency(440.0)
+	p.ks.SetAttenuate(1.0)
 	p.ks.Pluck()
 	p.pan.SetPan(0.5)
 	p.pan.SetVol(1.0)
