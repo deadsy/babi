@@ -40,20 +40,23 @@ func (s *Synth) VoiceAlloc(channel, note uint) error {
 	if channel >= MAX_CHANNELS || s.patch[channel] == nil {
 		return fmt.Errorf("no patch defined for channel %d", channel)
 	}
-	// stop any pre-existing voice
+
+	// stop any pre-existing voice in this slot
 	v := s.voice[s.voice_idx]
 	if v != nil {
 		v.patch.Stop()
 	}
+
 	// allocate and start a new voice
 	v = s.NewVoice(channel, note)
-	v.patch.Start()
-	// Currently doing simple round robin allocation.
 	s.voice[s.voice_idx] = v
+
+	// move to the next voice slot
 	s.voice_idx += 1
 	if s.voice_idx == MAX_VOICES {
 		s.voice_idx = 0
 	}
+
 	return nil
 }
 
@@ -72,7 +75,6 @@ func (s *Synth) VoiceLookup(channel, note uint) *Voice {
 // patches
 
 type Patch interface {
-	Start()       // start the patch
 	Stop()        // stop the patch
 	Process()     // run the patch
 	Active() bool // is this patch active?
@@ -81,7 +83,6 @@ type Patch interface {
 type PatchInfo struct {
 	Name string               // name of patch
 	New  func(s *Synth) Patch // function to create a new patch
-
 }
 
 // Add a patch to a channel
@@ -125,7 +126,7 @@ func (s *Synth) Run() {
 			v := s.voice[i]
 			if v != nil {
 				p := v.patch
-				if p != nil && p.Active() {
+				if p.Active() {
 					p.Process()
 				}
 			}

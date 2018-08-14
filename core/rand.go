@@ -30,12 +30,9 @@ func (r *Rand) Uint32() uint32 {
 }
 
 // Return a random float from -1..1
-// TODO this is broken, fix it.
 func (r *Rand) Float() float32 {
-	i := r.Uint32()
-	i |= (i << 1) & 0x80000000
-	i = (i & 0x807fffff) | (126 << 23)
-	return math.Float32frombits(i)
+	i := (r.Uint32() & 0x007fffff) | (128 << 23)
+	return math.Float32frombits(i) - 3
 }
 
 //-----------------------------------------------------------------------------

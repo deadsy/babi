@@ -10,6 +10,7 @@ package patches
 
 import (
 	"github.com/deadsy/babi/core"
+	"github.com/deadsy/babi/log"
 	"github.com/deadsy/babi/objects/audio"
 	"github.com/deadsy/babi/objects/osc"
 )
@@ -28,6 +29,8 @@ type KarplusStrong struct {
 }
 
 func NewKarplusStrong(s *core.Synth) core.Patch {
+	log.Info.Printf("")
+
 	p := &KarplusStrong{
 		ks:  osc.NewKarplusStrong(),
 		pan: audio.NewPan(),
@@ -43,10 +46,8 @@ func NewKarplusStrong(s *core.Synth) core.Patch {
 	return p
 }
 
-func (p *KarplusStrong) Start() {
-}
-
 func (p *KarplusStrong) Stop() {
+	log.Info.Printf("")
 }
 
 func (p *KarplusStrong) Active() bool {

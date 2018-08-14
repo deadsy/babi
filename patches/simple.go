@@ -10,6 +10,7 @@ package patches
 
 import (
 	"github.com/deadsy/babi/core"
+	"github.com/deadsy/babi/log"
 	"github.com/deadsy/babi/objects/audio"
 	"github.com/deadsy/babi/objects/env"
 	"github.com/deadsy/babi/objects/osc"
@@ -30,6 +31,8 @@ type Simple struct {
 }
 
 func NewSimple(s *core.Synth) core.Patch {
+	log.Info.Printf("")
+
 	p := &Simple{
 		adsr: env.NewAD(0.1, 1.0),
 		sine: osc.NewSine(),
@@ -45,10 +48,8 @@ func NewSimple(s *core.Synth) core.Patch {
 	return p
 }
 
-func (p *Simple) Start() {
-}
-
 func (p *Simple) Stop() {
+	log.Info.Printf("")
 }
 
 func (p *Simple) Active() bool {
