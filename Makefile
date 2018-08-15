@@ -1,5 +1,6 @@
 
 DIRS = simple \
+       jack_test \
 
 all:
 	for dir in $(DIRS); do \
