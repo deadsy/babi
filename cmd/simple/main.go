@@ -22,13 +22,15 @@ func main() {
 	}
 	defer audio.Close()
 
-	// setup synth and add patches
+	// create the synth
 	s := core.NewSynth(audio)
-	s.AddPatch(&patches.KarplusStrongInfo, 0)
-	s.AddPatch(&patches.SimpleInfo, 1)
-	s.VoiceAlloc(0, 69)
 
-	// run the synth
+	// create the patches
+	p0 := patches.NewPolyPatch(patches.NewSimplePatch)
+	p1 := patches.NewChannelPatch(&[]core.Patch{p0})
+
+	// set the root patch and run the synth
+	s.SetRoot(p1)
 	s.Run()
 }
 

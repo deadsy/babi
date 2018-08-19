@@ -8,16 +8,41 @@ Synth
 
 package core
 
-import "fmt"
+import "github.com/deadsy/babi/log"
 
 //-----------------------------------------------------------------------------
 
-const MAX_CHANNELS = 16
-const MAX_VOICES = 32
 const AUDIO_CHANNELS = 2
 
 //-----------------------------------------------------------------------------
+// events
+
+type EventType uint
+
+const (
+	null EventType = iota
+	midi
+)
+
+type Event struct {
+	dst   Patch       // destination patch
+	etype EventType   // event type
+	info  interface{} // event information
+}
+
+//-----------------------------------------------------------------------------
+
+type Patch interface {
+	Process()        // run the patch
+	Event(e *Event)  // process an event
+	Active() bool    // return true if the patch has non-zero output
+	Out(out ...*Buf) // output to the parent patch
+}
+
+//-----------------------------------------------------------------------------
 // voices (active patches)
+
+/*
 
 type Voice struct {
 	channel uint  // channel for this voice
@@ -71,8 +96,12 @@ func (s *Synth) VoiceLookup(channel, note uint) *Voice {
 	return nil
 }
 
+*/
+
 //-----------------------------------------------------------------------------
 // patches
+
+/*
 
 type Patch interface {
 	Stop()        // stop the patch
@@ -80,10 +109,7 @@ type Patch interface {
 	Active() bool // is this patch active?
 }
 
-type PatchInfo struct {
-	Name string               // name of patch
-	New  func(s *Synth) Patch // function to create a new patch
-}
+
 
 // Add a patch to a channel
 func (s *Synth) AddPatch(patch *PatchInfo, channel uint) error {
@@ -97,21 +123,27 @@ func (s *Synth) AddPatch(patch *PatchInfo, channel uint) error {
 	return nil
 }
 
+*/
+
 //-----------------------------------------------------------------------------
 
 type Synth struct {
-	patch     [MAX_CHANNELS]*PatchInfo // channel to patch mapping
-	voice     [MAX_VOICES]*Voice       // active patch set
-	voice_idx uint                     // current index into voice array
-	audio     Audio                    // audio output device
-	out       [AUDIO_CHANNELS]Buf      // audio output buffers
+	root  Patch               // root patch
+	audio Audio               // audio output device
+	out   [AUDIO_CHANNELS]Buf // audio output buffers
 }
 
 // NewSynth creates a synthesizer object.
 func NewSynth(audio Audio) *Synth {
+	log.Info.Printf("")
 	return &Synth{
 		audio: audio,
 	}
+}
+
+// Set the root patch for the synthesizer.
+func (s *Synth) SetRoot(p Patch) {
+	s.root = p
 }
 
 // Main loop for the synthesizer.
@@ -121,15 +153,9 @@ func (s *Synth) Run() {
 		for i := 0; i < AUDIO_CHANNELS; i++ {
 			s.out[i].Zero()
 		}
-		// process all active voices
-		for i := 0; i < MAX_VOICES; i++ {
-			v := s.voice[i]
-			if v != nil {
-				p := v.patch
-				if p.Active() {
-					p.Process()
-				}
-			}
+		// process the patches
+		if s.root != nil && s.root.Active() {
+			s.root.Process()
 		}
 		// write the output to the audio device
 		s.audio.Write(&s.out[0], &s.out[1])
