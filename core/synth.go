@@ -8,7 +8,9 @@ Synth
 
 package core
 
-import "github.com/deadsy/babi/log"
+import (
+	"github.com/deadsy/babi/log"
+)
 
 //-----------------------------------------------------------------------------
 
@@ -20,23 +22,27 @@ const AUDIO_CHANNELS = 2
 type EventType uint
 
 const (
-	null EventType = iota
-	midi
+	Event_Null EventType = iota
+	Event_MIDI
 )
 
 type Event struct {
-	dst   Patch       // destination patch
-	etype EventType   // event type
-	info  interface{} // event information
+	Etype EventType   // event type
+	Info  interface{} // event information
+}
+
+type MIDIEvent struct {
+	Status uint8 // message status byte
+	Arg0   uint8 // message byte 0
+	Arg1   uint8 // message byte 1
 }
 
 //-----------------------------------------------------------------------------
 
 type Patch interface {
-	Process()        // run the patch
-	Event(e *Event)  // process an event
-	Active() bool    // return true if the patch has non-zero output
-	Out(out ...*Buf) // output to the parent patch
+	Process(in, out []*Buf) // run the patch
+	Event(e *Event)         // process an event
+	Active() bool           // return true if the patch has non-zero output
 }
 
 //-----------------------------------------------------------------------------
@@ -155,7 +161,7 @@ func (s *Synth) Run() {
 		}
 		// process the patches
 		if s.root != nil && s.root.Active() {
-			s.root.Process()
+			s.root.Process(nil, nil)
 		}
 		// write the output to the audio device
 		s.audio.Write(&s.out[0], &s.out[1])

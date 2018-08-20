@@ -27,7 +27,7 @@ func main() {
 
 	// create the patches
 	p0 := patches.NewPolyPatch(patches.NewSimplePatch)
-	p1 := patches.NewChannelPatch(&[]core.Patch{p0})
+	p1 := patches.NewChannelPatch([]core.Patch{p0})
 
 	// set the root patch and run the synth
 	s.SetRoot(p1)

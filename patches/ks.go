@@ -17,8 +17,7 @@ import (
 //-----------------------------------------------------------------------------
 
 type ksPatch struct {
-	parent core.Patch
-	ks     *osc.KarplusStrong
+	ks *osc.KarplusStrong
 }
 
 func NewKSPatch() core.Patch {
@@ -29,12 +28,9 @@ func NewKSPatch() core.Patch {
 //-----------------------------------------------------------------------------
 
 // Run the patch.
-func (p *ksPatch) Process() {
-	var x core.Buf
+func (p *ksPatch) Process(in, out []*core.Buf) {
 	// generate the ks wave
-	p.ks.Process(&x)
-	// output
-	p.parent.Out(&x)
+	p.ks.Process(out[0])
 }
 
 // Process a patch event.
@@ -44,10 +40,6 @@ func (p *ksPatch) Event(e *core.Event) {
 // Return true if the patch has non-zero output.
 func (p *ksPatch) Active() bool {
 	return true
-}
-
-// Output to the parent patch.
-func (p *ksPatch) Out(out ...*core.Buf) {
 }
 
 //-----------------------------------------------------------------------------

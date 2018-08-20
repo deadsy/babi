@@ -36,10 +36,10 @@ func NewPolyPatch(subpatch func() core.Patch) core.Patch {
 //-----------------------------------------------------------------------------
 
 // Run the patch.
-func (p *polyPatch) Process() {
+func (p *polyPatch) Process(in, out []*core.Buf) {
 	for _, v := range p.voice {
 		if v != nil && v.Active() {
-			v.Process()
+			v.Process(nil, []*core.Buf{out[0]})
 		}
 	}
 }
@@ -51,10 +51,6 @@ func (p *polyPatch) Event(e *core.Event) {
 // Return true if the patch has non-zero output.
 func (p *polyPatch) Active() bool {
 	return true
-}
-
-// Output to the parent patch.
-func (p *polyPatch) Out(out ...*core.Buf) {
 }
 
 //-----------------------------------------------------------------------------

@@ -31,16 +31,14 @@ func NewSimplePatch() core.Patch {
 //-----------------------------------------------------------------------------
 
 // Run the patch.
-func (p *simplePatch) Process() {
-	var env, x core.Buf
+func (p *simplePatch) Process(in, out []*core.Buf) {
+	var env core.Buf
 	// generate the envelope
 	p.adsr.Process(&env)
 	// generate the sine wave
-	p.sine.Process(&x)
+	p.sine.Process(out[0])
 	// apply the envelope
-	x.Mul(&env)
-	// output
-	p.parent.Out(&x)
+	out[0].Mul(&env)
 }
 
 // Process a patch event.
@@ -50,10 +48,6 @@ func (p *simplePatch) Event(e *core.Event) {
 // Return true if the patch has non-zero output.
 func (p *simplePatch) Active() bool {
 	return p.adsr.Active()
-}
-
-// Output to the parent patch.
-func (p *simplePatch) Out(out ...*core.Buf) {
 }
 
 //-----------------------------------------------------------------------------

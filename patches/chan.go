@@ -17,15 +17,11 @@ import (
 
 //-----------------------------------------------------------------------------
 
-const MAX_CHANNELS = 16
-
-//-----------------------------------------------------------------------------
-
 type channelPatch struct {
-	channel *[]core.Patch
+	channel []core.Patch
 }
 
-func NewChannelPatch(channel *[]core.Patch) core.Patch {
+func NewChannelPatch(channel []core.Patch) core.Patch {
 	log.Info.Printf("")
 	return &channelPatch{
 		channel: channel,
@@ -35,25 +31,35 @@ func NewChannelPatch(channel *[]core.Patch) core.Patch {
 //-----------------------------------------------------------------------------
 
 // Run the patch.
-func (p *channelPatch) Process() {
-	for _, p := range *p.channel {
+func (p *channelPatch) Process(in, out []*core.Buf) {
+	for i, p := range p.channel {
 		if p != nil && p.Active() {
-			p.Process()
+			p.Process(nil, []*core.Buf{out[i]})
 		}
 	}
 }
 
 // Process a patch event.
 func (p *channelPatch) Event(e *core.Event) {
+	switch e.Etype {
+	case core.Event_MIDI:
+		// send the event to the channel patch
+		midi := e.Info.(*core.MIDIEvent)
+		ch := midi.Status & 0xf
+		if int(ch) < len(p.channel) && p.channel[ch] != nil {
+			// send the event to the subpatch
+			p.channel[ch].Event(e)
+		} else {
+			log.Info.Printf("no patch on channel %d for midi event", ch)
+		}
+	default:
+		log.Info.Printf("unhandled event type %s", e)
+	}
 }
 
 // Return true if the patch has non-zero output.
 func (p *channelPatch) Active() bool {
 	return true
-}
-
-// Output to the parent patch.
-func (p *channelPatch) Out(out ...*core.Buf) {
 }
 
 //-----------------------------------------------------------------------------
