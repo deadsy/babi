@@ -44,8 +44,7 @@ func (p *channelPatch) Event(e *core.Event) {
 	switch e.Etype {
 	case core.Event_MIDI:
 		// send the event to the channel patch
-		midi := e.Info.(*core.MIDIEvent)
-		ch := midi.Status & 0xf
+		ch := e.Info.(*core.MIDIEvent).GetChannel()
 		if int(ch) < len(p.channel) && p.channel[ch] != nil {
 			// send the event to the subpatch
 			p.channel[ch].Event(e)

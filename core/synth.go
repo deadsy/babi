@@ -31,12 +31,6 @@ type Event struct {
 	Info  interface{} // event information
 }
 
-type MIDIEvent struct {
-	Status uint8 // message status byte
-	Arg0   uint8 // message byte 0
-	Arg1   uint8 // message byte 1
-}
-
 //-----------------------------------------------------------------------------
 
 type Patch interface {
