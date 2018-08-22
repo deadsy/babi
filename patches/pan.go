@@ -47,4 +47,8 @@ func (p *panPatch) Active() bool {
 	return true
 }
 
+func (p *panPatch) Stop() {
+	// do nothing
+}
+
 //-----------------------------------------------------------------------------

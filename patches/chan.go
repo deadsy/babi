@@ -61,4 +61,8 @@ func (p *channelPatch) Active() bool {
 	return true
 }
 
+func (p *channelPatch) Stop() {
+	// do nothing
+}
+
 //-----------------------------------------------------------------------------

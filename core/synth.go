@@ -32,98 +32,14 @@ type Event struct {
 }
 
 //-----------------------------------------------------------------------------
+// patches
 
 type Patch interface {
 	Process(in, out []*Buf) // run the patch
 	Event(e *Event)         // process an event
 	Active() bool           // return true if the patch has non-zero output
+	Stop()                  // stop the patch
 }
-
-//-----------------------------------------------------------------------------
-// voices (active patches)
-
-/*
-
-type Voice struct {
-	channel uint  // channel for this voice
-	note    uint  // base note for this voice
-	patch   Patch // active patch for this voice
-}
-
-// NewVoice creates a new active voice.
-func (s *Synth) NewVoice(channel, note uint) *Voice {
-	return &Voice{
-		channel: channel,
-		note:    note,
-		patch:   s.patch[channel].New(s),
-	}
-}
-
-// Allocate and assign a voice to a channel.
-func (s *Synth) VoiceAlloc(channel, note uint) error {
-	// validate the channel
-	if channel >= MAX_CHANNELS || s.patch[channel] == nil {
-		return fmt.Errorf("no patch defined for channel %d", channel)
-	}
-
-	// stop any pre-existing voice in this slot
-	v := s.voice[s.voice_idx]
-	if v != nil {
-		v.patch.Stop()
-	}
-
-	// allocate and start a new voice
-	v = s.NewVoice(channel, note)
-	s.voice[s.voice_idx] = v
-
-	// move to the next voice slot
-	s.voice_idx += 1
-	if s.voice_idx == MAX_VOICES {
-		s.voice_idx = 0
-	}
-
-	return nil
-}
-
-// Lookup the voice being used for this channel and note.
-func (s *Synth) VoiceLookup(channel, note uint) *Voice {
-	for i := 0; i < MAX_VOICES; i++ {
-		v := s.voice[i]
-		if v != nil && v.channel == channel && v.note == note {
-			return v
-		}
-	}
-	return nil
-}
-
-*/
-
-//-----------------------------------------------------------------------------
-// patches
-
-/*
-
-type Patch interface {
-	Stop()        // stop the patch
-	Process()     // run the patch
-	Active() bool // is this patch active?
-}
-
-
-
-// Add a patch to a channel
-func (s *Synth) AddPatch(patch *PatchInfo, channel uint) error {
-	if channel >= MAX_CHANNELS {
-		return fmt.Errorf("channel %d is out of range", channel)
-	}
-	if s.patch[channel] != nil {
-		return fmt.Errorf("patch %s is already set for channel %d", s.patch[channel].Name, channel)
-	}
-	s.patch[channel] = patch
-	return nil
-}
-
-*/
 
 //-----------------------------------------------------------------------------
 

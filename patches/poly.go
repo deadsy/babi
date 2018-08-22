@@ -55,7 +55,7 @@ func (p *polyPatch) Process(in, out []*core.Buf) {
 func (p *polyPatch) Event(e *core.Event) {
 	switch e.Etype {
 	case core.Event_MIDI:
-		p.midiEvent(e.Info.(*core.MIDIEvent))
+		p.midiEvent(e)
 	default:
 		log.Info.Printf("unhandled event type %s", e)
 	}
@@ -66,27 +66,8 @@ func (p *polyPatch) Active() bool {
 	return true
 }
 
-//-----------------------------------------------------------------------------
-
-// Handle a MIDI event.
-func (p *polyPatch) midiEvent(e *core.MIDIEvent) {
-	switch e.Etype {
-	case core.MIDIEvent_NoteOn:
-		note := e.GetNote()
-		vel := e.GetVelocity()
-		if vel == 0 {
-			// velocity 0 == note off
-			p.noteOff(note, vel)
-		} else {
-			p.noteOn(note, vel)
-		}
-	case core.MIDIEvent_NoteOff:
-		note := e.GetNote()
-		vel := e.GetVelocity()
-		p.noteOff(note, vel)
-	default:
-		log.Info.Printf("unhandled midi event type %s", e)
-	}
+func (p *polyPatch) Stop() {
+	// do nothing
 }
 
 //-----------------------------------------------------------------------------
@@ -101,16 +82,70 @@ func (p *polyPatch) voiceLookup(note uint) *voiceInfo {
 	return nil
 }
 
-//-----------------------------------------------------------------------------
-
-// Handle a note on event.
-func (p *polyPatch) noteOn(note, vel uint) {
-	log.Info.Printf("note %d vel %d", note, vel)
+// allocate a new voice
+func (p *polyPatch) voiceAlloc(note uint) *voiceInfo {
+	// Currently doing simple round robin allocation.
+	v := &p.voice[p.idx]
+	p.idx += 1
+	if p.idx == MAX_VOICES {
+		p.idx = 0
+	}
+	// stop an existing patch on this voice
+	if v.patch != nil {
+		v.patch.Stop()
+	}
+	// setup the new voice
+	v.note = note
+	v.patch = p.newvoice()
+	return v
 }
 
-// Handle a note off event.
-func (p *polyPatch) noteOff(note, vel uint) {
+//-----------------------------------------------------------------------------
+// MIDI events
+
+// Handle a MIDI note off event.
+func (p *polyPatch) midiNoteOff(e *core.Event) {
+	me := e.Info.(*core.MIDIEvent)
+	note := me.GetNote()
+	vel := me.GetVelocity()
 	log.Info.Printf("note %d vel %d", note, vel)
+	v := p.voiceLookup(note)
+	if v != nil {
+		v.patch.Event(e)
+	}
+}
+
+// Handle a MIDI note on event.
+func (p *polyPatch) midiNoteOn(e *core.Event) {
+	me := e.Info.(*core.MIDIEvent)
+	note := me.GetNote()
+	vel := me.GetVelocity()
+	log.Info.Printf("note %d vel %d", note, vel)
+	if vel == 0 {
+		// velocity 0 == note off
+    me.EType = core.MIDIEvent_NoteOff
+    p.midiNoteOff(e)
+	}
+	v := p.voiceLookup(note)
+	if v == nil {
+		v = p.voiceAlloc(note)
+	}
+	if v != nil {
+		v.patch.Event(e)
+	}
+}
+
+// Handle a MIDI event.
+func (p *polyPatch) midiEvent(e *core.Event) {
+	me := e.Info.(*core.MIDIEvent)
+	switch me.Etype {
+	case core.MIDIEvent_NoteOn:
+		p.midiNoteOff(e)
+	case core.MIDIEvent_NoteOff:
+		p.midiNoteOn(e)
+	default:
+		log.Info.Printf("unhandled midi event type %s", e)
+	}
 }
 
 //-----------------------------------------------------------------------------
