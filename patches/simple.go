@@ -43,6 +43,22 @@ func (p *simplePatch) Process(in, out []*core.Buf) {
 
 // Process a patch event.
 func (p *simplePatch) Event(e *core.Event) {
+	switch e.GetType() {
+	case core.Event_Ctrl:
+		ce := e.GetCtrlEvent()
+		switch ce.GetType() {
+		case core.CtrlEvent_NoteOn:
+			p.adsr.Attack() // velocity?
+		case core.CtrlEvent_NoteOff:
+			p.adsr.Release() // velocity?
+		case core.CtrlEvent_Frequency:
+			p.sine.SetFrequency(ce.GetVal())
+		default:
+			log.Info.Printf("unhandled ctrl event %s", ce)
+		}
+	default:
+		log.Info.Printf("unhandled event %s", e)
+	}
 }
 
 // Return true if the patch has non-zero output.
@@ -51,6 +67,7 @@ func (p *simplePatch) Active() bool {
 }
 
 func (p *simplePatch) Stop() {
+	log.Info.Printf("")
 	// do nothing
 }
 

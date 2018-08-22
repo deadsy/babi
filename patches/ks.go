@@ -35,6 +35,24 @@ func (p *ksPatch) Process(in, out []*core.Buf) {
 
 // Process a patch event.
 func (p *ksPatch) Event(e *core.Event) {
+	switch e.GetType() {
+	case core.Event_Ctrl:
+		ce := e.GetCtrlEvent()
+		switch ce.GetType() {
+		case core.CtrlEvent_NoteOn:
+			p.ks.Pluck() // velocity?
+		case core.CtrlEvent_NoteOff:
+			// ignore
+		case core.CtrlEvent_Frequency:
+			p.ks.SetFrequency(ce.GetVal())
+		case core.CtrlEvent_Attenuate:
+			p.ks.SetAttenuate(ce.GetVal())
+		default:
+			log.Info.Printf("unhandled ctrl event %s", ce)
+		}
+	default:
+		log.Info.Printf("unhandled event %s", e)
+	}
 }
 
 // Return true if the patch has non-zero output.

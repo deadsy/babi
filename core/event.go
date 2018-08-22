@@ -84,7 +84,8 @@ const (
 	CtrlEvent_Null      CtrlEventType = iota
 	CtrlEvent_NoteOn                  // trigger a note (key pressed)
 	CtrlEvent_NoteOff                 // release a note (key released)
-	CtrlEvent_Frequency               // set the frequency of an oscillator
+	CtrlEvent_Frequency               // set an oscillator frequency
+	CtrlEvent_Attenuate               // set an attenuation level
 )
 
 type CtrlEvent struct {
@@ -92,10 +93,20 @@ type CtrlEvent struct {
 	val   float32
 }
 
+// NewCtrlEvent returns a new control event.
+func NewCtrlEvent(etype CtrlEventType, val float32) *CtrlEvent {
+	return &CtrlEvent{
+		etype: etype,
+		val:   val,
+	}
+}
+
+// GetType returns the type of a control event.
 func (e *CtrlEvent) GetType() CtrlEventType {
 	return e.etype
 }
 
+// GetVal returns the value of a control event.
 func (e *CtrlEvent) GetVal() float32 {
 	return e.val
 }
