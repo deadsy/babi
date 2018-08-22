@@ -9,41 +9,6 @@ MIDI Functions
 package core
 
 //-----------------------------------------------------------------------------
-// MIDI events
-
-type MIDIEventType uint
-
-const (
-	MIDIEvent_Null MIDIEventType = iota
-	MIDIEvent_NoteOn
-	MIDIEvent_NoteOff
-	MIDIEvent_ControlChange
-	MIDIEvent_PitchWheel
-	MIDIEvent_PolyphonicAftertouch
-	MIDIEvent_ProgramChange
-	MIDIEvent_ChannelAftertouch
-)
-
-type MIDIEvent struct {
-	Etype  MIDIEventType
-	status uint8 // message status byte
-	arg0   uint8 // message byte 0
-	arg1   uint8 // message byte 1
-}
-
-func (e *MIDIEvent) GetChannel() uint {
-	return uint(e.status & 0xf)
-}
-
-func (e *MIDIEvent) GetNote() uint {
-	return uint(e.arg0)
-}
-
-func (e *MIDIEvent) GetVelocity() uint {
-	return uint(e.arg1)
-}
-
-//-----------------------------------------------------------------------------
 
 // MIDI_Map maps a 0..127 midi control value from a..b
 func MIDI_Map(val uint8, a, b float32) float32 {

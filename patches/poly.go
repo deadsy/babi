@@ -53,7 +53,7 @@ func (p *polyPatch) Process(in, out []*core.Buf) {
 
 // Process a patch event.
 func (p *polyPatch) Event(e *core.Event) {
-	switch e.Etype {
+	switch e.GetType() {
 	case core.Event_MIDI:
 		p.midiEvent(e)
 	default:
@@ -105,7 +105,7 @@ func (p *polyPatch) voiceAlloc(note uint) *voiceInfo {
 
 // Handle a MIDI note off event.
 func (p *polyPatch) midiNoteOff(e *core.Event) {
-	me := e.Info.(*core.MIDIEvent)
+	me := e.GetMIDIEvent()
 	note := me.GetNote()
 	vel := me.GetVelocity()
 	log.Info.Printf("note %d vel %d", note, vel)
@@ -117,14 +117,13 @@ func (p *polyPatch) midiNoteOff(e *core.Event) {
 
 // Handle a MIDI note on event.
 func (p *polyPatch) midiNoteOn(e *core.Event) {
-	me := e.Info.(*core.MIDIEvent)
+	me := e.GetMIDIEvent()
 	note := me.GetNote()
 	vel := me.GetVelocity()
 	log.Info.Printf("note %d vel %d", note, vel)
 	if vel == 0 {
 		// velocity 0 == note off
-    me.EType = core.MIDIEvent_NoteOff
-    p.midiNoteOff(e)
+		p.midiNoteOff(e)
 	}
 	v := p.voiceLookup(note)
 	if v == nil {
@@ -137,8 +136,8 @@ func (p *polyPatch) midiNoteOn(e *core.Event) {
 
 // Handle a MIDI event.
 func (p *polyPatch) midiEvent(e *core.Event) {
-	me := e.Info.(*core.MIDIEvent)
-	switch me.Etype {
+	me := e.GetMIDIEvent()
+	switch me.GetType() {
 	case core.MIDIEvent_NoteOn:
 		p.midiNoteOff(e)
 	case core.MIDIEvent_NoteOff:

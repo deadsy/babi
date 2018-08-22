@@ -17,21 +17,6 @@ import (
 const AUDIO_CHANNELS = 2
 
 //-----------------------------------------------------------------------------
-// events
-
-type EventType uint
-
-const (
-	Event_Null EventType = iota
-	Event_MIDI
-)
-
-type Event struct {
-	Etype EventType   // event type
-	Info  interface{} // event information
-}
-
-//-----------------------------------------------------------------------------
 // patches
 
 type Patch interface {

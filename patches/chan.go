@@ -41,10 +41,10 @@ func (p *channelPatch) Process(in, out []*core.Buf) {
 
 // Process a patch event.
 func (p *channelPatch) Event(e *core.Event) {
-	switch e.Etype {
+	switch e.GetType() {
 	case core.Event_MIDI:
 		// send the event to the channel patch
-		ch := e.Info.(*core.MIDIEvent).GetChannel()
+		ch := e.GetMIDIEvent().GetChannel()
 		if int(ch) < len(p.channel) && p.channel[ch] != nil {
 			// send the event to the subpatch
 			p.channel[ch].Event(e)
