@@ -18,14 +18,16 @@ import (
 //-----------------------------------------------------------------------------
 
 type simplePatch struct {
-	parent core.Patch
-	adsr   *env.ADSR // adsr envelope
-	sine   *osc.Sine // sine oscillator
+	adsr *env.ADSR // adsr envelope
+	sine *osc.Sine // sine oscillator
 }
 
 func NewSimplePatch() core.Patch {
 	log.Info.Printf("")
-	return &simplePatch{}
+	return &simplePatch{
+		adsr: env.NewAD(0.1, 1),
+		sine: osc.NewSine(),
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -43,6 +45,7 @@ func (p *simplePatch) Process(in, out []*core.Buf) {
 
 // Process a patch event.
 func (p *simplePatch) Event(e *core.Event) {
+	log.Info.Printf("event %s", e)
 	switch e.GetType() {
 	case core.Event_Ctrl:
 		ce := e.GetCtrlEvent()

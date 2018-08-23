@@ -64,6 +64,11 @@ type MIDIEvent struct {
 	arg1   uint8 // message byte 1
 }
 
+// NewMIDIEvent returns a new MIDI event.
+func NewMIDIEvent(etype MIDIEventType, status, arg0, arg1 uint8) *Event {
+	return NewEvent(Event_MIDI, &MIDIEvent{etype, status, arg0, arg1})
+}
+
 // GetType returns the MIDI event type.
 func (e *MIDIEvent) GetType() MIDIEventType {
 	return e.etype

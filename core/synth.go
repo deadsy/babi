@@ -50,6 +50,9 @@ func (s *Synth) SetRoot(p Patch) {
 
 // Main loop for the synthesizer.
 func (s *Synth) Run() {
+
+	s.root.Event(NewMIDIEvent(MIDIEvent_NoteOn, 0, 69, 127))
+
 	for {
 		// zero the audio output buffers
 		for i := 0; i < AUDIO_CHANNELS; i++ {
