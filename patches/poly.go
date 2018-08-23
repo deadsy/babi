@@ -3,7 +3,7 @@
 
 Polyphonic Patch
 
-Manage multiple instances of a given subpatch.
+Manage concurrent instances (voices) of a given subpatch.
 
 */
 //-----------------------------------------------------------------------------
@@ -17,26 +17,57 @@ import (
 
 //-----------------------------------------------------------------------------
 
-const MAX_VOICES = 16
-
-//-----------------------------------------------------------------------------
-
 type voiceInfo struct {
-	note  uint8 // midi note value
-	patch core.Patch
+	note  uint8      // midi note value
+	patch core.Patch // voice patch
 }
 
 type polyPatch struct {
-	newvoice func() core.Patch     // new function for voice subpatch
-	idx      uint                  // round-robin index for voice array
-	voice    [MAX_VOICES]voiceInfo // voice array
+	subpatch func() core.Patch // new function for voice subpatch
+	voice    []voiceInfo       // voices
+	idx      int               // round-robin index for voice slice
+	bend     float32           // pitch bending value (for all voices)
 }
 
-func NewPolyPatch(newvoice func() core.Patch) core.Patch {
+func NewPolyPatch(subpatch func() core.Patch, maxvoices uint) core.Patch {
 	log.Info.Printf("")
 	return &polyPatch{
-		newvoice: newvoice,
+		subpatch: subpatch,
+		voice:    make([]voiceInfo, maxvoices),
 	}
+}
+
+//-----------------------------------------------------------------------------
+
+// voiceLookup returns the voice for this MIDI note (or nil).
+func (p *polyPatch) voiceLookup(note uint8) *voiceInfo {
+	for i := range p.voice {
+		if p.voice[i].patch != nil && p.voice[i].note == note {
+			return &p.voice[i]
+		}
+	}
+	return nil
+}
+
+// voiceAlloc allocates a new subpatch voice for a MIDI note.
+func (p *polyPatch) voiceAlloc(note uint8) *voiceInfo {
+	// Currently doing simple round robin allocation.
+	v := &p.voice[p.idx]
+	p.idx += 1
+	if p.idx == len(p.voice) {
+		p.idx = 0
+	}
+	// stop an existing patch on this voice
+	if v.patch != nil {
+		v.patch.Stop()
+	}
+	// setup the new voice
+	v.note = note
+	v.patch = p.subpatch()
+	// set the voice frequency
+	f := core.MIDI_ToFrequency(float32(v.note) + p.bend)
+	v.patch.Event(core.NewCtrlEvent(core.CtrlEvent_Frequency, f))
+	return v
 }
 
 //-----------------------------------------------------------------------------
@@ -85,12 +116,22 @@ func (p *polyPatch) Event(e *core.Event) {
 				vel := core.MIDI_Map(me.GetVelocity(), 0, 1)
 				v.patch.Event(core.NewCtrlEvent(core.CtrlEvent_NoteOff, vel))
 			}
+		case core.MIDIEvent_PitchWheel:
+			// get the pitch bend value
+			p.bend = core.MIDI_PitchBend(me.GetPitchWheel())
+			// update all active voices
+			for i := range p.voice {
+				v := &p.voice[i]
+				if v.patch != nil {
+					f := core.MIDI_ToFrequency(float32(v.note) + p.bend)
+					v.patch.Event(core.NewCtrlEvent(core.CtrlEvent_Frequency, f))
+				}
+			}
 		default:
-			log.Info.Printf("unhandled midi event type %s", me)
-
+			log.Info.Printf("unhandled midi event %s", me)
 		}
 	default:
-		log.Info.Printf("unhandled event type %s", e)
+		log.Info.Printf("unhandled event %s", e)
 	}
 }
 
@@ -100,37 +141,8 @@ func (p *polyPatch) Active() bool {
 }
 
 func (p *polyPatch) Stop() {
+	log.Info.Printf("")
 	// do nothing
-}
-
-//-----------------------------------------------------------------------------
-
-// lookup a voice by note
-func (p *polyPatch) voiceLookup(note uint8) *voiceInfo {
-	for i := range p.voice {
-		if p.voice[i].patch != nil && p.voice[i].note == note {
-			return &p.voice[i]
-		}
-	}
-	return nil
-}
-
-// allocate a new voice
-func (p *polyPatch) voiceAlloc(note uint8) *voiceInfo {
-	// Currently doing simple round robin allocation.
-	v := &p.voice[p.idx]
-	p.idx += 1
-	if p.idx == MAX_VOICES {
-		p.idx = 0
-	}
-	// stop an existing patch on this voice
-	if v.patch != nil {
-		v.patch.Stop()
-	}
-	// setup the new voice
-	v.note = note
-	v.patch = p.newvoice()
-	return v
 }
 
 //-----------------------------------------------------------------------------

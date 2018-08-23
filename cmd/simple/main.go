@@ -26,7 +26,7 @@ func main() {
 	s := core.NewSynth(audio)
 
 	// create the patches
-	p0 := patches.NewPolyPatch(patches.NewSimplePatch)
+	p0 := patches.NewPolyPatch(patches.NewSimplePatch, 16)
 	p1 := patches.NewChannelPatch([]core.Patch{p0})
 
 	// set the root patch and run the synth

@@ -9,7 +9,7 @@ Events
 package core
 
 //-----------------------------------------------------------------------------
-// events
+// general event
 
 type EventType uint
 
@@ -22,6 +22,11 @@ const (
 type Event struct {
 	etype EventType   // event type
 	info  interface{} // event information
+}
+
+// NewEvent returns a new event.
+func NewEvent(etype EventType, info interface{}) *Event {
+	return &Event{etype, info}
 }
 
 func (e *Event) GetType() EventType {
@@ -59,20 +64,29 @@ type MIDIEvent struct {
 	arg1   uint8 // message byte 1
 }
 
+// GetType returns the MIDI event type.
 func (e *MIDIEvent) GetType() MIDIEventType {
 	return e.etype
 }
 
+// GetChannel returns the MIDI channel number.
 func (e *MIDIEvent) GetChannel() uint8 {
 	return e.status & 0xf
 }
 
+// GetNote returns the MIDI note value.
 func (e *MIDIEvent) GetNote() uint8 {
 	return e.arg0
 }
 
+// GetVelocity returns the MIDI note velocity.
 func (e *MIDIEvent) GetVelocity() uint8 {
 	return e.arg1
+}
+
+// GetPitchWheel returns the MIDI pitch wheel value.
+func (e *MIDIEvent) GetPitchWheel() uint16 {
+	return uint16(e.arg1<<7) | uint16(e.arg0)
 }
 
 //-----------------------------------------------------------------------------
@@ -95,14 +109,7 @@ type CtrlEvent struct {
 
 // NewCtrlEvent returns a new control event.
 func NewCtrlEvent(etype CtrlEventType, val float32) *Event {
-	ce := &CtrlEvent{
-		etype: etype,
-		val:   val,
-	}
-	return &Event{
-		etype: Event_Ctrl,
-		info:  ce,
-	}
+	return NewEvent(Event_Ctrl, &CtrlEvent{etype, val})
 }
 
 // GetType returns the type of a control event.
