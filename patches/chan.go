@@ -31,10 +31,11 @@ func NewChannelPatch(channel []core.Patch) core.Patch {
 //-----------------------------------------------------------------------------
 
 // Run the patch.
+// N buffers in, N buffers out where N is then number of channels.
 func (p *channelPatch) Process(in, out []*core.Buf) {
 	for i, p := range p.channel {
 		if p != nil && p.Active() {
-			p.Process(nil, []*core.Buf{out[i]})
+			p.Process(in[i:i+1], out[i:i+1])
 		}
 	}
 }
@@ -49,10 +50,10 @@ func (p *channelPatch) Event(e *core.Event) {
 			// send the event to the subpatch
 			p.channel[ch].Event(e)
 		} else {
-			log.Info.Printf("no patch on channel %d for midi event", ch)
+			log.Info.Printf("no patch on channel %d", ch)
 		}
 	default:
-		log.Info.Printf("unhandled event type %s", e)
+		log.Info.Printf("unhandled event %s", e)
 	}
 }
 
@@ -62,6 +63,7 @@ func (p *channelPatch) Active() bool {
 }
 
 func (p *channelPatch) Stop() {
+	log.Info.Printf("")
 	// do nothing
 }
 

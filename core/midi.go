@@ -22,7 +22,7 @@ func MIDI_PitchBend(val uint16) float32 {
 }
 
 // MIDI_ToFrequency converts a MIDI note to a frequency value (Hz).
-// Note: we treat the note as a float for pitch bending, tuning, etc.
+// We treat the note value as a float for pitch bending, tuning, etc.
 func MIDI_ToFrequency(note float32) float32 {
 	return 440.0 * Pow2((note-69.0)*(1.0/12.0))
 }

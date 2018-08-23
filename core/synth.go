@@ -32,6 +32,7 @@ type Synth struct {
 	root  Patch               // root patch
 	audio Audio               // audio output device
 	out   [AUDIO_CHANNELS]Buf // audio output buffers
+	in    [AUDIO_CHANNELS]Buf // audio input buffers
 }
 
 // NewSynth creates a synthesizer object.
@@ -54,9 +55,14 @@ func (s *Synth) Run() {
 		for i := 0; i < AUDIO_CHANNELS; i++ {
 			s.out[i].Zero()
 		}
+		// TODO get the audio input buffers
+		for i := 0; i < AUDIO_CHANNELS; i++ {
+			s.in[i].Zero()
+		}
 		// process the patches
 		if s.root != nil && s.root.Active() {
-			s.root.Process(nil, nil)
+			// TODO fix buffer handling
+			s.root.Process([]*Buf{&s.in[0]}, []*Buf{&s.out[0]})
 		}
 		// write the output to the audio device
 		s.audio.Write(&s.out[0], &s.out[1])

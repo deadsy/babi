@@ -73,11 +73,12 @@ func (p *polyPatch) voiceAlloc(note uint8) *voiceInfo {
 //-----------------------------------------------------------------------------
 
 // Run the patch.
+// 1 buffer in, 1 buffer out.
 func (p *polyPatch) Process(in, out []*core.Buf) {
 	for i := range p.voice {
 		vp := p.voice[i].patch
 		if vp != nil && vp.Active() {
-			vp.Process(nil, []*core.Buf{out[0]})
+			vp.Process(in[0:1], out[0:1])
 		}
 	}
 }
