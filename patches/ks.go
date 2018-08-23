@@ -22,7 +22,9 @@ type ksPatch struct {
 
 func NewKSPatch() core.Patch {
 	log.Info.Printf("")
-	return &ksPatch{}
+	return &ksPatch{
+		ks: osc.NewKarplusStrong(),
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -35,6 +37,7 @@ func (p *ksPatch) Process(in, out []*core.Buf) {
 
 // Process a patch event.
 func (p *ksPatch) Event(e *core.Event) {
+	log.Info.Printf("event %s", e)
 	switch e.GetType() {
 	case core.Event_Ctrl:
 		ce := e.GetCtrlEvent()
@@ -61,6 +64,7 @@ func (p *ksPatch) Active() bool {
 }
 
 func (p *ksPatch) Stop() {
+	log.Info.Printf("")
 	// do nothing
 }
 

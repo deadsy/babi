@@ -86,6 +86,7 @@ func (p *polyPatch) Process(in, out []*core.Buf) {
 
 // Process a patch event.
 func (p *polyPatch) Event(e *core.Event) {
+	log.Info.Printf("event %s", e)
 	switch e.GetType() {
 	case core.Event_MIDI:
 		me := e.GetMIDIEvent()
