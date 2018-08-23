@@ -63,16 +63,16 @@ func (e *MIDIEvent) GetType() MIDIEventType {
 	return e.etype
 }
 
-func (e *MIDIEvent) GetChannel() uint {
-	return uint(e.status & 0xf)
+func (e *MIDIEvent) GetChannel() uint8 {
+	return e.status & 0xf
 }
 
-func (e *MIDIEvent) GetNote() uint {
-	return uint(e.arg0)
+func (e *MIDIEvent) GetNote() uint8 {
+	return e.arg0
 }
 
-func (e *MIDIEvent) GetVelocity() uint {
-	return uint(e.arg1)
+func (e *MIDIEvent) GetVelocity() uint8 {
+	return e.arg1
 }
 
 //-----------------------------------------------------------------------------
@@ -94,10 +94,14 @@ type CtrlEvent struct {
 }
 
 // NewCtrlEvent returns a new control event.
-func NewCtrlEvent(etype CtrlEventType, val float32) *CtrlEvent {
-	return &CtrlEvent{
+func NewCtrlEvent(etype CtrlEventType, val float32) *Event {
+	ce := &CtrlEvent{
 		etype: etype,
 		val:   val,
+	}
+	return &Event{
+		etype: Event_Ctrl,
+		info:  ce,
 	}
 }
 
