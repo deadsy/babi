@@ -106,6 +106,18 @@ func NewMIDIEvent(etype MIDIEventType, status, arg0, arg1 uint8) *Event {
 
 // String returns a descriptive string for the MIDI event.
 func (e *MIDIEvent) String() string {
+	descr := midiEventType2String[e.etype]
+	switch e.GetType() {
+	case MIDIEvent_NoteOn, MIDIEvent_NoteOff:
+		return fmt.Sprintf("%s ch %d note %d vel %d", descr, e.GetChannel(), e.GetNote(), e.GetVelocity())
+	case MIDIEvent_ControlChange:
+		return fmt.Sprintf("%s ch %d ctrl %d val %d", descr, e.GetChannel(), e.GetCtrlNum(), e.GetCtrlVal())
+	case MIDIEvent_PitchWheel:
+		return fmt.Sprintf("%s ch %d val %d", descr, e.GetChannel(), e.GetPitchWheel())
+		//case MIDIEvent_PolyphonicAftertouch:
+		//case MIDIEvent_ProgramChange:
+		//case MIDIEvent_ChannelAftertouch:
+	}
 	return fmt.Sprintf("%s status %02x arg0 %02x arg1 %02x", midiEventType2String[e.etype], e.status, e.arg0, e.arg1)
 }
 
@@ -122,6 +134,16 @@ func (e *MIDIEvent) GetChannel() uint8 {
 // GetNote returns the MIDI note value.
 func (e *MIDIEvent) GetNote() uint8 {
 	return e.arg0
+}
+
+// GetCtrlNum returns the MIDI control number.
+func (e *MIDIEvent) GetCtrlNum() uint8 {
+	return e.arg0
+}
+
+// GetCtrlVal returns the MIDI control value.
+func (e *MIDIEvent) GetCtrlVal() uint8 {
+	return e.arg1
 }
 
 // GetVelocity returns the MIDI note velocity.
@@ -145,6 +167,8 @@ const (
 	CtrlEvent_NoteOff                 // release a note (key released)
 	CtrlEvent_Frequency               // set an oscillator frequency
 	CtrlEvent_Attenuate               // set an attenuation level
+	CtrlEvent_Pan                     // set a left/right pan level
+	CtrlEvent_Vol                     // set a volume level
 )
 
 var ctrlEventType2String = map[CtrlEventType]string{
@@ -153,6 +177,8 @@ var ctrlEventType2String = map[CtrlEventType]string{
 	CtrlEvent_NoteOff:   "note_off",
 	CtrlEvent_Frequency: "frequency",
 	CtrlEvent_Attenuate: "attenuate",
+	CtrlEvent_Pan:       "pan",
+	CtrlEvent_Vol:       "vol",
 }
 
 type CtrlEvent struct {
@@ -179,5 +205,15 @@ func (e *CtrlEvent) GetType() CtrlEventType {
 func (e *CtrlEvent) GetVal() float32 {
 	return e.val
 }
+
+//-----------------------------------------------------------------------------
+
+type CtrlData struct {
+	num uint8   // MIDI control number
+	val float32 // default value
+}
+
+// control event info
+type CtrlInfo map[CtrlEventType]CtrlData
 
 //-----------------------------------------------------------------------------

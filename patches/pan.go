@@ -40,6 +40,21 @@ func (p *panPatch) Process(in, out []*core.Buf) {
 
 // Process a patch event.
 func (p *panPatch) Event(e *core.Event) {
+	log.Info.Printf("event %s", e)
+	switch e.GetType() {
+	case core.Event_Ctrl:
+		ce := e.GetCtrlEvent()
+		switch ce.GetType() {
+		case core.CtrlEvent_Pan:
+			p.pan.SetPan(ce.GetVal())
+		case core.CtrlEvent_Vol:
+			p.pan.SetVol(ce.GetVal())
+		default:
+			log.Info.Printf("unhandled ctrl event %s", ce)
+		}
+	default:
+		log.Info.Printf("unhandled event %s", e)
+	}
 }
 
 // Return true if the patch has non-zero output.
