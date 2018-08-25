@@ -8,6 +8,7 @@ import (
 	"fmt"
 
 	"github.com/deadsy/babi/core"
+	"github.com/deadsy/babi/module/env"
 	"github.com/deadsy/babi/patches"
 )
 
@@ -24,6 +25,9 @@ func main() {
 
 	// create the synth
 	s := core.NewSynth(audio)
+
+	x := env.NewADSR()
+	_ = x
 
 	// create the patches
 	//p0 := patches.NewPolyPatch(patches.NewSimplePatch, 16)
