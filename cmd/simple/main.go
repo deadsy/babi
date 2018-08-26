@@ -9,6 +9,7 @@ import (
 
 	"github.com/deadsy/babi/core"
 	"github.com/deadsy/babi/module/env"
+	"github.com/deadsy/babi/module/midi"
 	"github.com/deadsy/babi/patches"
 )
 
@@ -28,6 +29,9 @@ func main() {
 
 	x := env.NewADSR()
 	_ = x
+
+	y := midi.NewPoly(env.NewADSR, 16)
+	_ = y
 
 	// create the patches
 	//p0 := patches.NewPolyPatch(patches.NewSimplePatch, 16)

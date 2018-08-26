@@ -3,13 +3,6 @@
 
 ADSR Envelope Module
 
-
-"gate", gate, "envelope gate, attack(1) or release(0)"
-"A", attack_time, "attack time (secs)"
-"D", decay_time, "decay time (secs)"
-"S", sustain_level, "sustain level 0..1"
-"R", release_time, "release time (secs)"
-
 */
 //-----------------------------------------------------------------------------
 
@@ -22,6 +15,18 @@ import (
 	"github.com/deadsy/babi/core"
 	"github.com/deadsy/babi/log"
 )
+
+//-----------------------------------------------------------------------------
+
+var ports = []core.PortInfo{
+	{"in", "input (optional)", core.PortType_Buf, core.PortDirn_In, nil},
+	{"out", "output", core.PortType_Buf, core.PortDirn_Out, nil},
+	{"gate", "envelope gate, attack(>0) or release(=0)", core.PortType_Ctrl, core.PortDirn_In, nil},
+	{"A", "attack time (secs)", core.PortType_Ctrl, core.PortDirn_In, nil},
+	{"D", "decay time (secs)", core.PortType_Ctrl, core.PortDirn_In, nil},
+	{"S", "sustain level 0..1", core.PortType_Ctrl, core.PortDirn_In, nil},
+	{"R", "release time (secs)", core.PortType_Ctrl, core.PortDirn_In, nil},
+}
 
 //-----------------------------------------------------------------------------
 
@@ -176,20 +181,16 @@ func NewADSR() core.Module {
 	return &adsrModule{}
 }
 
-// NewAD returns an Attack/Decay envelope module.
-func NewAD() core.Module {
-	log.Info.Printf("")
-	return NewADSR()
-}
-
 //-----------------------------------------------------------------------------
 
 // Process runs the module DSP.
-func (m *adsrModule) Process(in, out []*core.Buf) {
-	m.generate(out[0])
+func (m *adsrModule) Process(buf []*core.Buf) {
+	in := buf[0]
+	out := buf[1]
+	m.generate(out)
 	// If there is an input buffer multiply it by the envelope.
-	if len(in) >= 1 && in[0] != nil {
-		out[0].Mul(in[0])
+	if in != nil {
+		out.Mul(in)
 	}
 }
 
@@ -201,6 +202,11 @@ func (m *adsrModule) Active() bool {
 // Stop stops and performs any cleanup of a module.
 func (m *adsrModule) Stop() {
 	log.Info.Printf("")
+}
+
+// Ports returns the module port information.
+func (m *adsrModule) Ports() []core.PortInfo {
+	return ports
 }
 
 // Event processes a module event.
