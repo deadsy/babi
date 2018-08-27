@@ -10,6 +10,7 @@ import (
 	"github.com/deadsy/babi/core"
 	"github.com/deadsy/babi/module/env"
 	"github.com/deadsy/babi/module/midi"
+	"github.com/deadsy/babi/module/noise"
 	"github.com/deadsy/babi/module/osc"
 )
 
@@ -39,6 +40,9 @@ func main() {
 
 	d := osc.NewKarplusStrong()
 	_ = d
+
+	e := noise.NewWhite()
+	_ = e
 
 	// 	// create the patches
 	// 	//p0 := patches.NewPolyPatch(patches.NewSimplePatch, 16)
