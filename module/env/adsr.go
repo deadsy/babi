@@ -22,10 +22,10 @@ var ports = []core.PortInfo{
 	{"in", "input (optional)", core.PortType_Buf, core.PortDirn_In, nil},
 	{"out", "output", core.PortType_Buf, core.PortDirn_Out, nil},
 	{"gate", "envelope gate, attack(>0) or release(=0)", core.PortType_Ctrl, core.PortDirn_In, nil},
-	{"A", "attack time (secs)", core.PortType_Ctrl, core.PortDirn_In, nil},
-	{"D", "decay time (secs)", core.PortType_Ctrl, core.PortDirn_In, nil},
-	{"S", "sustain level 0..1", core.PortType_Ctrl, core.PortDirn_In, nil},
-	{"R", "release time (secs)", core.PortType_Ctrl, core.PortDirn_In, nil},
+	{"a", "attack time (secs)", core.PortType_Ctrl, core.PortDirn_In, nil},
+	{"d", "decay time (secs)", core.PortType_Ctrl, core.PortDirn_In, nil},
+	{"s", "sustain level 0..1", core.PortType_Ctrl, core.PortDirn_In, nil},
+	{"r", "release time (secs)", core.PortType_Ctrl, core.PortDirn_In, nil},
 }
 
 //-----------------------------------------------------------------------------

@@ -10,7 +10,7 @@ import (
 	"github.com/deadsy/babi/core"
 	"github.com/deadsy/babi/module/env"
 	"github.com/deadsy/babi/module/midi"
-	"github.com/deadsy/babi/patches"
+	"github.com/deadsy/babi/module/osc"
 )
 
 //-----------------------------------------------------------------------------
@@ -26,21 +26,28 @@ func main() {
 
 	// create the synth
 	s := core.NewSynth(audio)
+	_ = s
 
-	x := env.NewADSR()
-	_ = x
+	a := env.NewADSR()
+	_ = a
 
-	y := midi.NewPoly(env.NewADSR, 16)
-	_ = y
+	b := midi.NewPoly(env.NewADSR, 16)
+	_ = b
 
-	// create the patches
-	//p0 := patches.NewPolyPatch(patches.NewSimplePatch, 16)
-	p0 := patches.NewPolyPatch(patches.NewKSPatch, 16)
-	p1 := patches.NewChannelPatch([]core.Patch{p0})
+	c := osc.NewSine()
+	_ = c
 
-	// set the root patch and run the synth
-	s.SetRoot(p1)
-	s.Run()
+	d := osc.NewKarplusStrong()
+	_ = d
+
+	// 	// create the patches
+	// 	//p0 := patches.NewPolyPatch(patches.NewSimplePatch, 16)
+	// 	p0 := patches.NewPolyPatch(patches.NewKSPatch, 16)
+	// 	p1 := patches.NewChannelPatch([]core.Patch{p0})
+	//
+	// 	// set the root patch and run the synth
+	// 	s.SetRoot(p1)
+	// 	s.Run()
 }
 
 //-----------------------------------------------------------------------------
