@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
 /*
 
-A simple patch - an AD envelope on a sine wave.
+A simple patch - an ADSR envelope on a sine wave.
 
 */
 //-----------------------------------------------------------------------------
@@ -11,67 +11,66 @@ package patches
 import (
 	"github.com/deadsy/babi/core"
 	"github.com/deadsy/babi/log"
-	"github.com/deadsy/babi/objects/env"
-	"github.com/deadsy/babi/objects/osc"
+	"github.com/deadsy/babi/module/env"
+	"github.com/deadsy/babi/module/osc"
 )
 
 //-----------------------------------------------------------------------------
 
 type simplePatch struct {
-	adsr *env.ADSR // adsr envelope
-	sine *osc.Sine // sine oscillator
+	adsr core.Module // adsr envelope
+	sine core.Module // sine oscillator
 }
 
-func NewSimplePatch() core.Patch {
+func NewSimple() core.Module {
 	log.Info.Printf("")
 	return &simplePatch{
-		adsr: env.NewAD(0.1, 1),
+		adsr: env.NewADSR(),
 		sine: osc.NewSine(),
 	}
 }
 
+// Stop and performs any cleanup of a module.
+func (m *simplePatch) Stop() {
+	log.Info.Printf("")
+	m.adsr.Stop()
+	m.sine.Stop()
+}
+
+//-----------------------------------------------------------------------------
+// Ports
+
+var simplePorts = []core.PortInfo{
+	{"out", "output", core.PortType_Buf, core.PortDirn_Out, nil},
+	{"f", "frequency (Hz)", core.PortType_Ctrl, core.PortDirn_In, nil},
+}
+
+// Ports returns the module port information.
+func (m *simplePatch) Ports() []core.PortInfo {
+	return simplePorts
+}
+
+//-----------------------------------------------------------------------------
+// Events
+
+// Event processes a module event.
+func (m *simplePatch) Event(e *core.Event) {
+}
+
 //-----------------------------------------------------------------------------
 
-// Run the patch.
-func (p *simplePatch) Process(in, out []*core.Buf) {
+// Process runs the module DSP.
+func (m *simplePatch) Process(buf []*core.Buf) {
+	out := buf[0]
+	m.sine.Process([]*core.Buf{out})
 	var env core.Buf
-	// generate the envelope
-	p.adsr.Process(&env)
-	// generate the sine wave
-	p.sine.Process(out[0])
-	// apply the envelope
-	out[0].Mul(&env)
+	m.adsr.Process([]*core.Buf{&env})
+	out.Mul(&env)
 }
 
-// Process a patch event.
-func (p *simplePatch) Event(e *core.Event) {
-	log.Info.Printf("event %s", e)
-	switch e.GetType() {
-	case core.Event_Ctrl:
-		ce := e.GetCtrlEvent()
-		switch ce.GetType() {
-		case core.CtrlEvent_NoteOn:
-			p.adsr.Attack() // velocity?
-		case core.CtrlEvent_NoteOff:
-			p.adsr.Release() // velocity?
-		case core.CtrlEvent_Frequency:
-			p.sine.SetFrequency(ce.GetVal())
-		default:
-			log.Info.Printf("unhandled ctrl event %s", ce)
-		}
-	default:
-		log.Info.Printf("unhandled event %s", e)
-	}
-}
-
-// Return true if the patch has non-zero output.
-func (p *simplePatch) Active() bool {
-	return p.adsr.Active()
-}
-
-func (p *simplePatch) Stop() {
-	log.Info.Printf("")
-	// do nothing
+// Active return true if the module has non-zero output.
+func (m *simplePatch) Active() bool {
+	return m.adsr.Active()
 }
 
 //-----------------------------------------------------------------------------

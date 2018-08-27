@@ -8,41 +8,43 @@ import (
 	"fmt"
 
 	"github.com/deadsy/babi/core"
-	"github.com/deadsy/babi/module/env"
+	"github.com/deadsy/babi/module/audio"
 	"github.com/deadsy/babi/module/midi"
 	"github.com/deadsy/babi/module/noise"
 	"github.com/deadsy/babi/module/osc"
+	"github.com/deadsy/babi/patches"
 )
 
 //-----------------------------------------------------------------------------
 
 func main() {
+
 	// setup audio output
-	audio, err := core.NewPulse()
+	au, err := core.NewPulse()
 	if err != nil {
 		fmt.Printf("%s\n", err)
 		return
 	}
-	defer audio.Close()
+	defer au.Close()
 
 	// create the synth
-	s := core.NewSynth(audio)
+	s := core.NewSynth(au)
 	_ = s
 
-	a := env.NewADSR()
-	_ = a
-
-	b := midi.NewPoly(env.NewADSR, 16)
+	b := midi.NewPoly(patches.NewSimple, 16)
 	_ = b
-
-	c := osc.NewSine()
-	_ = c
 
 	d := osc.NewKarplusStrong()
 	_ = d
 
 	e := noise.NewWhite()
 	_ = e
+
+	f := patches.NewSimple()
+	_ = f
+
+	g := audio.NewPan()
+	_ = g
 
 	// 	// create the patches
 	// 	//p0 := patches.NewPolyPatch(patches.NewSimplePatch, 16)
