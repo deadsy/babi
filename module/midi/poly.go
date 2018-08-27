@@ -80,11 +80,11 @@ func (m *polyModule) voiceAlloc(note uint8) *voiceInfo {
 //-----------------------------------------------------------------------------
 
 // Process runs the module DSP.
-func (m *polyModule) Process(buf []*core.Buf) {
+func (m *polyModule) Process(buf ...*core.Buf) {
 	for i := range m.voice {
 		vm := m.voice[i].module
 		if vm != nil && vm.Active() {
-			vm.Process(buf)
+			vm.Process(buf...)
 		}
 	}
 }

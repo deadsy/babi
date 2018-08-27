@@ -77,7 +77,7 @@ func (m *panModule) Event(e *core.Event) {
 //-----------------------------------------------------------------------------
 
 // Process runs the module DSP.
-func (m *panModule) Process(buf []*core.Buf) {
+func (m *panModule) Process(buf ...*core.Buf) {
 	in := buf[0]
 	out_l := buf[1]
 	out_r := buf[2]

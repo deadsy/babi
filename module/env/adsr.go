@@ -19,7 +19,6 @@ import (
 //-----------------------------------------------------------------------------
 
 var ports = []core.PortInfo{
-	{"in", "input (optional)", core.PortType_Buf, core.PortDirn_In, nil},
 	{"out", "output", core.PortType_Buf, core.PortDirn_Out, nil},
 	{"gate", "envelope gate, attack(>0) or release(=0)", core.PortType_Ctrl, core.PortDirn_In, nil},
 	{"a", "attack time (secs)", core.PortType_Ctrl, core.PortDirn_In, nil},
@@ -184,14 +183,9 @@ func NewADSR() core.Module {
 //-----------------------------------------------------------------------------
 
 // Process runs the module DSP.
-func (m *adsrModule) Process(buf []*core.Buf) {
-	in := buf[0]
-	out := buf[1]
+func (m *adsrModule) Process(buf ...*core.Buf) {
+	out := buf[0]
 	m.generate(out)
-	// If there is an input buffer multiply it by the envelope.
-	if in != nil {
-		out.Mul(in)
-	}
 }
 
 // Active return true if the module has non-zero output.

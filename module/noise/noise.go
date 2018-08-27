@@ -160,7 +160,7 @@ func (m *noiseModule) generate_pink2(out *core.Buf) {
 }
 
 // Process runs the module DSP.
-func (m *noiseModule) Process(buf []*core.Buf) {
+func (m *noiseModule) Process(buf ...*core.Buf) {
 	out := buf[0]
 	switch m.ntype {
 	case noiseType_white:

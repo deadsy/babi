@@ -60,11 +60,11 @@ func (m *simplePatch) Event(e *core.Event) {
 //-----------------------------------------------------------------------------
 
 // Process runs the module DSP.
-func (m *simplePatch) Process(buf []*core.Buf) {
+func (m *simplePatch) Process(buf ...*core.Buf) {
 	out := buf[0]
-	m.sine.Process([]*core.Buf{out})
+	m.sine.Process(out)
 	var env core.Buf
-	m.adsr.Process([]*core.Buf{&env})
+	m.adsr.Process(&env)
 	out.Mul(&env)
 }
 

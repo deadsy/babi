@@ -117,7 +117,7 @@ func (m *ksModule) Event(e *core.Event) {
 //-----------------------------------------------------------------------------
 
 // Process runs the module DSP.
-func (m *ksModule) Process(buf []*core.Buf) {
+func (m *ksModule) Process(buf ...*core.Buf) {
 	out := buf[0]
 	for i := 0; i < len(out); i++ {
 		x0 := m.x >> KS_FRAC_BITS

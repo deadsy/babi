@@ -70,7 +70,7 @@ func (m *sineModule) Event(e *core.Event) {
 //-----------------------------------------------------------------------------
 
 // Process runs the module DSP.
-func (m *sineModule) Process(buf []*core.Buf) {
+func (m *sineModule) Process(buf ...*core.Buf) {
 	out := buf[0]
 	for i := 0; i < len(out); i++ {
 		out[i] = core.CosLookup(m.x)

@@ -11,11 +11,11 @@ package core
 //-----------------------------------------------------------------------------
 
 type Module interface {
-	Process(buf []*Buf) // run the module dsp
-	Event(e *Event)     // process an event
-	Active() bool       // return true if the module has non-zero output
-	Stop()              // stop the module
-	Ports() []PortInfo  // return the module port information
+	Process(buf ...*Buf) // run the module dsp
+	Event(e *Event)      // process an event
+	Active() bool        // return true if the module has non-zero output
+	Stop()               // stop the module
+	Ports() []PortInfo   // return the module port information
 }
 
 //-----------------------------------------------------------------------------
