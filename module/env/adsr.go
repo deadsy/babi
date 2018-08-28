@@ -18,17 +18,6 @@ import (
 
 //-----------------------------------------------------------------------------
 
-var ports = []core.PortInfo{
-	{"out", "output", core.PortType_Buf, core.PortDirn_Out, nil},
-	{"gate", "envelope gate, attack(>0) or release(=0)", core.PortType_Ctrl, core.PortDirn_In, nil},
-	{"a", "attack time (secs)", core.PortType_Ctrl, core.PortDirn_In, nil},
-	{"d", "decay time (secs)", core.PortType_Ctrl, core.PortDirn_In, nil},
-	{"s", "sustain level 0..1", core.PortType_Ctrl, core.PortDirn_In, nil},
-	{"r", "release time (secs)", core.PortType_Ctrl, core.PortDirn_In, nil},
-}
-
-//-----------------------------------------------------------------------------
-
 // We can't reach the target level with the asymptotic rise/fall of exponentials.
 // We will change state when we are within level_epsilon of the target level.
 const level_epsilon = 0.001
@@ -42,6 +31,60 @@ func get_k(t float32, rate int) float32 {
 }
 
 //-----------------------------------------------------------------------------
+
+type adsrState int
+
+const (
+	stateNull adsrState = iota
+	stateIdle
+	stateAttack
+	stateDecay
+	stateSustain
+	stateRelease
+)
+
+type adsrModule struct {
+	state     adsrState // envelope state
+	s         float32   // sustain level
+	ka        float32   // attack constant
+	kd        float32   // decay constant
+	kr        float32   // release constant
+	d_trigger float32   // attack->decay trigger level
+	s_trigger float32   // decay->sustain trigger level
+	i_trigger float32   // release->idle trigger level
+	val       float32   // output value
+}
+
+// NewADSR returns an Attack/Decay/Sustain/Release envelope module.
+func NewADSR() core.Module {
+	log.Info.Printf("")
+	return &adsrModule{}
+}
+
+// Stop stops and performs any cleanup of a module.
+func (m *adsrModule) Stop() {
+	log.Info.Printf("")
+}
+
+//-----------------------------------------------------------------------------
+// Ports
+
+var adsrPorts = []core.PortInfo{
+	{"out", "output", core.PortType_Buf, core.PortDirn_Out, nil},
+	{"gate", "envelope gate, attack(>0) or release(=0)", core.PortType_Ctrl, core.PortDirn_In, nil},
+	{"a", "attack time (secs)", core.PortType_Ctrl, core.PortDirn_In, nil},
+	{"d", "decay time (secs)", core.PortType_Ctrl, core.PortDirn_In, nil},
+	{"s", "sustain level 0..1", core.PortType_Ctrl, core.PortDirn_In, nil},
+	{"r", "release time (secs)", core.PortType_Ctrl, core.PortDirn_In, nil},
+}
+
+// Ports returns the module port information.
+func (m *adsrModule) Ports() []core.PortInfo {
+	return adsrPorts
+}
+
+//-----------------------------------------------------------------------------
+// Events
 
 type adsrEvent int
 
@@ -100,9 +143,15 @@ func (m *adsrModule) event(etype adsrEvent, val float32) {
 	}
 }
 
+// Event processes a module event.
+func (m *adsrModule) Event(e *core.Event) {
+}
+
 //-----------------------------------------------------------------------------
 
-func (m *adsrModule) generate(out *core.Buf) {
+// Process runs the module DSP.
+func (m *adsrModule) Process(buf ...*core.Buf) {
+	out := buf[0]
 	for i := 0; i < len(out); i++ {
 		switch m.state {
 		case stateIdle:
@@ -149,62 +198,9 @@ func (m *adsrModule) generate(out *core.Buf) {
 	}
 }
 
-//-----------------------------------------------------------------------------
-
-type adsrState int
-
-const (
-	stateNull adsrState = iota
-	stateIdle
-	stateAttack
-	stateDecay
-	stateSustain
-	stateRelease
-)
-
-type adsrModule struct {
-	state     adsrState // envelope state
-	s         float32   // sustain level
-	ka        float32   // attack constant
-	kd        float32   // decay constant
-	kr        float32   // release constant
-	d_trigger float32   // attack->decay trigger level
-	s_trigger float32   // decay->sustain trigger level
-	i_trigger float32   // release->idle trigger level
-	val       float32   // output value
-}
-
-// NewADSR returns an Attack/Decay/Sustain/Release envelope module.
-func NewADSR() core.Module {
-	log.Info.Printf("")
-	return &adsrModule{}
-}
-
-//-----------------------------------------------------------------------------
-
-// Process runs the module DSP.
-func (m *adsrModule) Process(buf ...*core.Buf) {
-	out := buf[0]
-	m.generate(out)
-}
-
 // Active return true if the module has non-zero output.
 func (m *adsrModule) Active() bool {
 	return m.state != stateIdle
-}
-
-// Stop stops and performs any cleanup of a module.
-func (m *adsrModule) Stop() {
-	log.Info.Printf("")
-}
-
-// Ports returns the module port information.
-func (m *adsrModule) Ports() []core.PortInfo {
-	return ports
-}
-
-// Event processes a module event.
-func (m *adsrModule) Event(e *core.Event) {
 }
 
 //-----------------------------------------------------------------------------
