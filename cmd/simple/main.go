@@ -28,8 +28,6 @@ func main() {
 	defer au.Close()
 
 	// create the synth
-	s := core.NewSynth(au)
-	_ = s
 
 	b := midi.NewPoly(patches.NewSimple, 16)
 	_ = b
@@ -45,6 +43,9 @@ func main() {
 
 	g := audio.NewPan()
 	_ = g
+
+	s := core.NewSynth(b, au)
+	_ = s
 
 	// 	// create the patches
 	// 	//p0 := patches.NewPolyPatch(patches.NewSimplePatch, 16)

@@ -24,10 +24,10 @@ type Module interface {
 type PortType int
 
 const (
-	PortType_Null PortType = iota
-	PortType_Buf           // audio buffers
-	PortType_Ctrl          // control events
-	PortType_MIDI          // midi events
+	PortType_Null         PortType = iota
+	PortType_AudioBuffer           // audio buffers
+	PortType_EventFloat32          // event with float32 values
+	PortType_EventMIDI             // event with MIDI data
 )
 
 type PortDirn int
@@ -39,11 +39,10 @@ const (
 )
 
 type PortInfo struct {
-	Label       string      // small label for port
-	Description string      // description of port
-	Ptype       PortType    // port type
-	Dirn        PortDirn    // port direction
-	Info        interface{} // extra port info
+	Label       string   // short label for port
+	Description string   // description of port
+	Ptype       PortType // port type
+	Dirn        PortDirn // port direction
 }
 
 //-----------------------------------------------------------------------------

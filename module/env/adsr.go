@@ -70,12 +70,12 @@ func (m *adsrModule) Stop() {
 // Ports
 
 var adsrPorts = []core.PortInfo{
-	{"out", "output", core.PortType_Buf, core.PortDirn_Out, nil},
-	{"gate", "envelope gate, attack(>0) or release(=0)", core.PortType_Ctrl, core.PortDirn_In, nil},
-	{"a", "attack time (secs)", core.PortType_Ctrl, core.PortDirn_In, nil},
-	{"d", "decay time (secs)", core.PortType_Ctrl, core.PortDirn_In, nil},
-	{"s", "sustain level 0..1", core.PortType_Ctrl, core.PortDirn_In, nil},
-	{"r", "release time (secs)", core.PortType_Ctrl, core.PortDirn_In, nil},
+	{"out", "output", core.PortType_AudioBuffer, core.PortDirn_Out},
+	{"gate", "envelope gate, attack(>0) or release(=0)", core.PortType_EventFloat32, core.PortDirn_In},
+	{"a", "attack time (secs)", core.PortType_EventFloat32, core.PortDirn_In},
+	{"d", "decay time (secs)", core.PortType_EventFloat32, core.PortDirn_In},
+	{"s", "sustain level 0..1", core.PortType_EventFloat32, core.PortDirn_In},
+	{"r", "release time (secs)", core.PortType_EventFloat32, core.PortDirn_In},
 }
 
 // Ports returns the module port information.

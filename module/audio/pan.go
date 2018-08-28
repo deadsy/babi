@@ -36,11 +36,11 @@ func (m *panModule) Stop() {
 // Ports
 
 var panPorts = []core.PortInfo{
-	{"in", "input", core.PortType_Buf, core.PortDirn_In, nil},
-	{"out_l", "left channel output", core.PortType_Buf, core.PortDirn_Out, nil},
-	{"out_r", "right channel output", core.PortType_Buf, core.PortDirn_Out, nil},
-	{"vol", "volume (0..1)", core.PortType_Ctrl, core.PortDirn_In, nil},
-	{"pan", "left/right pan (0..1)", core.PortType_Ctrl, core.PortDirn_In, nil},
+	{"in", "input", core.PortType_AudioBuffer, core.PortDirn_In},
+	{"out_l", "left channel output", core.PortType_AudioBuffer, core.PortDirn_Out},
+	{"out_r", "right channel output", core.PortType_AudioBuffer, core.PortDirn_Out},
+	{"vol", "volume (0..1)", core.PortType_EventFloat32, core.PortDirn_In},
+	{"pan", "left/right pan (0..1)", core.PortType_EventFloat32, core.PortDirn_In},
 }
 
 // Ports returns the module port information.

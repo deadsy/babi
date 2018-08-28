@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
 /*
 
-A simple patch - an ADSR envelope on a sine wave.
+Simple Patch: an ADSR envelope on a sine wave.
 
 */
 //-----------------------------------------------------------------------------
@@ -41,8 +41,8 @@ func (m *simplePatch) Stop() {
 // Ports
 
 var simplePorts = []core.PortInfo{
-	{"out", "output", core.PortType_Buf, core.PortDirn_Out, nil},
-	{"f", "frequency (Hz)", core.PortType_Ctrl, core.PortDirn_In, nil},
+	{"out", "output", core.PortType_AudioBuffer, core.PortDirn_Out},
+	{"f", "frequency (Hz)", core.PortType_EventFloat32, core.PortDirn_In},
 }
 
 // Ports returns the module port information.

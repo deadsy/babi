@@ -79,7 +79,7 @@ func (m *noiseModule) Stop() {
 // Ports
 
 var noisePorts = []core.PortInfo{
-	{"out", "output", core.PortType_Buf, core.PortDirn_Out, nil},
+	{"out", "output", core.PortType_AudioBuffer, core.PortDirn_Out},
 }
 
 // Ports returns the module port information.

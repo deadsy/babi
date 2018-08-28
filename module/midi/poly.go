@@ -17,12 +17,6 @@ import (
 
 //-----------------------------------------------------------------------------
 
-var ports = []core.PortInfo{
-	{"midi", "midi channel input", core.PortType_MIDI, core.PortDirn_In, nil},
-}
-
-//-----------------------------------------------------------------------------
-
 type voiceInfo struct {
 	note   uint8       // midi note value
 	module core.Module // voice module
@@ -43,7 +37,25 @@ func NewPoly(sm func() core.Module, maxvoices uint) core.Module {
 	}
 }
 
+// Stop performs any cleanup of a module.
+func (m *polyModule) Stop() {
+	log.Info.Printf("")
+}
+
 //-----------------------------------------------------------------------------
+// Ports
+
+var polyPorts = []core.PortInfo{
+	{"midi", "midi input", core.PortType_EventMIDI, core.PortDirn_In},
+}
+
+// Ports returns the module port information.
+func (m *polyModule) Ports() []core.PortInfo {
+	return polyPorts
+}
+
+//-----------------------------------------------------------------------------
+// Events
 
 // voiceLookup returns the voice for this MIDI note (or nil).
 func (m *polyModule) voiceLookup(note uint8) *voiceInfo {
@@ -77,6 +89,10 @@ func (m *polyModule) voiceAlloc(note uint8) *voiceInfo {
 	return v
 }
 
+// Event processes a module event.
+func (m *polyModule) Event(e *core.Event) {
+}
+
 //-----------------------------------------------------------------------------
 
 // Process runs the module DSP.
@@ -92,20 +108,6 @@ func (m *polyModule) Process(buf ...*core.Buf) {
 // Active return true if the module has non-zero output.
 func (m *polyModule) Active() bool {
 	return true
-}
-
-// Stop stops and performs any cleanup of a module.
-func (m *polyModule) Stop() {
-	log.Info.Printf("")
-}
-
-// Ports returns the module port information.
-func (m *polyModule) Ports() []core.PortInfo {
-	return ports
-}
-
-// Event processes a module event.
-func (m *polyModule) Event(e *core.Event) {
 }
 
 //-----------------------------------------------------------------------------
