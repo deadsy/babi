@@ -23,6 +23,18 @@ import (
 
 //-----------------------------------------------------------------------------
 
+// Info returns the module information.
+func (m *noiseModule) Info() *core.ModuleInfo {
+	return &core.ModuleInfo{
+		In: nil,
+		Out: []core.PortInfo{
+			{"out", "output", core.PortType_AudioBuffer},
+		},
+	}
+}
+
+//-----------------------------------------------------------------------------
+
 type noiseType int
 
 const (
@@ -73,18 +85,6 @@ func NewPink2() core.Module {
 // Stop and performs any cleanup of a module.
 func (m *noiseModule) Stop() {
 	log.Info.Printf("")
-}
-
-//-----------------------------------------------------------------------------
-// Ports
-
-var noisePorts = []core.PortInfo{
-	{"out", "output", core.PortType_AudioBuffer, core.PortDirn_Out},
-}
-
-// Ports returns the module port information.
-func (m *noiseModule) Ports() []core.PortInfo {
-	return noisePorts
 }
 
 //-----------------------------------------------------------------------------

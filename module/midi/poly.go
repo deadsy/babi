@@ -17,6 +17,18 @@ import (
 
 //-----------------------------------------------------------------------------
 
+// Info returns the module information.
+func (m *polyModule) Info() *core.ModuleInfo {
+	return &core.ModuleInfo{
+		In: []core.PortInfo{
+			{"midi", "midi input", core.PortType_EventMIDI},
+		},
+		Out: nil,
+	}
+}
+
+//-----------------------------------------------------------------------------
+
 type voiceInfo struct {
 	note   uint8       // midi note value
 	module core.Module // voice module
@@ -40,18 +52,6 @@ func NewPoly(sm func() core.Module, maxvoices uint) core.Module {
 // Stop performs any cleanup of a module.
 func (m *polyModule) Stop() {
 	log.Info.Printf("")
-}
-
-//-----------------------------------------------------------------------------
-// Ports
-
-var polyPorts = []core.PortInfo{
-	{"midi", "midi input", core.PortType_EventMIDI, core.PortDirn_In},
-}
-
-// Ports returns the module port information.
-func (m *polyModule) Ports() []core.PortInfo {
-	return polyPorts
 }
 
 //-----------------------------------------------------------------------------

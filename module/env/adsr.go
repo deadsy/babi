@@ -18,6 +18,24 @@ import (
 
 //-----------------------------------------------------------------------------
 
+// Info returns the module information.
+func (m *adsrModule) Info() *core.ModuleInfo {
+	return &core.ModuleInfo{
+		In: []core.PortInfo{
+			{"gate", "envelope gate, attack(>0) or release(=0)", core.PortType_EventFloat32},
+			{"a", "attack time (secs)", core.PortType_EventFloat32},
+			{"d", "decay time (secs)", core.PortType_EventFloat32},
+			{"s", "sustain level 0..1", core.PortType_EventFloat32},
+			{"r", "release time (secs)", core.PortType_EventFloat32},
+		},
+		Out: []core.PortInfo{
+			{"out", "output", core.PortType_AudioBuffer},
+		},
+	}
+}
+
+//-----------------------------------------------------------------------------
+
 // We can't reach the target level with the asymptotic rise/fall of exponentials.
 // We will change state when we are within level_epsilon of the target level.
 const level_epsilon = 0.001
@@ -64,23 +82,6 @@ func NewADSR() core.Module {
 // Stop stops and performs any cleanup of a module.
 func (m *adsrModule) Stop() {
 	log.Info.Printf("")
-}
-
-//-----------------------------------------------------------------------------
-// Ports
-
-var adsrPorts = []core.PortInfo{
-	{"out", "output", core.PortType_AudioBuffer, core.PortDirn_Out},
-	{"gate", "envelope gate, attack(>0) or release(=0)", core.PortType_EventFloat32, core.PortDirn_In},
-	{"a", "attack time (secs)", core.PortType_EventFloat32, core.PortDirn_In},
-	{"d", "decay time (secs)", core.PortType_EventFloat32, core.PortDirn_In},
-	{"s", "sustain level 0..1", core.PortType_EventFloat32, core.PortDirn_In},
-	{"r", "release time (secs)", core.PortType_EventFloat32, core.PortDirn_In},
-}
-
-// Ports returns the module port information.
-func (m *adsrModule) Ports() []core.PortInfo {
-	return adsrPorts
 }
 
 //-----------------------------------------------------------------------------

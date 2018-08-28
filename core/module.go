@@ -15,7 +15,12 @@ type Module interface {
 	Event(e *Event)      // process an event
 	Active() bool        // return true if the module has non-zero output
 	Stop()               // stop the module
-	Ports() []PortInfo   // return the module port information
+	Info() *ModuleInfo   // return the module information
+}
+
+type ModuleInfo struct {
+	In  []PortInfo // input ports
+	Out []PortInfo // input ports
 }
 
 //-----------------------------------------------------------------------------
@@ -30,19 +35,10 @@ const (
 	PortType_EventMIDI             // event with MIDI data
 )
 
-type PortDirn int
-
-const (
-	PortDirn_Null PortDirn = iota
-	PortDirn_In            // input
-	PortDirn_Out           // output
-)
-
 type PortInfo struct {
 	Label       string   // short label for port
 	Description string   // description of port
 	Ptype       PortType // port type
-	Dirn        PortDirn // port direction
 }
 
 //-----------------------------------------------------------------------------

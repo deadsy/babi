@@ -26,6 +26,22 @@ import (
 
 //-----------------------------------------------------------------------------
 
+// Info returns the module information.
+func (m *ksModule) Info() *core.ModuleInfo {
+	return &core.ModuleInfo{
+		In: []core.PortInfo{
+			{"gate", "oscillator gate, attack(>0) or mute(=0)", core.PortType_EventFloat32},
+			{"f", "frequency (Hz)", core.PortType_EventFloat32},
+			{"a", "attenuation (0..1)", core.PortType_EventFloat32},
+		},
+		Out: []core.PortInfo{
+			{"out", "output", core.PortType_AudioBuffer},
+		},
+	}
+}
+
+//-----------------------------------------------------------------------------
+
 const KS_DELAY_BITS = 6
 const KS_DELAY_SIZE = 1 << KS_DELAY_BITS
 
@@ -57,21 +73,6 @@ func NewKarplusStrong() core.Module {
 // Stop performs any cleanup of a module.
 func (m *ksModule) Stop() {
 	log.Info.Printf("")
-}
-
-//-----------------------------------------------------------------------------
-// Ports
-
-var ksPorts = []core.PortInfo{
-	{"out", "output", core.PortType_AudioBuffer, core.PortDirn_Out},
-	{"gate", "oscillator gate, attack(>0) or mute(=0)", core.PortType_EventFloat32, core.PortDirn_In},
-	{"f", "frequency (Hz)", core.PortType_EventFloat32, core.PortDirn_In},
-	{"a", "attenuation (0..1)", core.PortType_EventFloat32, core.PortDirn_In},
-}
-
-// Ports returns the module port information.
-func (m *ksModule) Ports() []core.PortInfo {
-	return ksPorts
 }
 
 //-----------------------------------------------------------------------------

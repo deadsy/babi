@@ -17,6 +17,20 @@ import (
 
 //-----------------------------------------------------------------------------
 
+// Info returns the module information.
+func (m *simplePatch) Info() *core.ModuleInfo {
+	return &core.ModuleInfo{
+		In: []core.PortInfo{
+			{"f", "frequency (Hz)", core.PortType_EventFloat32},
+		},
+		Out: []core.PortInfo{
+			{"out", "output", core.PortType_AudioBuffer},
+		},
+	}
+}
+
+//-----------------------------------------------------------------------------
+
 type simplePatch struct {
 	adsr core.Module // adsr envelope
 	sine core.Module // sine oscillator
@@ -35,19 +49,6 @@ func (m *simplePatch) Stop() {
 	log.Info.Printf("")
 	m.adsr.Stop()
 	m.sine.Stop()
-}
-
-//-----------------------------------------------------------------------------
-// Ports
-
-var simplePorts = []core.PortInfo{
-	{"out", "output", core.PortType_AudioBuffer, core.PortDirn_Out},
-	{"f", "frequency (Hz)", core.PortType_EventFloat32, core.PortDirn_In},
-}
-
-// Ports returns the module port information.
-func (m *simplePatch) Ports() []core.PortInfo {
-	return simplePorts
 }
 
 //-----------------------------------------------------------------------------

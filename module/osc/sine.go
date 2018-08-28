@@ -17,6 +17,20 @@ import (
 
 //-----------------------------------------------------------------------------
 
+// Info returns the module information.
+func (m *sineModule) Info() *core.ModuleInfo {
+	return &core.ModuleInfo{
+		In: []core.PortInfo{
+			{"f", "frequency (Hz)", core.PortType_EventFloat32},
+		},
+		Out: []core.PortInfo{
+			{"out", "output", core.PortType_AudioBuffer},
+		},
+	}
+}
+
+//-----------------------------------------------------------------------------
+
 // frequency to x scaling (xrange/fs)
 const FREQ_SCALE = (1 << 32) / core.AUDIO_FS
 
@@ -35,19 +49,6 @@ func NewSine() core.Module {
 // Stop and performs any cleanup of a module.
 func (m *sineModule) Stop() {
 	log.Info.Printf("")
-}
-
-//-----------------------------------------------------------------------------
-// Ports
-
-var sinePorts = []core.PortInfo{
-	{"out", "output", core.PortType_AudioBuffer, core.PortDirn_Out},
-	{"f", "frequency (Hz)", core.PortType_EventFloat32, core.PortDirn_In},
-}
-
-// Ports returns the module port information.
-func (m *sineModule) Ports() []core.PortInfo {
-	return sinePorts
 }
 
 //-----------------------------------------------------------------------------

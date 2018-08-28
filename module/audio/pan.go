@@ -15,6 +15,23 @@ import (
 
 //-----------------------------------------------------------------------------
 
+// Info returns the module information.
+func (m *panModule) Info() *core.ModuleInfo {
+	return &core.ModuleInfo{
+		In: []core.PortInfo{
+			{"in", "input", core.PortType_AudioBuffer},
+			{"vol", "volume (0..1)", core.PortType_EventFloat32},
+			{"pan", "left/right pan (0..1)", core.PortType_EventFloat32},
+		},
+		Out: []core.PortInfo{
+			{"out_l", "left channel output", core.PortType_AudioBuffer},
+			{"out_r", "right channel output", core.PortType_AudioBuffer},
+		},
+	}
+}
+
+//-----------------------------------------------------------------------------
+
 type panModule struct {
 	vol          float32 // overall volume
 	pan          float32 // pan value 0 == left, 1 == right
@@ -30,22 +47,6 @@ func NewPan() core.Module {
 // Stop and performs any cleanup of a module.
 func (m *panModule) Stop() {
 	log.Info.Printf("")
-}
-
-//-----------------------------------------------------------------------------
-// Ports
-
-var panPorts = []core.PortInfo{
-	{"in", "input", core.PortType_AudioBuffer, core.PortDirn_In},
-	{"out_l", "left channel output", core.PortType_AudioBuffer, core.PortDirn_Out},
-	{"out_r", "right channel output", core.PortType_AudioBuffer, core.PortDirn_Out},
-	{"vol", "volume (0..1)", core.PortType_EventFloat32, core.PortDirn_In},
-	{"pan", "left/right pan (0..1)", core.PortType_EventFloat32, core.PortDirn_In},
-}
-
-// Ports returns the module port information.
-func (m *panModule) Ports() []core.PortInfo {
-	return panPorts
 }
 
 //-----------------------------------------------------------------------------
