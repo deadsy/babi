@@ -29,10 +29,10 @@ type ModuleInfo struct {
 type PortType int
 
 const (
-	PortType_Null         PortType = iota
-	PortType_AudioBuffer           // audio buffers
-	PortType_EventFloat32          // event with float32 values
-	PortType_EventMIDI             // event with MIDI data
+	PortType_Null        PortType = iota
+	PortType_AudioBuffer          // audio buffers
+	PortType_EventFloat           // event with float32 values
+	PortType_EventMIDI            // event with MIDI data
 )
 
 type PortInfo struct {

@@ -22,11 +22,11 @@ import (
 func (m *adsrModule) Info() *core.ModuleInfo {
 	return &core.ModuleInfo{
 		In: []core.PortInfo{
-			{"gate", "envelope gate, attack(>0) or release(=0)", core.PortType_EventFloat32},
-			{"a", "attack time (secs)", core.PortType_EventFloat32},
-			{"d", "decay time (secs)", core.PortType_EventFloat32},
-			{"s", "sustain level 0..1", core.PortType_EventFloat32},
-			{"r", "release time (secs)", core.PortType_EventFloat32},
+			{"gate", "envelope gate, attack(>0) or release(=0)", core.PortType_EventFloat},
+			{"a", "attack time (secs)", core.PortType_EventFloat},
+			{"d", "decay time (secs)", core.PortType_EventFloat},
+			{"s", "sustain level 0..1", core.PortType_EventFloat},
+			{"r", "release time (secs)", core.PortType_EventFloat},
 		},
 		Out: []core.PortInfo{
 			{"out", "output", core.PortType_AudioBuffer},

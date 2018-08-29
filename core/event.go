@@ -18,13 +18,13 @@ type EventType uint
 const (
 	Event_Null EventType = iota
 	Event_MIDI
-	Event_Ctrl
+	Event_Float
 )
 
 var eventType2String = map[EventType]string{
-	Event_Null: "null",
-	Event_MIDI: "midi",
-	Event_Ctrl: "ctrl",
+	Event_Null:  "null",
+	Event_MIDI:  "midi",
+	Event_Float: "float",
 }
 
 type Event struct {
@@ -44,9 +44,9 @@ func (e *Event) String() string {
 	case Event_Null:
 		s = "null"
 	case Event_MIDI:
-		s = fmt.Sprintf("%s", e.GetMIDIEvent())
-	case Event_Ctrl:
-		s = fmt.Sprintf("%s", e.GetCtrlEvent())
+		s = fmt.Sprintf("%s", e.GetEventMIDI())
+	case Event_Float:
+		s = fmt.Sprintf("%s", e.GetEventFloat())
 	default:
 		s = "unknown"
 	}
@@ -57,163 +57,121 @@ func (e *Event) GetType() EventType {
 	return e.etype
 }
 
-func (e *Event) GetMIDIEvent() *MIDIEvent {
-	return e.info.(*MIDIEvent)
+func (e *Event) GetEventMIDI() *EventMIDI {
+	return e.info.(*EventMIDI)
 }
 
-func (e *Event) GetCtrlEvent() *CtrlEvent {
-	return e.info.(*CtrlEvent)
+func (e *Event) GetEventFloat() *EventFloat {
+	return e.info.(*EventFloat)
 }
 
 //-----------------------------------------------------------------------------
-// MIDI events
+// MIDI Events
 
-type MIDIEventType uint
+type EventTypeMIDI uint
 
 const (
-	MIDIEvent_Null MIDIEventType = iota
-	MIDIEvent_NoteOn
-	MIDIEvent_NoteOff
-	MIDIEvent_ControlChange
-	MIDIEvent_PitchWheel
-	MIDIEvent_PolyphonicAftertouch
-	MIDIEvent_ProgramChange
-	MIDIEvent_ChannelAftertouch
+	EventMIDI_Null EventTypeMIDI = iota
+	EventMIDI_NoteOn
+	EventMIDI_NoteOff
+	EventMIDI_ControlChange
+	EventMIDI_PitchWheel
+	EventMIDI_PolyphonicAftertouch
+	EventMIDI_ProgramChange
+	EventMIDI_ChannelAftertouch
 )
 
-var midiEventType2String = map[MIDIEventType]string{
-	MIDIEvent_Null:                 "null",
-	MIDIEvent_NoteOn:               "note_on",
-	MIDIEvent_NoteOff:              "note_off",
-	MIDIEvent_ControlChange:        "control_change",
-	MIDIEvent_PitchWheel:           "pitch_wheel",
-	MIDIEvent_PolyphonicAftertouch: "polyphonic_aftertouch",
-	MIDIEvent_ProgramChange:        "program_change",
-	MIDIEvent_ChannelAftertouch:    "channel_aftertouch",
+var midiEventType2String = map[EventTypeMIDI]string{
+	EventMIDI_Null:                 "null",
+	EventMIDI_NoteOn:               "note_on",
+	EventMIDI_NoteOff:              "note_off",
+	EventMIDI_ControlChange:        "control_change",
+	EventMIDI_PitchWheel:           "pitch_wheel",
+	EventMIDI_PolyphonicAftertouch: "polyphonic_aftertouch",
+	EventMIDI_ProgramChange:        "program_change",
+	EventMIDI_ChannelAftertouch:    "channel_aftertouch",
 }
 
-type MIDIEvent struct {
-	etype  MIDIEventType
+type EventMIDI struct {
+	etype  EventTypeMIDI
 	status uint8 // message status byte
 	arg0   uint8 // message byte 0
 	arg1   uint8 // message byte 1
 }
 
-// NewMIDIEvent returns a new MIDI event.
-func NewMIDIEvent(etype MIDIEventType, status, arg0, arg1 uint8) *Event {
-	return NewEvent(Event_MIDI, &MIDIEvent{etype, status, arg0, arg1})
+// NewEventMIDI returns a new MIDI event.
+func NewEventMIDI(etype EventTypeMIDI, status, arg0, arg1 uint8) *Event {
+	return NewEvent(Event_MIDI, &EventMIDI{etype, status, arg0, arg1})
 }
 
 // String returns a descriptive string for the MIDI event.
-func (e *MIDIEvent) String() string {
+func (e *EventMIDI) String() string {
 	descr := midiEventType2String[e.etype]
 	switch e.GetType() {
-	case MIDIEvent_NoteOn, MIDIEvent_NoteOff:
+	case EventMIDI_NoteOn, EventMIDI_NoteOff:
 		return fmt.Sprintf("%s ch %d note %d vel %d", descr, e.GetChannel(), e.GetNote(), e.GetVelocity())
-	case MIDIEvent_ControlChange:
+	case EventMIDI_ControlChange:
 		return fmt.Sprintf("%s ch %d ctrl %d val %d", descr, e.GetChannel(), e.GetCtrlNum(), e.GetCtrlVal())
-	case MIDIEvent_PitchWheel:
+	case EventMIDI_PitchWheel:
 		return fmt.Sprintf("%s ch %d val %d", descr, e.GetChannel(), e.GetPitchWheel())
-		//case MIDIEvent_PolyphonicAftertouch:
-		//case MIDIEvent_ProgramChange:
-		//case MIDIEvent_ChannelAftertouch:
+		//case EventMIDI_PolyphonicAftertouch:
+		//case EventMIDI_ProgramChange:
+		//case EventMIDI_ChannelAftertouch:
 	}
 	return fmt.Sprintf("%s status %02x arg0 %02x arg1 %02x", midiEventType2String[e.etype], e.status, e.arg0, e.arg1)
 }
 
 // GetType returns the MIDI event type.
-func (e *MIDIEvent) GetType() MIDIEventType {
+func (e *EventMIDI) GetType() EventTypeMIDI {
 	return e.etype
 }
 
 // GetChannel returns the MIDI channel number.
-func (e *MIDIEvent) GetChannel() uint8 {
+func (e *EventMIDI) GetChannel() uint8 {
 	return e.status & 0xf
 }
 
 // GetNote returns the MIDI note value.
-func (e *MIDIEvent) GetNote() uint8 {
+func (e *EventMIDI) GetNote() uint8 {
 	return e.arg0
 }
 
 // GetCtrlNum returns the MIDI control number.
-func (e *MIDIEvent) GetCtrlNum() uint8 {
+func (e *EventMIDI) GetCtrlNum() uint8 {
 	return e.arg0
 }
 
 // GetCtrlVal returns the MIDI control value.
-func (e *MIDIEvent) GetCtrlVal() uint8 {
+func (e *EventMIDI) GetCtrlVal() uint8 {
 	return e.arg1
 }
 
 // GetVelocity returns the MIDI note velocity.
-func (e *MIDIEvent) GetVelocity() uint8 {
+func (e *EventMIDI) GetVelocity() uint8 {
 	return e.arg1
 }
 
 // GetPitchWheel returns the MIDI pitch wheel value.
-func (e *MIDIEvent) GetPitchWheel() uint16 {
+func (e *EventMIDI) GetPitchWheel() uint16 {
 	return uint16(e.arg1<<7) | uint16(e.arg0)
 }
 
 //-----------------------------------------------------------------------------
-// Control Event
+// Float Events
 
-type CtrlEventType uint
-
-const (
-	CtrlEvent_Null      CtrlEventType = iota
-	CtrlEvent_NoteOn                  // trigger a note (key pressed)
-	CtrlEvent_NoteOff                 // release a note (key released)
-	CtrlEvent_Frequency               // set an oscillator frequency
-	CtrlEvent_Attenuate               // set an attenuation level
-	CtrlEvent_Pan                     // set a left/right pan level
-	CtrlEvent_Vol                     // set a volume level
-)
-
-var ctrlEventType2String = map[CtrlEventType]string{
-	CtrlEvent_Null:      "null",
-	CtrlEvent_NoteOn:    "note_on",
-	CtrlEvent_NoteOff:   "note_off",
-	CtrlEvent_Frequency: "frequency",
-	CtrlEvent_Attenuate: "attenuate",
-	CtrlEvent_Pan:       "pan",
-	CtrlEvent_Vol:       "vol",
+type EventFloat struct {
+	Id  uint
+	Val float32
 }
 
-type CtrlEvent struct {
-	etype CtrlEventType
-	val   float32
+// NewEventFloat returns a new control event.
+func NewEventFloat(id uint, val float32) *Event {
+	return NewEvent(Event_Float, &EventFloat{id, val})
 }
 
-// NewCtrlEvent returns a new control event.
-func NewCtrlEvent(etype CtrlEventType, val float32) *Event {
-	return NewEvent(Event_Ctrl, &CtrlEvent{etype, val})
+// String returns a descriptive string for the float event.
+func (e *EventFloat) String() string {
+	return fmt.Sprintf("id %d val %f", e.Id, e.Val)
 }
-
-// String returns a descriptive string for the control event.
-func (e *CtrlEvent) String() string {
-	return fmt.Sprintf("%s val %f", ctrlEventType2String[e.etype], e.val)
-}
-
-// GetType returns the type of a control event.
-func (e *CtrlEvent) GetType() CtrlEventType {
-	return e.etype
-}
-
-// GetVal returns the value of a control event.
-func (e *CtrlEvent) GetVal() float32 {
-	return e.val
-}
-
-//-----------------------------------------------------------------------------
-
-type CtrlData struct {
-	num uint8   // MIDI control number
-	val float32 // default value
-}
-
-// control event info
-type CtrlInfo map[CtrlEventType]CtrlData
 
 //-----------------------------------------------------------------------------

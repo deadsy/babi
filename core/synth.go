@@ -37,7 +37,7 @@ func NewSynth(root Module, audio Audio) *Synth {
 // Main loop for the synthesizer.
 func (s *Synth) Run() {
 
-	s.root.Event(NewMIDIEvent(MIDIEvent_NoteOn, 0, 69, 127))
+	s.root.Event(NewEventMIDI(EventMIDI_NoteOn, 0, 69, 127))
 
 	for {
 		// zero the audio output buffers
