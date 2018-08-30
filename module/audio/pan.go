@@ -18,14 +18,15 @@ import (
 // Info returns the module information.
 func (m *panModule) Info() *core.ModuleInfo {
 	return &core.ModuleInfo{
+		Name: "pan",
 		In: []core.PortInfo{
-			{"in", "input", core.PortType_AudioBuffer},
-			{"vol", "volume (0..1)", core.PortType_EventFloat},
-			{"pan", "left/right pan (0..1)", core.PortType_EventFloat},
+			{"in", "input", core.PortType_AudioBuffer, 0},
+			{"volume", "volume (0..1)", core.PortType_EventFloat, 0},
+			{"pan", "left/right pan (0..1)", core.PortType_EventFloat, 0},
 		},
 		Out: []core.PortInfo{
-			{"out_l", "left channel output", core.PortType_AudioBuffer},
-			{"out_r", "right channel output", core.PortType_AudioBuffer},
+			{"out_left", "left channel output", core.PortType_AudioBuffer, 0},
+			{"out_right", "right channel output", core.PortType_AudioBuffer, 0},
 		},
 	}
 }

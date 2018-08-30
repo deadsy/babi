@@ -29,13 +29,14 @@ import (
 // Info returns the module information.
 func (m *ksModule) Info() *core.ModuleInfo {
 	return &core.ModuleInfo{
+		Name: "karplus_strong",
 		In: []core.PortInfo{
-			{"gate", "oscillator gate, attack(>0) or mute(=0)", core.PortType_EventFloat},
-			{"f", "frequency (Hz)", core.PortType_EventFloat},
-			{"a", "attenuation (0..1)", core.PortType_EventFloat},
+			{"gate", "oscillator gate, attack(>0) or mute(=0)", core.PortType_EventFloat, 0},
+			{"frequency", "frequency (Hz)", core.PortType_EventFloat, 0},
+			{"attenuation", "attenuation (0..1)", core.PortType_EventFloat, 0},
 		},
 		Out: []core.PortInfo{
-			{"out", "output", core.PortType_AudioBuffer},
+			{"out", "output", core.PortType_AudioBuffer, 0},
 		},
 	}
 }

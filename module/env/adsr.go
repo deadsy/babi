@@ -21,15 +21,16 @@ import (
 // Info returns the module information.
 func (m *adsrModule) Info() *core.ModuleInfo {
 	return &core.ModuleInfo{
+		Name: "adsr",
 		In: []core.PortInfo{
-			{"gate", "envelope gate, attack(>0) or release(=0)", core.PortType_EventFloat},
-			{"a", "attack time (secs)", core.PortType_EventFloat},
-			{"d", "decay time (secs)", core.PortType_EventFloat},
-			{"s", "sustain level 0..1", core.PortType_EventFloat},
-			{"r", "release time (secs)", core.PortType_EventFloat},
+			{"gate", "envelope gate, attack(>0) or release(=0)", core.PortType_EventFloat, 0},
+			{"attack", "attack time (secs)", core.PortType_EventFloat, 0},
+			{"decay", "decay time (secs)", core.PortType_EventFloat, 0},
+			{"sustain", "sustain level 0..1", core.PortType_EventFloat, 0},
+			{"release", "release time (secs)", core.PortType_EventFloat, 0},
 		},
 		Out: []core.PortInfo{
-			{"out", "output", core.PortType_AudioBuffer},
+			{"out", "output", core.PortType_AudioBuffer, 0},
 		},
 	}
 }

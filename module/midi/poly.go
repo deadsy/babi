@@ -20,8 +20,9 @@ import (
 // Info returns the module information.
 func (m *polyModule) Info() *core.ModuleInfo {
 	return &core.ModuleInfo{
+		Name: "polyphonic",
 		In: []core.PortInfo{
-			{"midi", "midi input", core.PortType_EventMIDI},
+			{"midi_in", "midi input", core.PortType_EventMIDI, 0},
 		},
 		Out: nil,
 	}
@@ -35,20 +36,21 @@ type voiceInfo struct {
 }
 
 type polyModule struct {
-	submodule    func() core.Module // new function for voice sub-module
-	voice        []voiceInfo        // voices
-	idx          int                // round-robin index for voice slice
-	bend         float32            // pitch bending value (for all voices)
-	frequency_id uint               // sub-module control id
-	noteon_id    uint               // sub-module control id
-	noteoff_id   uint               // sub-module control id
+	submodule      func() core.Module // new function for voice sub-module
+	voice          []voiceInfo        // voices
+	idx            int                // round-robin index for voice slice
+	bend           float32            // pitch bending value (for all voices)
+	frequency_ctrl uint               // sub-module frequency control id
+	gate_ctrl      uint               // sub-module gate control id
 }
 
 func NewPoly(sm func() core.Module, maxvoices uint) core.Module {
 	log.Info.Printf("")
 	return &polyModule{
-		submodule: sm,
-		voice:     make([]voiceInfo, maxvoices),
+		submodule:      sm,
+		voice:          make([]voiceInfo, maxvoices),
+		frequency_ctrl: sm().Info().GetPortID("frequency"),
+		gate_ctrl:      sm().Info().GetPortID("gate"),
 	}
 }
 
@@ -88,7 +90,7 @@ func (m *polyModule) voiceAlloc(note uint8) *voiceInfo {
 	v.module = m.submodule()
 	// set the voice frequency
 	f := core.MIDI_ToFrequency(float32(v.note) + m.bend)
-	v.module.Event(core.NewEventFloat(m.frequency_id, f))
+	v.module.Event(core.NewEventFloat(m.frequency_ctrl, f))
 	return v
 }
 
@@ -103,18 +105,13 @@ func (m *polyModule) Event(e *core.Event) {
 			v := m.voiceLookup(me.GetNote())
 			vel := core.MIDI_Map(me.GetVelocity(), 0, 1)
 			if v != nil {
-				if vel == 0 {
-					// velocity 0 == note off
-					v.module.Event(core.NewEventFloat(m.noteoff_id, vel))
-				} else {
-					// trigger the note again
-					v.module.Event(core.NewEventFloat(m.noteon_id, vel))
-				}
+				// note: vel=0 is the same as note off (gate=0).
+				v.module.Event(core.NewEventFloat(m.gate_ctrl, vel))
 			} else {
 				if vel != 0 {
 					v := m.voiceAlloc(me.GetNote())
 					if v != nil {
-						v.module.Event(core.NewEventFloat(m.noteon_id, vel))
+						v.module.Event(core.NewEventFloat(m.gate_ctrl, vel))
 					} else {
 						log.Info.Printf("unable to allocate new voice")
 					}
@@ -124,8 +121,8 @@ func (m *polyModule) Event(e *core.Event) {
 			v := m.voiceLookup(me.GetNote())
 			if v != nil {
 				// send a note off control event
-				vel := core.MIDI_Map(me.GetVelocity(), 0, 1)
-				v.module.Event(core.NewEventFloat(m.noteoff_id, vel))
+				// ignoring the note off velocity (for now)
+				v.module.Event(core.NewEventFloat(m.gate_ctrl, 0))
 			}
 		case core.EventMIDI_PitchWheel:
 			// get the pitch bend value
@@ -135,7 +132,7 @@ func (m *polyModule) Event(e *core.Event) {
 				v := &m.voice[i]
 				if v.module != nil {
 					f := core.MIDI_ToFrequency(float32(v.note) + m.bend)
-					v.module.Event(core.NewEventFloat(m.frequency_id, f))
+					v.module.Event(core.NewEventFloat(m.frequency_ctrl, f))
 				}
 			}
 		default:

@@ -26,9 +26,10 @@ import (
 // Info returns the module information.
 func (m *noiseModule) Info() *core.ModuleInfo {
 	return &core.ModuleInfo{
-		In: nil,
+		Name: "noise",
+		In:   nil,
 		Out: []core.PortInfo{
-			{"out", "output", core.PortType_AudioBuffer},
+			{"out", "output", core.PortType_AudioBuffer, 0},
 		},
 	}
 }
@@ -52,7 +53,6 @@ type noiseModule struct {
 }
 
 func newNoise(ntype noiseType) core.Module {
-	log.Info.Printf("")
 	return &noiseModule{
 		ntype: ntype,
 	}
@@ -61,24 +61,28 @@ func newNoise(ntype noiseType) core.Module {
 // NewWhite returns a white noise generator module.
 // white noise (spectral density = k)
 func NewWhite() core.Module {
+	log.Info.Printf("")
 	return newNoise(noiseType_white)
 }
 
 // NewBrown returns a brown noise generator module.
 // brown noise (spectral density = k/f*f)
 func NewBrown() core.Module {
+	log.Info.Printf("")
 	return newNoise(noiseType_brown)
 }
 
 // NewPink1 returns a pink noise generator module.
 // pink noise (spectral density = k/f): fast, inaccurate version
 func NewPink1() core.Module {
+	log.Info.Printf("")
 	return newNoise(noiseType_pink1)
 }
 
 // NewPink2 returns a pink noise generator module.
 // pink noise (spectral density = k/f): slow, accurate version
 func NewPink2() core.Module {
+	log.Info.Printf("")
 	return newNoise(noiseType_pink2)
 }
 

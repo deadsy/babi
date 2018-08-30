@@ -20,11 +20,12 @@ import (
 // Info returns the module information.
 func (m *sineModule) Info() *core.ModuleInfo {
 	return &core.ModuleInfo{
+		Name: "sine",
 		In: []core.PortInfo{
-			{"f", "frequency (Hz)", core.PortType_EventFloat},
+			{"frequency", "frequency (Hz)", core.PortType_EventFloat, 0},
 		},
 		Out: []core.PortInfo{
-			{"out", "output", core.PortType_AudioBuffer},
+			{"out", "output", core.PortType_AudioBuffer, 0},
 		},
 	}
 }

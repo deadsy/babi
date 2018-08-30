@@ -8,6 +8,8 @@ Modules
 
 package core
 
+import "fmt"
+
 //-----------------------------------------------------------------------------
 
 type Module interface {
@@ -19,8 +21,9 @@ type Module interface {
 }
 
 type ModuleInfo struct {
-	In  []PortInfo // input ports
-	Out []PortInfo // input ports
+	Name string     // module name
+	In   []PortInfo // input ports
+	Out  []PortInfo // input ports
 }
 
 //-----------------------------------------------------------------------------
@@ -36,9 +39,35 @@ const (
 )
 
 type PortInfo struct {
-	Label       string   // short label for port
+	Name        string   // standard port name
 	Description string   // description of port
 	Ptype       PortType // port type
+	Id          uint     // port ID: used as the ID for events on this port
+}
+
+//-----------------------------------------------------------------------------
+
+// GetPortByName returns the module port information by port name.
+func (mi *ModuleInfo) GetPortByName(name string) *PortInfo {
+	// input ports
+	for i := range mi.In {
+		if name == mi.In[i].Name {
+			return &mi.In[i]
+		}
+	}
+	// output ports
+	for i := range mi.Out {
+		if name == mi.Out[i].Name {
+			return &mi.Out[i]
+		}
+	}
+	panic(fmt.Sprintf("no port named \"%s\" in module \"%s\"", name, mi.Name))
+	return nil
+}
+
+// GetPortID returns the module port ID by port name.
+func (mi *ModuleInfo) GetPortID(name string) uint {
+	return mi.GetPortByName(name).Id
 }
 
 //-----------------------------------------------------------------------------
