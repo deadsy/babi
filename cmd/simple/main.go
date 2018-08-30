@@ -44,6 +44,9 @@ func main() {
 	g := audio.NewPan()
 	_ = g
 
+	h := midi.NewCtrl(0, 10, g, "volume")
+	_ = h
+
 	s := core.NewSynth(b, au)
 	_ = s
 
