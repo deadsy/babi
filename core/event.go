@@ -65,6 +65,14 @@ func (e *Event) GetEventFloat() *EventFloat {
 	return e.info.(*EventFloat)
 }
 
+// IsMIDI returns true if this is a MIDI event for channel ch.
+func (e *Event) IsMIDI(ch uint8) bool {
+	if e.etype == Event_MIDI {
+		return e.GetEventMIDI().GetChannel() == ch
+	}
+	return false
+}
+
 //-----------------------------------------------------------------------------
 // MIDI Events
 

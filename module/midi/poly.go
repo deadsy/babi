@@ -5,6 +5,9 @@ Polyphonic Module
 
 Manage concurrent instances (voices) of a given sub-module.
 
+TODO currently has a single output and assumes the sub-modules
+have a single output.
+
 */
 //-----------------------------------------------------------------------------
 
@@ -24,7 +27,9 @@ func (m *polyModule) Info() *core.ModuleInfo {
 		In: []core.PortInfo{
 			{"midi_in", "midi input", core.PortType_EventMIDI, 0},
 		},
-		Out: nil,
+		Out: []core.PortInfo{
+			{"out", "output", core.PortType_AudioBuffer, 0},
+		},
 	}
 }
 
@@ -147,10 +152,16 @@ func (m *polyModule) Event(e *core.Event) {
 
 // Process runs the module DSP.
 func (m *polyModule) Process(buf ...*core.Buf) {
+	out := buf[0]
+	var vout core.Buf
+	// run each voice
 	for i := range m.voice {
 		vm := m.voice[i].module
 		if vm != nil && vm.Active() {
-			vm.Process(buf...)
+			// get the voice output
+			vm.Process(&vout)
+			// accumulate in the output buffer
+			out.Add(&vout)
 		}
 	}
 }
