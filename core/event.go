@@ -129,6 +129,17 @@ func (e *EventMIDI) String() string {
 	return fmt.Sprintf("%s status %02x arg0 %02x arg1 %02x", midiEventType2String[e.etype], e.status, e.arg0, e.arg1)
 }
 
+// GetEventMIDIChannel returns the MIDI event if the MIDI channel matches.
+func (e *Event) GetEventMIDIChannel(ch uint8) *EventMIDI {
+	if e.GetType() == Event_MIDI {
+		me := e.GetEventMIDI()
+		if me.GetChannel() == ch {
+			return me
+		}
+	}
+	return nil
+}
+
 // GetType returns the MIDI event type.
 func (e *EventMIDI) GetType() EventTypeMIDI {
 	return e.etype

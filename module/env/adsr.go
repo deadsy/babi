@@ -54,8 +54,7 @@ func get_k(t float32, rate int) float32 {
 type adsrState int
 
 const (
-	stateNull adsrState = iota
-	stateIdle
+	stateIdle adsrState = iota // initial state
 	stateAttack
 	stateDecay
 	stateSustain
