@@ -18,16 +18,25 @@ import (
 
 //-----------------------------------------------------------------------------
 
+const (
+	adsr_port_null = iota
+	adsr_port_gate
+	adsr_port_attack
+	adsr_port_decay
+	adsr_port_sustain
+	adsr_port_release
+)
+
 // Info returns the module information.
 func (m *adsrModule) Info() *core.ModuleInfo {
 	return &core.ModuleInfo{
 		Name: "adsr",
 		In: []core.PortInfo{
-			{"gate", "envelope gate, attack(>0) or release(=0)", core.PortType_EventFloat, 0},
-			{"attack", "attack time (secs)", core.PortType_EventFloat, 0},
-			{"decay", "decay time (secs)", core.PortType_EventFloat, 0},
-			{"sustain", "sustain level 0..1", core.PortType_EventFloat, 0},
-			{"release", "release time (secs)", core.PortType_EventFloat, 0},
+			{"gate", "envelope gate, attack(>0) or release(=0)", core.PortType_EventFloat, adsr_port_gate},
+			{"attack", "attack time (secs)", core.PortType_EventFloat, adsr_port_attack},
+			{"decay", "decay time (secs)", core.PortType_EventFloat, adsr_port_decay},
+			{"sustain", "sustain level 0..1", core.PortType_EventFloat, adsr_port_sustain},
+			{"release", "release time (secs)", core.PortType_EventFloat, adsr_port_release},
 		},
 		Out: []core.PortInfo{
 			{"out", "output", core.PortType_AudioBuffer, 0},
@@ -87,65 +96,60 @@ func (m *adsrModule) Stop() {
 //-----------------------------------------------------------------------------
 // Events
 
-type adsrEvent int
-
-const (
-	null          adsrEvent = iota
-	gate                    // attack (!= 0) or release (==0)
-	attack_time             // set the attack time
-	decay_time              // set the decay time
-	sustain_level           // set the sustain level
-	release_time            // set the release time
-)
-
-func (m *adsrModule) event(etype adsrEvent, val float32) {
-	switch etype {
-	case gate: // attack (!= 0) or release (==0)
-		if val != 0 {
-			// enter the attack segment
-			m.state = stateAttack
-		} else {
-			// enter the release segment
-			if m.state != stateIdle {
-				if m.kr == 1 {
-					// no release - goto idle
-					m.val = 0
-					m.state = stateIdle
-				} else {
-					m.state = stateRelease
-				}
-			}
-		}
-	case attack_time: // set the attack time
-		if val < 0 {
-			panic(fmt.Sprintf("bad attack time %f", val))
-		}
-		m.ka = get_k(val, core.AUDIO_FS)
-	case decay_time: // set the decay time
-		if val < 0 {
-			panic(fmt.Sprintf("bad decay time %f", val))
-		}
-		m.kd = get_k(val, core.AUDIO_FS)
-	case sustain_level: // set the sustain level
-		if val < 0 || val > 1 {
-			panic(fmt.Sprintf("bad sustain level %f", val))
-		}
-		m.s = val
-		m.d_trigger = 1.0 - level_epsilon
-		m.s_trigger = val + (1.0-val)*level_epsilon
-		m.i_trigger = val * level_epsilon
-	case release_time: // set the release time
-		if val < 0 {
-			panic(fmt.Sprintf("bad release time %f", val))
-		}
-		m.kr = get_k(val, core.AUDIO_FS)
-	default:
-		panic(fmt.Sprintf("unhandled event type %d", etype))
-	}
-}
-
 // Event processes a module event.
 func (m *adsrModule) Event(e *core.Event) {
+	fe := e.GetEventFloat()
+	if fe != nil {
+		val := fe.Val
+		switch fe.Id {
+		case adsr_port_gate: // attack (!= 0) or release (==0)
+			log.Info.Printf("set gate %f", val)
+			if val != 0 {
+				// enter the attack segment
+				m.state = stateAttack
+			} else {
+				// enter the release segment
+				if m.state != stateIdle {
+					if m.kr == 1 {
+						// no release - goto idle
+						m.val = 0
+						m.state = stateIdle
+					} else {
+						m.state = stateRelease
+					}
+				}
+			}
+		case adsr_port_attack: // set the attack time
+			log.Info.Printf("set attack %f", val)
+			if val < 0 {
+				panic(fmt.Sprintf("bad attack time %f", fe.Val))
+			}
+			m.ka = get_k(val, core.AUDIO_FS)
+		case adsr_port_decay: // set the decay time
+			log.Info.Printf("set decay %f", val)
+			if val < 0 {
+				panic(fmt.Sprintf("bad decay time %f", val))
+			}
+			m.kd = get_k(val, core.AUDIO_FS)
+		case adsr_port_sustain: // set the sustain level
+			log.Info.Printf("set sustain %f", val)
+			if val < 0 || val > 1 {
+				panic(fmt.Sprintf("bad sustain level %f", val))
+			}
+			m.s = val
+			m.d_trigger = 1.0 - level_epsilon
+			m.s_trigger = val + (1.0-val)*level_epsilon
+			m.i_trigger = val * level_epsilon
+		case adsr_port_release: // set the release time
+			log.Info.Printf("set release %f", val)
+			if val < 0 {
+				panic(fmt.Sprintf("bad release time %f", val))
+			}
+			m.kr = get_k(val, core.AUDIO_FS)
+		default:
+			log.Info.Printf("bad port number %d", fe.Id)
+		}
+	}
 }
 
 //-----------------------------------------------------------------------------

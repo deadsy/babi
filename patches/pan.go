@@ -66,7 +66,8 @@ func (m *panPatch) Stop() {
 
 // Event processes a module event.
 func (m *panPatch) Event(e *core.Event) {
-	if e.IsMIDI(m.ch) {
+	me := e.GetEventMIDIChannel(m.ch)
+	if me != nil {
 		m.sm.Event(e)
 		m.pan_ctrl.Event(e)
 		m.vol_ctrl.Event(e)

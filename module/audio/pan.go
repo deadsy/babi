@@ -15,14 +15,20 @@ import (
 
 //-----------------------------------------------------------------------------
 
+const (
+	pan_port_null = iota
+	pan_port_volume
+	pan_port_pan
+)
+
 // Info returns the module information.
 func (m *panModule) Info() *core.ModuleInfo {
 	return &core.ModuleInfo{
 		Name: "pan",
 		In: []core.PortInfo{
 			{"in", "input", core.PortType_AudioBuffer, 0},
-			{"volume", "volume (0..1)", core.PortType_EventFloat, 0},
-			{"pan", "left/right pan (0..1)", core.PortType_EventFloat, 0},
+			{"volume", "volume (0..1)", core.PortType_EventFloat, pan_port_volume},
+			{"pan", "left/right pan (0..1)", core.PortType_EventFloat, pan_port_pan},
 		},
 		Out: []core.PortInfo{
 			{"out_left", "left channel output", core.PortType_AudioBuffer, 0},
@@ -53,27 +59,30 @@ func (m *panModule) Stop() {
 //-----------------------------------------------------------------------------
 // Events
 
-/*
-func (p *Pan) set() {
-	p.vol_l = p.vol * core.Cos(p.pan)
-	p.vol_r = p.vol * core.Sin(p.pan)
-}
-
-func (p *Pan) SetVol(vol float32) {
-	// convert to a linear volume
-	p.vol = core.Pow2(core.Clamp(vol, 0, 1)) - 1
-	p.set()
-}
-
-func (p *Pan) SetPan(pan float32) {
+func (m *panModule) set() {
 	// Use sin/cos so that l*l + r*r = K (constant power)
-	p.pan = core.Clamp(pan, 0, 1) * (core.PI / 2)
-	p.set()
+	m.vol_l = m.vol * core.Cos(m.pan)
+	m.vol_r = m.vol * core.Sin(m.pan)
 }
-*/
 
 // Event processes a module event.
 func (m *panModule) Event(e *core.Event) {
+	fe := e.GetEventFloat()
+	if fe != nil {
+		switch fe.Id {
+		case pan_port_volume:
+			log.Info.Printf("set volume %f", fe.Val)
+			// convert to a linear volume
+			m.vol = core.Pow2(core.Clamp(fe.Val, 0, 1)) - 1
+			m.set()
+		case pan_port_pan:
+			log.Info.Printf("set pan %f", fe.Val)
+			m.pan = core.Clamp(fe.Val, 0, 1) * (core.PI / 2)
+			m.set()
+		default:
+			log.Info.Printf("bad port number %d", fe.Id)
+		}
+	}
 }
 
 //-----------------------------------------------------------------------------

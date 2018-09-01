@@ -44,9 +44,9 @@ func (e *Event) String() string {
 	case Event_Null:
 		s = "null"
 	case Event_MIDI:
-		s = fmt.Sprintf("%s", e.GetEventMIDI())
+		s = fmt.Sprintf("%s", e.info.(*EventMIDI))
 	case Event_Float:
-		s = fmt.Sprintf("%s", e.GetEventFloat())
+		s = fmt.Sprintf("%s", e.info.(*EventFloat))
 	default:
 		s = "unknown"
 	}
@@ -55,22 +55,6 @@ func (e *Event) String() string {
 
 func (e *Event) GetType() EventType {
 	return e.etype
-}
-
-func (e *Event) GetEventMIDI() *EventMIDI {
-	return e.info.(*EventMIDI)
-}
-
-func (e *Event) GetEventFloat() *EventFloat {
-	return e.info.(*EventFloat)
-}
-
-// IsMIDI returns true if this is a MIDI event for channel ch.
-func (e *Event) IsMIDI(ch uint8) bool {
-	if e.etype == Event_MIDI {
-		return e.GetEventMIDI().GetChannel() == ch
-	}
-	return false
 }
 
 //-----------------------------------------------------------------------------
@@ -129,10 +113,10 @@ func (e *EventMIDI) String() string {
 	return fmt.Sprintf("%s status %02x arg0 %02x arg1 %02x", midiEventType2String[e.etype], e.status, e.arg0, e.arg1)
 }
 
-// GetEventMIDIChannel returns the MIDI event if the MIDI channel matches.
+// GetEventMIDIChannel returns the MIDI event for the MIDI channel.
 func (e *Event) GetEventMIDIChannel(ch uint8) *EventMIDI {
 	if e.GetType() == Event_MIDI {
-		me := e.GetEventMIDI()
+		me := e.info.(*EventMIDI)
 		if me.GetChannel() == ch {
 			return me
 		}
@@ -191,6 +175,14 @@ func NewEventFloat(id uint, val float32) *Event {
 // String returns a descriptive string for the float event.
 func (e *EventFloat) String() string {
 	return fmt.Sprintf("id %d val %f", e.Id, e.Val)
+}
+
+// GetEventFloat returns the float event.
+func (e *Event) GetEventFloat() *EventFloat {
+	if e.GetType() == Event_Float {
+		return e.info.(*EventFloat)
+	}
+	return nil
 }
 
 //-----------------------------------------------------------------------------

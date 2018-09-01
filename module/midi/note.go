@@ -32,19 +32,19 @@ func (m *noteModule) Info() *core.ModuleInfo {
 
 type noteModule struct {
 	ch   uint8       // MIDI channel
-	cc   uint8       // MIDI control change number
+	note uint8       // MIDI note number
 	dst  core.Module // destination module
-	gate uint        // port ID for gate of the destination module
+	gate uint        // port ID for gate of destination module
 }
 
 // NewNote returns a MIDI note on/off gate control module.
-func NewNote(ch, cc uint8, dst core.Module) core.Module {
+func NewNote(ch, note uint8, dst core.Module, name string) core.Module {
 	log.Info.Printf("")
 	return &noteModule{
 		ch:   ch,
-		cc:   cc,
+		note: note,
 		dst:  dst,
-		gate: dst.Info().GetPortID("gate"),
+		gate: dst.Info().GetPortID(name),
 	}
 }
 
@@ -61,10 +61,14 @@ func (m *noteModule) Event(e *core.Event) {
 	if me != nil {
 		switch me.GetType() {
 		case core.EventMIDI_NoteOn:
-			vel := core.MIDI_Map(me.GetVelocity(), 0, 1)
-			m.dst.Event(core.NewEventFloat(m.gate, vel))
+			if me.GetNote() == m.note {
+				vel := core.MIDI_Map(me.GetVelocity(), 0, 1)
+				m.dst.Event(core.NewEventFloat(m.gate, vel))
+			}
 		case core.EventMIDI_NoteOff:
-			m.dst.Event(core.NewEventFloat(m.gate, 0))
+			if me.GetNote() == m.note {
+				m.dst.Event(core.NewEventFloat(m.gate, 0))
+			}
 		default:
 		}
 	}

@@ -11,23 +11,7 @@ package core
 import "fmt"
 
 //-----------------------------------------------------------------------------
-
-type Module interface {
-	Process(buf ...*Buf) // run the module dsp
-	Event(e *Event)      // process an event
-	Active() bool        // return true if the module has non-zero output
-	Stop()               // stop the module
-	Info() *ModuleInfo   // return the module information
-}
-
-type ModuleInfo struct {
-	Name string     // module name
-	In   []PortInfo // input ports
-	Out  []PortInfo // input ports
-}
-
-//-----------------------------------------------------------------------------
-// module ports
+// Module Ports
 
 type PortType int
 
@@ -46,6 +30,13 @@ type PortInfo struct {
 }
 
 //-----------------------------------------------------------------------------
+// Module Information
+
+type ModuleInfo struct {
+	Name string     // module name
+	In   []PortInfo // input ports
+	Out  []PortInfo // input ports
+}
 
 // GetPortByName returns the module port information by port name.
 func (mi *ModuleInfo) GetPortByName(name string) *PortInfo {
@@ -68,6 +59,17 @@ func (mi *ModuleInfo) GetPortByName(name string) *PortInfo {
 // GetPortID returns the module port ID by port name.
 func (mi *ModuleInfo) GetPortID(name string) uint {
 	return mi.GetPortByName(name).Id
+}
+
+//-----------------------------------------------------------------------------
+// Modules
+
+type Module interface {
+	Process(buf ...*Buf) // run the module dsp
+	Event(e *Event)      // process an event
+	Active() bool        // return true if the module has non-zero output
+	Stop()               // stop the module
+	Info() *ModuleInfo   // return the module information
 }
 
 //-----------------------------------------------------------------------------

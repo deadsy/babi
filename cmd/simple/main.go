@@ -24,10 +24,9 @@ func main() {
 	defer audio.Close()
 
 	m0 := patches.NewSimple()
-	m1 := patches.NewPan(0, m0)
 
 	// create the synth
-	s := core.NewSynth(m1, audio)
+	s := core.NewSynth(m0, audio)
 	s.Run()
 }
 

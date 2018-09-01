@@ -23,7 +23,7 @@ import (
 // Info returns the module information.
 func (m *polyModule) Info() *core.ModuleInfo {
 	return &core.ModuleInfo{
-		Name: "polyphonic",
+		Name: "poly",
 		In: []core.PortInfo{
 			{"midi_in", "midi input", core.PortType_EventMIDI, 0},
 		},
@@ -41,6 +41,7 @@ type voiceInfo struct {
 }
 
 type polyModule struct {
+	ch             uint8              // MIDI channel
 	submodule      func() core.Module // new function for voice sub-module
 	voice          []voiceInfo        // voices
 	idx            int                // round-robin index for voice slice
@@ -49,9 +50,10 @@ type polyModule struct {
 	gate_ctrl      uint               // sub-module gate control id
 }
 
-func NewPoly(sm func() core.Module, maxvoices uint) core.Module {
+func NewPoly(ch uint8, sm func() core.Module, maxvoices uint) core.Module {
 	log.Info.Printf("")
 	return &polyModule{
+		ch:             ch,
 		submodule:      sm,
 		voice:          make([]voiceInfo, maxvoices),
 		frequency_ctrl: sm().Info().GetPortID("frequency"),
@@ -101,10 +103,8 @@ func (m *polyModule) voiceAlloc(note uint8) *voiceInfo {
 
 // Event processes a module event.
 func (m *polyModule) Event(e *core.Event) {
-	log.Info.Printf("event %s", e)
-	switch e.GetType() {
-	case core.Event_MIDI:
-		me := e.GetEventMIDI()
+	me := e.GetEventMIDIChannel(m.ch)
+	if me != nil {
 		switch me.GetType() {
 		case core.EventMIDI_NoteOn:
 			v := m.voiceLookup(me.GetNote())
@@ -143,8 +143,6 @@ func (m *polyModule) Event(e *core.Event) {
 		default:
 			log.Info.Printf("unhandled midi event %s", me)
 		}
-	default:
-		log.Info.Printf("unhandled event %s", e)
 	}
 }
 
