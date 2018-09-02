@@ -14,20 +14,27 @@ import (
 
 //-----------------------------------------------------------------------------
 
-const AUDIO_CHANNELS = 2
+const numMIDIIn = 1
+const numAudioIn = 0
+const numAudioOut = 2
 
 //-----------------------------------------------------------------------------
 
 type Synth struct {
-	root  Module              // root module
-	audio Audio               // audio output device
-	out   [AUDIO_CHANNELS]Buf // audio output buffers
-	in    [AUDIO_CHANNELS]Buf // audio input buffers
+	root  Module           // root module
+	audio Audio            // audio output device
+	out   [numAudioOut]Buf // audio output buffers
 }
 
 // NewSynth creates a synthesizer object.
 func NewSynth(root Module, audio Audio) *Synth {
 	log.Info.Printf("")
+
+	err := root.Info().CheckIO(numMIDIIn, numAudioIn, numAudioOut)
+	if err != nil {
+		panic(err)
+	}
+
 	return &Synth{
 		root:  root,
 		audio: audio,
@@ -41,26 +48,16 @@ func (s *Synth) Run() {
 
 	for {
 		// zero the audio output buffers
-		for i := 0; i < AUDIO_CHANNELS; i++ {
+		for i := 0; i < numAudioOut; i++ {
 			s.out[i].Zero()
 		}
-		// TODO get the audio input buffers
-		for i := 0; i < AUDIO_CHANNELS; i++ {
-			s.in[i].Zero()
-		}
-		// process the patches
+		// process the root module
 		if s.root != nil && s.root.Active() {
-			// TODO fix buffer handling
-			s.root.Process(&s.in[0], &s.in[1], &s.out[0], &s.out[1])
+			s.root.Process(&s.out[0], &s.out[1])
 		}
 		// write the output to the audio device
 		s.audio.Write(&s.out[0], &s.out[1])
 	}
-}
-
-func (s *Synth) OutLR(l, r *Buf) {
-	s.out[0].Add(l)
-	s.out[1].Add(r)
 }
 
 //-----------------------------------------------------------------------------

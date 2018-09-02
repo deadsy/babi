@@ -8,7 +8,9 @@ Modules
 
 package core
 
-import "fmt"
+import (
+	"fmt"
+)
 
 //-----------------------------------------------------------------------------
 // Module Ports
@@ -29,13 +31,15 @@ type PortInfo struct {
 	Id          uint     // port ID: used as the ID for events on this port
 }
 
+type PortSet []PortInfo
+
 //-----------------------------------------------------------------------------
 // Module Information
 
 type ModuleInfo struct {
-	Name string     // module name
-	In   []PortInfo // input ports
-	Out  []PortInfo // input ports
+	Name string  // module name
+	In   PortSet // input ports
+	Out  PortSet // output ports
 }
 
 // GetPortByName returns the module port information by port name.
@@ -59,6 +63,35 @@ func (mi *ModuleInfo) GetPortByName(name string) *PortInfo {
 // GetPortID returns the module port ID by port name.
 func (mi *ModuleInfo) GetPortID(name string) uint {
 	return mi.GetPortByName(name).Id
+}
+
+// numPorts return the number of ports within a set matching a specific type.
+func (ps PortSet) numPorts(ptype PortType) int {
+	var count int
+	for _, pi := range ps {
+		if pi.Ptype == ptype {
+			count += 1
+		}
+	}
+	return count
+}
+
+// CheckIO checks a module for the required type/number of IO ports.
+func (mi *ModuleInfo) CheckIO(midi_in, audio_in, audio_out int) error {
+	var n int
+	n = mi.In.numPorts(PortType_EventMIDI)
+	if n != midi_in {
+		return fmt.Errorf("%s needs %d MIDI inputs (has %d)", mi.Name, midi_in, n)
+	}
+	n = mi.In.numPorts(PortType_AudioBuffer)
+	if n != audio_in {
+		return fmt.Errorf("%s needs %d audio inputs (has %d)", mi.Name, audio_in, n)
+	}
+	n = mi.Out.numPorts(PortType_AudioBuffer)
+	if n != audio_out {
+		return fmt.Errorf("%s needs %d audio outputs (has %d)", mi.Name, audio_out, n)
+	}
+	return nil
 }
 
 //-----------------------------------------------------------------------------

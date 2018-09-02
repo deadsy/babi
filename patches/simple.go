@@ -62,7 +62,7 @@ func NewSimple() core.Module {
 	// adsr defaults
 	adsr.Event(core.NewEventFloat(adsr.Info().GetPortByName("attack").Id, 0.1))
 	adsr.Event(core.NewEventFloat(adsr.Info().GetPortByName("decay").Id, 0.5))
-	adsr.Event(core.NewEventFloat(adsr.Info().GetPortByName("sustain").Id, 0.7))
+	adsr.Event(core.NewEventFloat(adsr.Info().GetPortByName("sustain").Id, 0.1))
 	adsr.Event(core.NewEventFloat(adsr.Info().GetPortByName("release").Id, 1))
 	// sine defaults
 	sine.Event(core.NewEventFloat(sine.Info().GetPortByName("frequency").Id, 440.0))
