@@ -9,20 +9,23 @@ Sine Oscillator Module
 package osc
 
 import (
-	"fmt"
-
 	"github.com/deadsy/babi/core"
 	"github.com/deadsy/babi/log"
 )
 
 //-----------------------------------------------------------------------------
 
+const (
+	sine_port_null = iota
+	sine_port_frequency
+)
+
 // Info returns the module information.
 func (m *sineModule) Info() *core.ModuleInfo {
 	return &core.ModuleInfo{
 		Name: "sine",
 		In: []core.PortInfo{
-			{"frequency", "frequency (Hz)", core.PortType_EventFloat, 0},
+			{"frequency", "frequency (Hz)", core.PortType_EventFloat, sine_port_frequency},
 		},
 		Out: []core.PortInfo{
 			{"out", "output", core.PortType_AudioBuffer, 0},
@@ -33,7 +36,7 @@ func (m *sineModule) Info() *core.ModuleInfo {
 //-----------------------------------------------------------------------------
 
 // frequency to x scaling (xrange/fs)
-const FREQ_SCALE = (1 << 32) / core.AUDIO_FS
+const sine_freq_scale = (1 << 32) / core.AUDIO_FS
 
 type sineModule struct {
 	freq  float32 // base frequency
@@ -55,18 +58,20 @@ func (m *sineModule) Stop() {
 //-----------------------------------------------------------------------------
 // Events
 
-func (m *sineModule) event(etype oscEvent, val float32) {
-	switch etype {
-	case frequency: // set the oscillator frequency
-		m.freq = val
-		m.xstep = uint32(m.freq * FREQ_SCALE)
-	default:
-		panic(fmt.Sprintf("unhandled event type %d", etype))
-	}
-}
-
 // Event processes a module event.
 func (m *sineModule) Event(e *core.Event) {
+	fe := e.GetEventFloat()
+	if fe != nil {
+		val := fe.Val
+		switch fe.Id {
+		case sine_port_frequency: // set the oscillator frequency
+			log.Info.Printf("set frequency %f", val)
+			m.freq = val
+			m.xstep = uint32(val * sine_freq_scale)
+		default:
+			log.Info.Printf("bad port number %d", fe.Id)
+		}
+	}
 }
 
 //-----------------------------------------------------------------------------
