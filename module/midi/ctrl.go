@@ -34,7 +34,7 @@ type ctrlModule struct {
 	ch   uint8       // MIDI channel
 	cc   uint8       // MIDI control change number
 	dst  core.Module // destination module
-	ctrl uint        // control number for the destination module
+	ctrl core.PortId // port id for destination module
 }
 
 // NewCtrl returns a MIDI control module.
@@ -44,7 +44,7 @@ func NewCtrl(ch, cc uint8, dst core.Module, name string) core.Module {
 		ch:   ch,
 		cc:   cc,
 		dst:  dst,
-		ctrl: dst.Info().GetPortID(name),
+		ctrl: dst.Info().GetPortId(name),
 	}
 }
 
@@ -63,7 +63,7 @@ func (m *ctrlModule) Event(e *core.Event) {
 			// convert to a float event and send
 			val := core.MIDI_Map(me.GetCtrlVal(), 0, 1)
 			log.Info.Printf("send float event to %s port %d val %f", m.dst, m.ctrl, val)
-			m.dst.Event(core.NewEventFloat(m.ctrl, val))
+			core.SendEventFloatID(m.dst, m.ctrl, val)
 		}
 	}
 }

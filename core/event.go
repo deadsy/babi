@@ -163,12 +163,12 @@ func (e *EventMIDI) GetPitchWheel() uint16 {
 // Float Events
 
 type EventFloat struct {
-	Id  uint
+	Id  PortId
 	Val float32
 }
 
 // NewEventFloat returns a new control event.
-func NewEventFloat(id uint, val float32) *Event {
+func NewEventFloat(id PortId, val float32) *Event {
 	return NewEvent(Event_Float, &EventFloat{id, val})
 }
 
@@ -183,6 +183,16 @@ func (e *Event) GetEventFloat() *EventFloat {
 		return e.info.(*EventFloat)
 	}
 	return nil
+}
+
+// SendEventFloatName sends a float event to a named port on a module.
+func SendEventFloatName(m Module, name string, val float32) {
+	m.Event(NewEventFloat(m.Info().GetPortByName(name).Id, val))
+}
+
+// SendEventFloatID sends a float event to a port ID on a module.
+func SendEventFloatID(m Module, id PortId, val float32) {
+	m.Event(NewEventFloat(id, val))
 }
 
 //-----------------------------------------------------------------------------

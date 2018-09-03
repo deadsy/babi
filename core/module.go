@@ -8,9 +8,7 @@ Modules
 
 package core
 
-import (
-	"fmt"
-)
+import "fmt"
 
 //-----------------------------------------------------------------------------
 // Module Ports
@@ -24,11 +22,13 @@ const (
 	PortType_EventMIDI            // event with MIDI data
 )
 
+type PortId uint
+
 type PortInfo struct {
 	Name        string   // standard port name
 	Description string   // description of port
 	Ptype       PortType // port type
-	Id          uint     // port ID: used as the ID for events on this port
+	Id          PortId   // numeric port id
 }
 
 type PortSet []PortInfo
@@ -61,7 +61,7 @@ func (mi *ModuleInfo) GetPortByName(name string) *PortInfo {
 }
 
 // GetPortID returns the module port ID by port name.
-func (mi *ModuleInfo) GetPortID(name string) uint {
+func (mi *ModuleInfo) GetPortId(name string) PortId {
 	return mi.GetPortByName(name).Id
 }
 

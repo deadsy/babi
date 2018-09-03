@@ -60,15 +60,15 @@ func NewSimple() core.Module {
 	vol_ctrl := midi.NewCtrl(midi_ch, midi_ctrl+1, pan, "volume")
 
 	// adsr defaults
-	adsr.Event(core.NewEventFloat(adsr.Info().GetPortByName("attack").Id, 0.1))
-	adsr.Event(core.NewEventFloat(adsr.Info().GetPortByName("decay").Id, 0.5))
-	adsr.Event(core.NewEventFloat(adsr.Info().GetPortByName("sustain").Id, 0.1))
-	adsr.Event(core.NewEventFloat(adsr.Info().GetPortByName("release").Id, 1))
+	core.SendEventFloatName(adsr, "attack", 0.1)
+	core.SendEventFloatName(adsr, "decay", 0.5)
+	core.SendEventFloatName(adsr, "sustain", 0.1)
+	core.SendEventFloatName(adsr, "release", 1)
 	// sine defaults
-	sine.Event(core.NewEventFloat(sine.Info().GetPortByName("frequency").Id, 440.0))
+	core.SendEventFloatName(sine, "frequency", 440.0)
 	// pan defaults
-	pan.Event(core.NewEventFloat(pan.Info().GetPortByName("pan").Id, 0.5))
-	pan.Event(core.NewEventFloat(pan.Info().GetPortByName("volume").Id, 1))
+	core.SendEventFloatName(pan, "pan", 0.5)
+	core.SendEventFloatName(pan, "volume", 1)
 
 	return &simplePatch{
 		ch:       midi_ch,
