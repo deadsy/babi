@@ -49,6 +49,7 @@ type simplePatch struct {
 	volCtrl core.Module // MIDI to volume control
 }
 
+// NewSimple returns a simple sine/adsr patch.
 func NewSimple() core.Module {
 	log.Info.Printf("")
 

@@ -39,7 +39,8 @@ type ctrlModule struct {
 
 // NewCtrl returns a MIDI control module.
 func NewCtrl(ch, cc uint8, dst core.Module, name string) core.Module {
-	log.Info.Printf("")
+	mi := dst.Info()
+	log.Info.Printf("midi ch %d cc %d controlling %s.%s port", ch, cc, mi.Name, name)
 	return &ctrlModule{
 		ch:   ch,
 		cc:   cc,

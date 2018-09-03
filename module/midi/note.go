@@ -39,12 +39,13 @@ type noteModule struct {
 
 // NewNote returns a MIDI note on/off gate control module.
 func NewNote(ch, note uint8, dst core.Module, name string) core.Module {
-	log.Info.Printf("")
+	mi := dst.Info()
+	log.Info.Printf("midi ch %d note %d controlling %s.%s port", ch, note, mi.Name, name)
 	return &noteModule{
 		ch:   ch,
 		note: note,
 		dst:  dst,
-		gate: dst.Info().GetPortId(name),
+		gate: mi.GetPortId(name),
 	}
 }
 

@@ -36,30 +36,37 @@ func (m *panPatch) Info() *core.ModuleInfo {
 //-----------------------------------------------------------------------------
 
 type panPatch struct {
-	ch       uint8       // MIDI channel
-	sm       core.Module // sub-module
-	pan      core.Module // pan module
-	pan_ctrl core.Module // MIDI control for pan
-	vol_ctrl core.Module // MIDI control for volume
+	ch      uint8       // MIDI channel
+	sm      core.Module // sub-module
+	pan     core.Module // pan module
+	panCtrl core.Module // MIDI control for pan
+	volCtrl core.Module // MIDI control for volume
 }
 
+// NewPan returns a module that pans the output of a given sub-module.
 func NewPan(ch uint8, sm core.Module) core.Module {
 	log.Info.Printf("")
+	// check for IO compatability
+	err := sm.Info().CheckIO(1, 0, 1)
+	if err != nil {
+		panic(err)
+	}
 	pan := audio.NewPan()
 	return &panPatch{
-		ch:       ch,
-		sm:       sm,
-		pan:      pan,
-		pan_ctrl: midi.NewCtrl(ch, 10, pan, "pan"),
-		vol_ctrl: midi.NewCtrl(ch, 11, pan, "volume"),
+		ch:      ch,
+		sm:      sm,
+		pan:     pan,
+		panCtrl: midi.NewCtrl(ch, 10, pan, "pan"),
+		volCtrl: midi.NewCtrl(ch, 11, pan, "volume"),
 	}
 }
 
 // Stop and cleanup the module.
 func (m *panPatch) Stop() {
 	log.Info.Printf("")
-	m.sm.Stop()
 	m.pan.Stop()
+	m.panCtrl.Stop()
+	m.volCtrl.Stop()
 }
 
 //-----------------------------------------------------------------------------
@@ -69,8 +76,8 @@ func (m *panPatch) Event(e *core.Event) {
 	me := e.GetEventMIDIChannel(m.ch)
 	if me != nil {
 		m.sm.Event(e)
-		m.pan_ctrl.Event(e)
-		m.vol_ctrl.Event(e)
+		m.panCtrl.Event(e)
+		m.volCtrl.Event(e)
 	}
 }
 
@@ -78,11 +85,11 @@ func (m *panPatch) Event(e *core.Event) {
 
 // Process runs the module DSP.
 func (m *panPatch) Process(buf ...*core.Buf) {
-	out_l := buf[0]
-	out_r := buf[0]
+	outL := buf[0]
+	outR := buf[0]
 	var out core.Buf
 	m.sm.Process(&out)
-	m.pan.Process(&out, out_l, out_r)
+	m.pan.Process(&out, outL, outR)
 }
 
 // Active return true if the module has non-zero output.

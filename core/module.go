@@ -57,7 +57,6 @@ func (mi *ModuleInfo) GetPortByName(name string) *PortInfo {
 		}
 	}
 	panic(fmt.Sprintf("no port named \"%s\" in module \"%s\"", name, mi.Name))
-	return nil
 }
 
 // GetPortID returns the module port ID by port name.
