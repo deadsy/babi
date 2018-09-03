@@ -50,6 +50,7 @@ type polyModule struct {
 	gate      core.PortId        // sub-module gate port id
 }
 
+// NewPoly returns a MIDI polyphonic voice control module.
 func NewPoly(ch uint8, sm func() core.Module, maxvoices uint) core.Module {
 	log.Info.Printf("")
 	return &polyModule{

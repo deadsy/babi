@@ -35,18 +35,18 @@ func (m *simplePatch) Info() *core.ModuleInfo {
 
 //-----------------------------------------------------------------------------
 
-const midi_ch = 0
-const midi_note = 69
-const midi_ctrl = 6
+const midiCh = 0
+const midiNote = 69
+const midiCtrl = 6
 
 type simplePatch struct {
-	ch       uint8       // MIDI channel
-	adsr     core.Module // adsr envelope
-	sine     core.Module // sine oscillator
-	pan      core.Module // pan left/right
-	note     core.Module // note to gate
-	pan_ctrl core.Module // MIDI to pan control
-	vol_ctrl core.Module // MIDI to volume control
+	ch      uint8       // MIDI channel
+	adsr    core.Module // adsr envelope
+	sine    core.Module // sine oscillator
+	pan     core.Module // pan left/right
+	note    core.Module // note to gate
+	panCtrl core.Module // MIDI to pan control
+	volCtrl core.Module // MIDI to volume control
 }
 
 func NewSimple() core.Module {
@@ -55,9 +55,9 @@ func NewSimple() core.Module {
 	adsr := env.NewADSR()
 	sine := osc.NewSine()
 	pan := audio.NewPan()
-	note := midi.NewNote(midi_ch, midi_note, adsr, "gate")
-	pan_ctrl := midi.NewCtrl(midi_ch, midi_ctrl+0, pan, "pan")
-	vol_ctrl := midi.NewCtrl(midi_ch, midi_ctrl+1, pan, "volume")
+	note := midi.NewNote(midiCh, midiNote, adsr, "gate")
+	panCtrl := midi.NewCtrl(midiCh, midiCtrl+0, pan, "pan")
+	volCtrl := midi.NewCtrl(midiCh, midiCtrl+1, pan, "volume")
 
 	// adsr defaults
 	core.SendEventFloatName(adsr, "attack", 0.1)
@@ -71,13 +71,13 @@ func NewSimple() core.Module {
 	core.SendEventFloatName(pan, "volume", 1)
 
 	return &simplePatch{
-		ch:       midi_ch,
-		adsr:     adsr,
-		sine:     sine,
-		pan:      pan,
-		note:     note,
-		pan_ctrl: pan_ctrl,
-		vol_ctrl: vol_ctrl,
+		ch:      midiCh,
+		adsr:    adsr,
+		sine:    sine,
+		pan:     pan,
+		note:    note,
+		panCtrl: panCtrl,
+		volCtrl: volCtrl,
 	}
 }
 
@@ -86,6 +86,10 @@ func (m *simplePatch) Stop() {
 	log.Info.Printf("")
 	m.adsr.Stop()
 	m.sine.Stop()
+	m.pan.Stop()
+	m.note.Stop()
+	m.panCtrl.Stop()
+	m.volCtrl.Stop()
 }
 
 //-----------------------------------------------------------------------------
@@ -96,8 +100,8 @@ func (m *simplePatch) Event(e *core.Event) {
 	me := e.GetEventMIDIChannel(m.ch)
 	if me != nil {
 		m.note.Event(e)
-		m.pan_ctrl.Event(e)
-		m.vol_ctrl.Event(e)
+		m.panCtrl.Event(e)
+		m.volCtrl.Event(e)
 	}
 }
 
@@ -105,8 +109,8 @@ func (m *simplePatch) Event(e *core.Event) {
 
 // Process runs the module DSP.
 func (m *simplePatch) Process(buf ...*core.Buf) {
-	out_l := buf[0]
-	out_r := buf[1]
+	outL := buf[0]
+	outR := buf[1]
 	// generate sine
 	var out core.Buf
 	m.sine.Process(&out)
@@ -116,7 +120,7 @@ func (m *simplePatch) Process(buf ...*core.Buf) {
 	// apply envelope
 	out.Mul(&env)
 	// pan left/right
-	m.pan.Process(&out, out_l, out_r)
+	m.pan.Process(&out, outL, outR)
 }
 
 // Active return true if the module has non-zero output.
