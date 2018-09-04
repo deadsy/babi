@@ -192,7 +192,7 @@ func main() {
 
 	client, status := jack.ClientOpen("jack_test", jack.NoStartServer)
 	if status != 0 {
-		fmt.Println(jack.StrError(status))
+		fmt.Printf("%s\n", status)
 		return
 	}
 	defer client.Close()

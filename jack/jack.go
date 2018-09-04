@@ -25,8 +25,8 @@ jack_client_t * jack_client_open_go(const char *client_name, int options, int *s
 */
 import "C"
 import (
-	"errors"
 	"fmt"
+	"strings"
 	"sync"
 	"unsafe"
 )
@@ -42,20 +42,6 @@ const (
 	LoadName      = C.JackLoadName
 	LoadInit      = C.JackLoadInit
 	SessionID     = C.JackSessionID
-	// status
-	Failure       = C.JackFailure
-	InvalidOption = C.JackInvalidOption
-	NameNotUnique = C.JackNameNotUnique
-	ServerStarted = C.JackServerStarted
-	ServerFailed  = C.JackServerFailed
-	ServerError   = C.JackServerError
-	NoSuchClient  = C.JackNoSuchClient
-	LoadFailure   = C.JackLoadFailure
-	InitFailure   = C.JackInitFailure
-	ShmFailure    = C.JackShmFailure
-	VersionError  = C.JackVersionError
-	BackendError  = C.JackBackendError
-	ClientZombie  = C.JackClientZombie
 	// port flags
 	PortIsInput    = C.JackPortIsInput
 	PortIsOutput   = C.JackPortIsOutput
@@ -68,31 +54,61 @@ const (
 )
 
 //-----------------------------------------------------------------------------
+// status bitfield
 
-var errorStrings = map[int]string{
-	Failure:       "failure",
-	InvalidOption: "invalid option",
-	NameNotUnique: "name not unique",
-	ServerStarted: "server started",
-	ServerFailed:  "server failed",
-	ServerError:   "server error",
-	NoSuchClient:  "no such client",
-	LoadFailure:   "load failure",
-	InitFailure:   "init failure",
-	ShmFailure:    "shared memory failure",
-	VersionError:  "version error",
-	BackendError:  "backend error",
-	ClientZombie:  "client zombie",
-}
+type Status uint
 
-func StrError(status int) error {
+const (
+	Failure       Status = C.JackFailure
+	InvalidOption        = C.JackInvalidOption
+	NameNotUnique        = C.JackNameNotUnique
+	ServerStarted        = C.JackServerStarted
+	ServerFailed         = C.JackServerFailed
+	ServerError          = C.JackServerError
+	NoSuchClient         = C.JackNoSuchClient
+	LoadFailure          = C.JackLoadFailure
+	InitFailure          = C.JackInitFailure
+	ShmFailure           = C.JackShmFailure
+	VersionError         = C.JackVersionError
+	BackendError         = C.JackBackendError
+	ClientZombie         = C.JackClientZombie
+)
+
+func (status Status) String() string {
 	if status == 0 {
-		return nil
+		return ""
 	}
-	if s, ok := errorStrings[status]; ok {
-		return errors.New(s)
+	var s []string
+	// decode the bits
+	statusString := []struct {
+		val Status
+		str string
+	}{
+		{Failure, "Failure"},
+		{InvalidOption, "InvalidOption"},
+		{NameNotUnique, "NameNotUnique"},
+		{ServerStarted, "ServerStarted"},
+		{ServerFailed, "ServerFailed"},
+		{ServerError, "ServerError"},
+		{NoSuchClient, "NoSuchClient"},
+		{LoadFailure, "LoadFailure"},
+		{InitFailure, "InitFailure"},
+		{ShmFailure, "ShmFailure"},
+		{VersionError, "VersionError"},
+		{BackendError, "BackendError"},
+		{ClientZombie, "ClientZombie"},
 	}
-	return fmt.Errorf("unknown error(%d)", status)
+	for _, v := range statusString {
+		if status&v.val == v.val {
+			s = append(s, v.str)
+			status &= ^v.val
+		}
+	}
+	// any leftover bits
+	if status != 0 {
+		s = append(s, fmt.Sprintf("Unknown(%x)", status))
+	}
+	return strings.Join(s, ",")
 }
 
 //-----------------------------------------------------------------------------
@@ -135,7 +151,7 @@ var (
 )
 
 // ClientOpen opens an external client session with a JACK server.
-func ClientOpen(name string, options int) (*Client, int) {
+func ClientOpen(name string, options int) (*Client, Status) {
 	cname := C.CString(name)
 	defer C.free(unsafe.Pointer(cname))
 	var status C.int
@@ -151,7 +167,7 @@ func ClientOpen(name string, options int) (*Client, int) {
 		clientMap[cc] = c
 		clientMapLock.Unlock()
 	}
-	return c, int(status)
+	return c, Status(status)
 }
 
 // Close disconnects an external client from a JACK server.
@@ -193,7 +209,7 @@ func (c *Client) Activate() int {
 	return int(C.jack_activate(c.ptr))
 }
 
-// Deactivate tells the Jack server to remove this @a client from the process graph.
+// Deactivate tells the Jack server to remove this client from the process graph.
 func (c *Client) Deactivate() int {
 	return int(C.jack_deactivate(c.ptr))
 }
