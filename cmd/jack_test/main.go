@@ -129,6 +129,8 @@ func main() {
 */
 //-----------------------------------------------------------------------------
 
+/*
+
 var (
 	portIn, portOut *jack.Port
 	ch              chan string // for printing midi events
@@ -178,6 +180,23 @@ func main() {
 		str, more = <-ch
 		fmt.Printf("Midi Event: %s\n", str)
 	}
+}
+
+*/
+
+//-----------------------------------------------------------------------------
+
+func main() {
+
+	fmt.Printf("jack version %s\n", jack.GetVersionString())
+
+	client, status := jack.ClientOpen("jack_test", jack.NoStartServer)
+	if status != 0 {
+		fmt.Println(jack.StrError(status))
+		return
+	}
+	defer client.Close()
+
 }
 
 //-----------------------------------------------------------------------------

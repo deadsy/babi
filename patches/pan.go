@@ -46,7 +46,7 @@ type panPatch struct {
 // NewPan returns a module that pans the output of a given sub-module.
 func NewPan(ch uint8, sm core.Module) core.Module {
 	log.Info.Printf("")
-	// check for IO compatability
+	// check for IO compatibility
 	err := sm.Info().CheckIO(1, 0, 1)
 	if err != nil {
 		panic(err)
