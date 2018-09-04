@@ -6,7 +6,6 @@ Golang wrapper for jackd2.
 */
 //-----------------------------------------------------------------------------
 
-// Package jack provides go wrappers for jackd2
 package jack
 
 /*
@@ -14,12 +13,57 @@ package jack
 #cgo windows,386 LDFLAGS: -llibjack
 #cgo windows,amd64 LDFLAGS: -llibjack64
 
-//#include <stdio.h>
 #include <jack/jack.h>
 #include <jack/midiport.h>
 
+extern int goProcess(unsigned int, void *);
+extern int goBufferSize(unsigned int, void *);
+extern int goSampleRate(unsigned int, void *);
+extern void goPortRegistration(jack_port_id_t, int, void *);
+extern void goPortRename(jack_port_id_t, const char *, const char *, void *);
+extern void goPortConnect(jack_port_id_t, jack_port_id_t, int, void *);
+extern void goShutdown(void *);
+extern void goErrorFunction(const char *);
+extern void goInfoFunction(const char *);
+
 jack_client_t * jack_client_open_go(const char *client_name, int options, int *status) {
   return jack_client_open(client_name, (jack_options_t)options, (jack_status_t *)status);
+}
+
+int jack_set_process_callback_go(jack_client_t * client) {
+	return jack_set_process_callback(client, goProcess, client);
+}
+
+int jack_set_buffer_size_callback_go(jack_client_t * client) {
+	return jack_set_buffer_size_callback(client, goBufferSize, client);
+}
+
+int jack_set_sample_rate_callback_go(jack_client_t * client) {
+	return jack_set_sample_rate_callback(client, goSampleRate, client);
+}
+
+int jack_set_port_registration_callback_go(jack_client_t * client) {
+	return jack_set_port_registration_callback(client, goPortRegistration, client);
+}
+
+int jack_set_port_rename_callback_go(jack_client_t * client) {
+	return jack_set_port_rename_callback(client, goPortRename, client);
+}
+
+int jack_set_port_connect_callback_go(jack_client_t * client) {
+	return jack_set_port_connect_callback(client, goPortConnect, client);
+}
+
+void jack_on_shutdown_go(jack_client_t * client) {
+	jack_on_shutdown(client, goShutdown, client);
+}
+
+void jack_set_error_function_go() {
+	jack_set_error_function(goErrorFunction);
+}
+
+void jack_set_info_function_go() {
+	jack_set_info_function(goInfoFunction);
 }
 
 */
@@ -141,13 +185,26 @@ func GetClientPID(name string) int {
 
 //-----------------------------------------------------------------------------
 
+type PortId uint32
+
+//-----------------------------------------------------------------------------
+
 type Client struct {
-	ptr *C.struct__jack_client
+	ptr                      *C.struct__jack_client
+	processCallback          ProcessCallback
+	bufferSizeCallback       BufferSizeCallback
+	sampleRateCallback       SampleRateCallback
+	portRegistrationCallback PortRegistrationCallback
+	portRenameCallback       PortRenameCallback
+	portConnectCallback      PortConnectCallback
+	shutdownCallback         ShutdownCallback
 }
 
 var (
 	clientMap     map[*C.struct__jack_client]*Client
 	clientMapLock sync.Mutex
+	errorFunction ErrorFunction = nil
+	infoFunction  InfoFunction  = nil
 )
 
 // ClientOpen opens an external client session with a JACK server.
@@ -225,16 +282,41 @@ func (c *Client) Deactivate() int {
 // int jack_set_thread_init_callback (jack_client_t *client,
 // void jack_on_shutdown (jack_client_t *client,
 // void jack_on_info_shutdown (jack_client_t *client,
-// int jack_set_process_callback (jack_client_t *client,
+
+//-----------------------------------------------------------------------------
+
+func (c *Client) SetProcessCallback(cb ProcessCallback) int {
+	c.processCallback = cb
+	return int(C.jack_set_process_callback_go(c.ptr))
+}
+
 // int jack_set_freewheel_callback (jack_client_t *client,
+
 // int jack_set_buffer_size_callback (jack_client_t *client,
+//	bufferSizeCallback       BufferSizeCallback
+
 // int jack_set_sample_rate_callback (jack_client_t *client,
+//	sampleRateCallback       SampleRateCallback
+
 // int jack_set_client_registration_callback (jack_client_t *client,
+
 // int jack_set_port_registration_callback (jack_client_t *client,
+//	portRegistrationCallback PortRegistrationCallback
+
 // int jack_set_port_connect_callback (jack_client_t *client,
+//	portConnectCallback      PortConnectCallback
+
 // int jack_set_port_rename_callback (jack_client_t *client,
+//	portRenameCallback       PortRenameCallback
+
 // int jack_set_graph_order_callback (jack_client_t *client,
+
 // int jack_set_xrun_callback (jack_client_t *client,
+
+//	shutdownCallback         ShutdownCallback
+
+//-----------------------------------------------------------------------------
+
 // int jack_set_latency_callback (jack_client_t *client,
 // int jack_set_freewheel(jack_client_t* client, int onoff) JACK_OPTIONAL_WEAK_EXPORT;
 // int jack_set_buffer_size (jack_client_t *client, jack_nframes_t nframes) JACK_OPTIONAL_WEAK_EXPORT;
