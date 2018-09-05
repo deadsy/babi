@@ -186,6 +186,21 @@ func main() {
 
 //-----------------------------------------------------------------------------
 
+func process_cb(nframes uint32) int {
+	fmt.Printf("process_cb\n")
+	return 0
+}
+
+func shutdown_cb() {
+	fmt.Printf("shutdown_cb\n")
+}
+
+func info_shutdown_cb() {
+	fmt.Printf("info_shutdown_cb\n")
+}
+
+//-----------------------------------------------------------------------------
+
 func main() {
 
 	fmt.Printf("jack version %s\n", jack.GetVersionString())
@@ -196,6 +211,21 @@ func main() {
 		return
 	}
 	defer client.Close()
+
+	rc := client.SetProcessCallback(process_cb)
+	if rc != 0 {
+		fmt.Print("SetProcessCallback() error %d\n", rc)
+		return
+	}
+
+	fmt.Printf("sample_rate %d\n", client.GetSampleRate())
+	fmt.Printf("buffer_size %d\n", client.GetBufferSize())
+
+	client.OnShutdown(shutdown_cb)
+	client.OnInfoShutdown(info_shutdown_cb)
+
+	for true {
+	}
 
 }
 

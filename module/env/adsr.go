@@ -19,12 +19,12 @@ import (
 //-----------------------------------------------------------------------------
 
 const (
-	adsr_port_null = iota
-	adsr_port_gate
-	adsr_port_attack
-	adsr_port_decay
-	adsr_port_sustain
-	adsr_port_release
+	adsrNull = iota
+	adsrGate
+	adsrAttack
+	adsrDecay
+	adsrSustain
+	adsrRelease
 )
 
 // Info returns the module information.
@@ -32,11 +32,11 @@ func (m *adsrModule) Info() *core.ModuleInfo {
 	return &core.ModuleInfo{
 		Name: "adsr",
 		In: []core.PortInfo{
-			{"gate", "envelope gate, attack(>0) or release(=0)", core.PortType_EventFloat, adsr_port_gate},
-			{"attack", "attack time (secs)", core.PortType_EventFloat, adsr_port_attack},
-			{"decay", "decay time (secs)", core.PortType_EventFloat, adsr_port_decay},
-			{"sustain", "sustain level 0..1", core.PortType_EventFloat, adsr_port_sustain},
-			{"release", "release time (secs)", core.PortType_EventFloat, adsr_port_release},
+			{"gate", "envelope gate, attack(>0) or release(=0)", core.PortType_EventFloat, adsrGate},
+			{"attack", "attack time (secs)", core.PortType_EventFloat, adsrAttack},
+			{"decay", "decay time (secs)", core.PortType_EventFloat, adsrDecay},
+			{"sustain", "sustain level 0..1", core.PortType_EventFloat, adsrSustain},
+			{"release", "release time (secs)", core.PortType_EventFloat, adsrRelease},
 		},
 		Out: []core.PortInfo{
 			{"out", "output", core.PortType_AudioBuffer, 0},
@@ -47,15 +47,15 @@ func (m *adsrModule) Info() *core.ModuleInfo {
 //-----------------------------------------------------------------------------
 
 // We can't reach the target level with the asymptotic rise/fall of exponentials.
-// We will change state when we are within level_epsilon of the target level.
-const level_epsilon = 0.001
+// We will change state when we are within adsrEpsilon of the target level.
+const adsrEpsilon = 0.001
 
 // Return a k value to give the exponential rise/fall in the required time.
-func get_k(t float32, rate int) float32 {
+func getK(t float32, rate int) float32 {
 	if t <= 0 {
 		return 1.0
 	}
-	return float32(1.0 - math.Exp(math.Log(level_epsilon)/(float64(t)*float64(rate))))
+	return float32(1.0 - math.Exp(math.Log(adsrEpsilon)/(float64(t)*float64(rate))))
 }
 
 //-----------------------------------------------------------------------------
@@ -71,15 +71,15 @@ const (
 )
 
 type adsrModule struct {
-	state     adsrState // envelope state
-	s         float32   // sustain level
-	ka        float32   // attack constant
-	kd        float32   // decay constant
-	kr        float32   // release constant
-	d_trigger float32   // attack->decay trigger level
-	s_trigger float32   // decay->sustain trigger level
-	i_trigger float32   // release->idle trigger level
-	val       float32   // output value
+	state    adsrState // envelope state
+	s        float32   // sustain level
+	ka       float32   // attack constant
+	kd       float32   // decay constant
+	kr       float32   // release constant
+	dTrigger float32   // attack->decay trigger level
+	sTrigger float32   // decay->sustain trigger level
+	iTrigger float32   // release->idle trigger level
+	val      float32   // output value
 }
 
 // NewADSR returns an Attack/Decay/Sustain/Release envelope module.
@@ -102,7 +102,7 @@ func (m *adsrModule) Event(e *core.Event) {
 	if fe != nil {
 		val := fe.Val
 		switch fe.Id {
-		case adsr_port_gate: // attack (!= 0) or release (==0)
+		case adsrGate: // attack (!= 0) or release (==0)
 			log.Info.Printf("set gate %f", val)
 			if val != 0 {
 				// enter the attack segment
@@ -119,33 +119,33 @@ func (m *adsrModule) Event(e *core.Event) {
 					}
 				}
 			}
-		case adsr_port_attack: // set the attack time
+		case adsrAttack: // set the attack time
 			log.Info.Printf("set attack %f", val)
 			if val < 0 {
 				panic(fmt.Sprintf("bad attack time %f", fe.Val))
 			}
-			m.ka = get_k(val, core.AUDIO_FS)
-		case adsr_port_decay: // set the decay time
+			m.ka = getK(val, core.AUDIO_FS)
+		case adsrDecay: // set the decay time
 			log.Info.Printf("set decay %f", val)
 			if val < 0 {
 				panic(fmt.Sprintf("bad decay time %f", val))
 			}
-			m.kd = get_k(val, core.AUDIO_FS)
-		case adsr_port_sustain: // set the sustain level
+			m.kd = getK(val, core.AUDIO_FS)
+		case adsrSustain: // set the sustain level
 			log.Info.Printf("set sustain %f", val)
 			if val < 0 || val > 1 {
 				panic(fmt.Sprintf("bad sustain level %f", val))
 			}
 			m.s = val
-			m.d_trigger = 1.0 - level_epsilon
-			m.s_trigger = val + (1.0-val)*level_epsilon
-			m.i_trigger = val * level_epsilon
-		case adsr_port_release: // set the release time
+			m.dTrigger = 1.0 - adsrEpsilon
+			m.sTrigger = val + (1.0-val)*adsrEpsilon
+			m.iTrigger = val * adsrEpsilon
+		case adsrRelease: // set the release time
 			log.Info.Printf("set release %f", val)
 			if val < 0 {
 				panic(fmt.Sprintf("bad release time %f", val))
 			}
-			m.kr = get_k(val, core.AUDIO_FS)
+			m.kr = getK(val, core.AUDIO_FS)
 		default:
 			log.Info.Printf("bad port number %d", fe.Id)
 		}
@@ -163,7 +163,7 @@ func (m *adsrModule) Process(buf ...*core.Buf) {
 			// idle - do nothing
 		case stateAttack:
 			// attack until 1.0 level
-			if m.val < m.d_trigger {
+			if m.val < m.dTrigger {
 				m.val += m.ka * (1.0 - m.val)
 			} else {
 				// goto decay state
@@ -172,7 +172,7 @@ func (m *adsrModule) Process(buf ...*core.Buf) {
 			}
 		case stateDecay:
 			// decay until sustain level
-			if m.val > m.s_trigger {
+			if m.val > m.sTrigger {
 				m.val += m.kd * (m.s - m.val)
 			} else {
 				if m.s != 0 {
@@ -189,7 +189,7 @@ func (m *adsrModule) Process(buf ...*core.Buf) {
 			// sustain - do nothing
 		case stateRelease:
 			// release until idle level
-			if m.val > m.i_trigger {
+			if m.val > m.iTrigger {
 				m.val += m.kr * (0.0 - m.val)
 			} else {
 				// goto idle state

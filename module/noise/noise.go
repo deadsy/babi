@@ -39,11 +39,11 @@ func (m *noiseModule) Info() *core.ModuleInfo {
 type noiseType int
 
 const (
-	noiseType_null noiseType = iota
-	noiseType_pink1
-	noiseType_pink2
-	noiseType_white
-	noiseType_brown
+	noiseNull noiseType = iota
+	noisePink1
+	noisePink2
+	noiseWhite
+	noiseBrown
 )
 
 type noiseModule struct {
@@ -62,28 +62,28 @@ func newNoise(ntype noiseType) core.Module {
 // white noise (spectral density = k)
 func NewWhite() core.Module {
 	log.Info.Printf("")
-	return newNoise(noiseType_white)
+	return newNoise(noiseWhite)
 }
 
 // NewBrown returns a brown noise generator module.
 // brown noise (spectral density = k/f*f)
 func NewBrown() core.Module {
 	log.Info.Printf("")
-	return newNoise(noiseType_brown)
+	return newNoise(noiseBrown)
 }
 
 // NewPink1 returns a pink noise generator module.
 // pink noise (spectral density = k/f): fast, inaccurate version
 func NewPink1() core.Module {
 	log.Info.Printf("")
-	return newNoise(noiseType_pink1)
+	return newNoise(noisePink1)
 }
 
 // NewPink2 returns a pink noise generator module.
 // pink noise (spectral density = k/f): slow, accurate version
 func NewPink2() core.Module {
 	log.Info.Printf("")
-	return newNoise(noiseType_pink2)
+	return newNoise(noisePink2)
 }
 
 // Stop and performs any cleanup of a module.
@@ -101,13 +101,13 @@ func (m *noiseModule) Event(e *core.Event) {
 
 //-----------------------------------------------------------------------------
 
-func (m *noiseModule) generate_white(out *core.Buf) {
+func (m *noiseModule) generateWhite(out *core.Buf) {
 	for i := 0; i < len(out); i++ {
 		out[i] = m.r.Float()
 	}
 }
 
-func (m *noiseModule) generate_brown(out *core.Buf) {
+func (m *noiseModule) generateBrown(out *core.Buf) {
 	b0 := m.b0
 	for i := 0; i < len(out); i++ {
 		white := m.r.Float()
@@ -117,7 +117,7 @@ func (m *noiseModule) generate_brown(out *core.Buf) {
 	m.b0 = b0
 }
 
-func (m *noiseModule) generate_pink1(out *core.Buf) {
+func (m *noiseModule) generatePink1(out *core.Buf) {
 	b0 := m.b0
 	b1 := m.b1
 	b2 := m.b2
@@ -134,7 +134,7 @@ func (m *noiseModule) generate_pink1(out *core.Buf) {
 	m.b2 = b2
 }
 
-func (m *noiseModule) generate_pink2(out *core.Buf) {
+func (m *noiseModule) generatePink2(out *core.Buf) {
 	b0 := m.b0
 	b1 := m.b1
 	b2 := m.b2
@@ -167,14 +167,14 @@ func (m *noiseModule) generate_pink2(out *core.Buf) {
 func (m *noiseModule) Process(buf ...*core.Buf) {
 	out := buf[0]
 	switch m.ntype {
-	case noiseType_white:
-		m.generate_white(out)
-	case noiseType_pink1:
-		m.generate_pink1(out)
-	case noiseType_pink2:
-		m.generate_pink2(out)
-	case noiseType_brown:
-		m.generate_brown(out)
+	case noiseWhite:
+		m.generateWhite(out)
+	case noisePink1:
+		m.generatePink1(out)
+	case noisePink2:
+		m.generatePink2(out)
+	case noiseBrown:
+		m.generateBrown(out)
 	default:
 		panic(fmt.Sprintf("bad noise type %d", m.ntype))
 	}
