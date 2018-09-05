@@ -22,6 +22,10 @@ extern int goSampleRate(unsigned int, void *);
 extern void goPortRegistration(jack_port_id_t, int, void *);
 extern void goPortRename(jack_port_id_t, const char *, const char *, void *);
 extern void goPortConnect(jack_port_id_t, jack_port_id_t, int, void *);
+extern void goClientRegistration(void *);
+extern void goFreewheel(void *);
+extern void goGraphOrder(void *);
+extern void goXrun(void *);
 extern void goShutdown(void *);
 extern void goErrorFunction(const char *);
 extern void goInfoFunction(const char *);
@@ -31,11 +35,11 @@ jack_client_t * jack_client_open_go(const char *client_name, int options, int *s
 }
 
 int jack_set_process_callback_go(jack_client_t * client) {
-	return jack_set_process_callback(client, goProcess, client);
+  return jack_set_process_callback(client, goProcess, client);
 }
 
 int jack_set_buffer_size_callback_go(jack_client_t * client) {
-	return jack_set_buffer_size_callback(client, goBufferSize, client);
+  return jack_set_buffer_size_callback(client, goBufferSize, client);
 }
 
 int jack_set_sample_rate_callback_go(jack_client_t * client) {
@@ -52,6 +56,22 @@ int jack_set_port_rename_callback_go(jack_client_t * client) {
 
 int jack_set_port_connect_callback_go(jack_client_t * client) {
 	return jack_set_port_connect_callback(client, goPortConnect, client);
+}
+
+int jack_set_client_registration_callback_go(jack_client_t * client) {
+  jack_set_client_registration_callback(client, goClientRegistration, client);
+}
+
+int jack_set_freewheel_callback_go(jack_client_t * client) {
+  jack_set_freewheel_callback(client, goFreewheel, client);
+}
+
+int jack_set_graph_order_callback_go(jack_client_t * client) {
+  jack_set_graph_order_callback(client, goGraphOrder, client);
+}
+
+int jack_set_xrun_callback_go(jack_client_t * client) {
+  jack_set_xrun_callback(client, goXrun, client);
 }
 
 void jack_on_shutdown_go(jack_client_t * client) {
@@ -190,14 +210,18 @@ type PortId uint32
 //-----------------------------------------------------------------------------
 
 type Client struct {
-	ptr                      *C.struct__jack_client
-	processCallback          ProcessCallback
-	bufferSizeCallback       BufferSizeCallback
-	sampleRateCallback       SampleRateCallback
-	portRegistrationCallback PortRegistrationCallback
-	portRenameCallback       PortRenameCallback
-	portConnectCallback      PortConnectCallback
-	shutdownCallback         ShutdownCallback
+	ptr                        *C.struct__jack_client
+	processCallback            ProcessCallback
+	bufferSizeCallback         BufferSizeCallback
+	sampleRateCallback         SampleRateCallback
+	portRegistrationCallback   PortRegistrationCallback
+	portRenameCallback         PortRenameCallback
+	portConnectCallback        PortConnectCallback
+	clientRegistrationCallback ClientRegistrationCallback
+	freewheelCallback          FreewheelCallback
+	graphOrderCallback         GraphOrderCallback
+	xrunCallback               XrunCallback
+	shutdownCallback           ShutdownCallback
 }
 
 var (
@@ -279,6 +303,7 @@ func (c *Client) Deactivate() int {
 // jack_nframes_t jack_cycle_wait (jack_client_t* client) JACK_OPTIONAL_WEAK_EXPORT;
 // void jack_cycle_signal (jack_client_t* client, int status) JACK_OPTIONAL_WEAK_EXPORT;
 // int jack_set_process_thread(jack_client_t* client, JackThreadCallback thread_callback, void *arg) JACK_OPTIONAL_WEAK_EXPORT;
+
 // int jack_set_thread_init_callback (jack_client_t *client,
 // void jack_on_shutdown (jack_client_t *client,
 // void jack_on_info_shutdown (jack_client_t *client,
@@ -290,28 +315,51 @@ func (c *Client) SetProcessCallback(cb ProcessCallback) int {
 	return int(C.jack_set_process_callback_go(c.ptr))
 }
 
-// int jack_set_freewheel_callback (jack_client_t *client,
+func (c *Client) SetFreewheelCallback(cb FreewheelCallback) int {
+	c.freewheelCallback = cb
+	return int(C.jack_set_freewheel_callback_go(c.ptr))
+}
 
-// int jack_set_buffer_size_callback (jack_client_t *client,
-//	bufferSizeCallback       BufferSizeCallback
+func (c *Client) SetBufferSizeCallback(cb BufferSizeCallback) int {
+	c.bufferSizeCallback = cb
+	return int(C.jack_set_buffer_size_callback_go(c.ptr))
+}
 
-// int jack_set_sample_rate_callback (jack_client_t *client,
-//	sampleRateCallback       SampleRateCallback
+func (c *Client) SetSampleRateCallback(cb SampleRateCallback) int {
+	c.sampleRateCallback = cb
+	return int(C.jack_set_sample_rate_callback_go(c.ptr))
+}
 
-// int jack_set_client_registration_callback (jack_client_t *client,
+func (c *Client) SetClientRegistrationCallback(cb ClientRegistrationCallback) int {
+	c.clientRegistrationCallback = cb
+	return int(C.jack_set_client_registration_callback_go(c.ptr))
+}
 
-// int jack_set_port_registration_callback (jack_client_t *client,
-//	portRegistrationCallback PortRegistrationCallback
+func (c *Client) SetPortRegistrationCallback(cb PortRegistrationCallback) int {
+	c.portRegistrationCallback = cb
+	return int(C.jack_set_port_registration_callback_go(c.ptr))
+}
 
-// int jack_set_port_connect_callback (jack_client_t *client,
-//	portConnectCallback      PortConnectCallback
+func (c *Client) SetPortConnectCallback(cb PortConnectCallback) int {
+	c.portConnectCallback = cb
+	return int(C.jack_set_port_connect_callback_go(c.ptr))
 
-// int jack_set_port_rename_callback (jack_client_t *client,
-//	portRenameCallback       PortRenameCallback
+}
 
-// int jack_set_graph_order_callback (jack_client_t *client,
+func (c *Client) SetPortRenameCallback(cb PortRenameCallback) int {
+	c.portRenameCallback = cb
+	return int(C.jack_set_port_rename_callback_go(c.ptr))
+}
 
-// int jack_set_xrun_callback (jack_client_t *client,
+func (c *Client) SetGraphOrderCallback(cb GraphOrderCallback) int {
+	c.graphOrderCallback = cb
+	return int(C.jack_set_graph_order_callback_go(c.ptr))
+}
+
+func (c *Client) SetXrunCallback(cb XrunCallback) int {
+	c.xrunCallback = cb
+	return int(C.jack_set_xrun_callback_go(c.ptr))
+}
 
 //	shutdownCallback         ShutdownCallback
 

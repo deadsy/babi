@@ -19,6 +19,10 @@ type SampleRateCallback func(uint32) int
 type PortRegistrationCallback func(PortId, bool)
 type PortRenameCallback func(PortId, string, string)
 type PortConnectCallback func(PortId, PortId, bool)
+type ClientRegistrationCallback func()
+type FreewheelCallback func()
+type GraphOrderCallback func()
+type XrunCallback func()
 type ShutdownCallback func()
 type ErrorFunction func(string)
 type InfoFunction func(string)
@@ -57,6 +61,30 @@ func goPortRename(port uint, oldName, newName *C.char, arg unsafe.Pointer) {
 func goPortConnect(aport, bport uint, connect int, arg unsafe.Pointer) {
 	client := (*C.struct__jack_client)(arg)
 	clientMap[client].portConnectCallback(PortId(aport), PortId(bport), connect != 0)
+}
+
+//export goClientRegistration
+func goClientRegistration(arg unsafe.Pointer) {
+	client := (*C.struct__jack_client)(arg)
+	clientMap[client].clientRegistrationCallback()
+}
+
+//export goFreewheel
+func goFreewheel(arg unsafe.Pointer) {
+	client := (*C.struct__jack_client)(arg)
+	clientMap[client].freewheelCallback()
+}
+
+//export goGraphOrder
+func goGraphOrder(arg unsafe.Pointer) {
+	client := (*C.struct__jack_client)(arg)
+	clientMap[client].graphOrderCallback()
+}
+
+//export goXrun
+func goXrun(arg unsafe.Pointer) {
+	client := (*C.struct__jack_client)(arg)
+	clientMap[client].xrunCallback()
 }
 
 //export goShutdown
