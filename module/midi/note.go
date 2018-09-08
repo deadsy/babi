@@ -49,6 +49,11 @@ func NewNote(ch, note uint8, dst core.Module, name string) core.Module {
 	}
 }
 
+// Return the child modules.
+func (m *noteModule) Child() []core.Module {
+	return nil
+}
+
 // Stop and cleanup the module.
 func (m *noteModule) Stop() {
 	log.Info.Printf("")

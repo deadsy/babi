@@ -8,9 +8,7 @@ Synth
 
 package core
 
-import (
-	"github.com/deadsy/babi/log"
-)
+import "github.com/deadsy/babi/log"
 
 //-----------------------------------------------------------------------------
 
@@ -34,6 +32,8 @@ func NewSynth(root Module, audio Audio) *Synth {
 	if err != nil {
 		panic(err)
 	}
+
+	log.Info.Printf(ModuleString(root))
 
 	return &Synth{
 		root:  root,

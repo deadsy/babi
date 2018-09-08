@@ -16,8 +16,8 @@ import (
 //-----------------------------------------------------------------------------
 
 const (
-	sine_port_null = iota
-	sine_port_frequency
+	sinePortNull = iota
+	sinePortFrequency
 )
 
 // Info returns the module information.
@@ -25,7 +25,7 @@ func (m *sineModule) Info() *core.ModuleInfo {
 	return &core.ModuleInfo{
 		Name: "sine",
 		In: []core.PortInfo{
-			{"frequency", "frequency (Hz)", core.PortType_EventFloat, sine_port_frequency},
+			{"frequency", "frequency (Hz)", core.PortType_EventFloat, sinePortFrequency},
 		},
 		Out: []core.PortInfo{
 			{"out", "output", core.PortType_AudioBuffer, 0},
@@ -50,6 +50,11 @@ func NewSine() core.Module {
 	return &sineModule{}
 }
 
+// Return the child modules.
+func (m *sineModule) Child() []core.Module {
+	return nil
+}
+
 // Stop and performs any cleanup of a module.
 func (m *sineModule) Stop() {
 	log.Info.Printf("")
@@ -64,7 +69,7 @@ func (m *sineModule) Event(e *core.Event) {
 	if fe != nil {
 		val := fe.Val
 		switch fe.Id {
-		case sine_port_frequency: // set the oscillator frequency
+		case sinePortFrequency: // set the oscillator frequency
 			log.Info.Printf("set frequency %f", val)
 			m.freq = val
 			m.xstep = uint32(val * sine_freq_scale)

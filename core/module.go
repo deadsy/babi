@@ -8,7 +8,10 @@ Modules
 
 package core
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 //-----------------------------------------------------------------------------
 // Module Ports
@@ -102,6 +105,21 @@ type Module interface {
 	Active() bool        // return true if the module has non-zero output
 	Stop()               // stop the module
 	Info() *ModuleInfo   // return the module information
+	Child() []Module     // return the child modules
+}
+
+// Return a string for the module tree of this module.
+func ModuleString(m Module) string {
+	mi := m.Info()
+	children := m.Child()
+	if len(children) != 0 {
+		s := make([]string, len(children))
+		for i, c := range children {
+			s[i] = ModuleString(c)
+		}
+		return fmt.Sprintf("%s (%s)", mi.Name, strings.Join(s, " "))
+	}
+	return fmt.Sprintf("%s", mi.Name)
 }
 
 //-----------------------------------------------------------------------------

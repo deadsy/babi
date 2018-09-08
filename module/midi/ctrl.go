@@ -49,6 +49,11 @@ func NewCtrl(ch, cc uint8, dst core.Module, name string) core.Module {
 	}
 }
 
+// Return the child modules.
+func (m *ctrlModule) Child() []core.Module {
+	return nil
+}
+
 // Stop and cleanup the module.
 func (m *ctrlModule) Stop() {
 	log.Info.Printf("")

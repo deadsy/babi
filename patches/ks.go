@@ -1,9 +1,7 @@
 //-----------------------------------------------------------------------------
 /*
 
-Pan Patch:
-
-Single output channel module with a pan module added for L/R output.
+Karplus Strong Patch
 
 */
 //-----------------------------------------------------------------------------
@@ -15,14 +13,15 @@ import (
 	"github.com/deadsy/babi/log"
 	"github.com/deadsy/babi/module/audio"
 	"github.com/deadsy/babi/module/midi"
+	"github.com/deadsy/babi/module/osc"
 )
 
 //-----------------------------------------------------------------------------
 
 // Info returns the module information.
-func (m *panPatch) Info() *core.ModuleInfo {
+func (m *ksPatch) Info() *core.ModuleInfo {
 	return &core.ModuleInfo{
-		Name: "pan_patch",
+		Name: "ks_patch",
 		In: []core.PortInfo{
 			{"midi_in", "midi input", core.PortType_EventMIDI, 0},
 		},
@@ -35,52 +34,64 @@ func (m *panPatch) Info() *core.ModuleInfo {
 
 //-----------------------------------------------------------------------------
 
-type panPatch struct {
+type ksPatch struct {
 	ch      uint8       // MIDI channel
-	sm      core.Module // sub-module
-	pan     core.Module // pan module
-	panCtrl core.Module // MIDI control for pan
-	volCtrl core.Module // MIDI control for volume
+	ks      core.Module // ks oscillator
+	pan     core.Module // pan left/right
+	note    core.Module // note to gate
+	panCtrl core.Module // MIDI to pan control
+	volCtrl core.Module // MIDI to volume control
 }
 
-// NewPan returns a module that pans the output of a given sub-module.
-func NewPan(ch uint8, sm core.Module) core.Module {
+// NewKarplusStrongPatch returns a karplus strong patch.
+func NewKarplusStrongPatch() core.Module {
 	log.Info.Printf("")
-	// check for IO compatibility
-	err := sm.Info().CheckIO(1, 0, 1)
-	if err != nil {
-		panic(err)
-	}
+
+	const midiCh = 0
+	const midiNote = 69
+	const midiCtrl = 6
+
+	ks := osc.NewKarplusStrong()
 	pan := audio.NewPan()
-	return &panPatch{
-		ch:      ch,
-		sm:      sm,
+	note := midi.NewNote(midiCh, midiNote, ks, "gate")
+	panCtrl := midi.NewCtrl(midiCh, midiCtrl+0, pan, "pan")
+	volCtrl := midi.NewCtrl(midiCh, midiCtrl+1, pan, "volume")
+
+	// ks default
+	core.SendEventFloatName(ks, "attenuation", 1.0)
+	core.SendEventFloatName(ks, "frequency", 440.0)
+	// pan defaults
+	core.SendEventFloatName(pan, "pan", 0.5)
+	core.SendEventFloatName(pan, "volume", 1)
+
+	return &ksPatch{
+		ch:      midiCh,
+		ks:      ks,
 		pan:     pan,
-		panCtrl: midi.NewCtrl(ch, 10, pan, "pan"),
-		volCtrl: midi.NewCtrl(ch, 11, pan, "volume"),
+		note:    note,
+		panCtrl: panCtrl,
+		volCtrl: volCtrl,
 	}
 }
 
 // Return the child modules.
-func (m *panPatch) Child() []core.Module {
-	return []core.Module{m.sm, m.pan, m.panCtrl, m.volCtrl}
+func (m *ksPatch) Child() []core.Module {
+	return []core.Module{m.ks, m.pan, m.note, m.panCtrl, m.volCtrl}
 }
 
-// Stop and cleanup the module.
-func (m *panPatch) Stop() {
+// Stop and performs any cleanup of a module.
+func (m *ksPatch) Stop() {
 	log.Info.Printf("")
-	m.pan.Stop()
-	m.panCtrl.Stop()
-	m.volCtrl.Stop()
 }
 
 //-----------------------------------------------------------------------------
+// Events
 
 // Event processes a module event.
-func (m *panPatch) Event(e *core.Event) {
+func (m *ksPatch) Event(e *core.Event) {
 	me := e.GetEventMIDIChannel(m.ch)
 	if me != nil {
-		m.sm.Event(e)
+		m.note.Event(e)
 		m.panCtrl.Event(e)
 		m.volCtrl.Event(e)
 	}
@@ -89,16 +100,18 @@ func (m *panPatch) Event(e *core.Event) {
 //-----------------------------------------------------------------------------
 
 // Process runs the module DSP.
-func (m *panPatch) Process(buf ...*core.Buf) {
+func (m *ksPatch) Process(buf ...*core.Buf) {
 	outL := buf[0]
-	outR := buf[0]
+	outR := buf[1]
+	// generate wave
 	var out core.Buf
-	m.sm.Process(&out)
+	m.ks.Process(&out)
+	// pan left/right
 	m.pan.Process(&out, outL, outR)
 }
 
 // Active return true if the module has non-zero output.
-func (m *panPatch) Active() bool {
+func (m *ksPatch) Active() bool {
 	return true
 }
 

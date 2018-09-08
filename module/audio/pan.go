@@ -56,6 +56,11 @@ func NewPan() core.Module {
 	return &panModule{}
 }
 
+// Return the child modules.
+func (m *panModule) Child() []core.Module {
+	return nil
+}
+
 // Stop and performs any cleanup of a module.
 func (m *panModule) Stop() {
 	log.Info.Printf("")

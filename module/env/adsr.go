@@ -19,12 +19,12 @@ import (
 //-----------------------------------------------------------------------------
 
 const (
-	adsrNull = iota
-	adsrGate
-	adsrAttack
-	adsrDecay
-	adsrSustain
-	adsrRelease
+	adsrPortNull = iota
+	adsrPortGate
+	adsrPortAttack
+	adsrPortDecay
+	adsrPortSustain
+	adsrPortRelease
 )
 
 // Info returns the module information.
@@ -32,11 +32,11 @@ func (m *adsrModule) Info() *core.ModuleInfo {
 	return &core.ModuleInfo{
 		Name: "adsr",
 		In: []core.PortInfo{
-			{"gate", "envelope gate, attack(>0) or release(=0)", core.PortType_EventFloat, adsrGate},
-			{"attack", "attack time (secs)", core.PortType_EventFloat, adsrAttack},
-			{"decay", "decay time (secs)", core.PortType_EventFloat, adsrDecay},
-			{"sustain", "sustain level 0..1", core.PortType_EventFloat, adsrSustain},
-			{"release", "release time (secs)", core.PortType_EventFloat, adsrRelease},
+			{"gate", "envelope gate, attack(>0) or release(=0)", core.PortType_EventFloat, adsrPortGate},
+			{"attack", "attack time (secs)", core.PortType_EventFloat, adsrPortAttack},
+			{"decay", "decay time (secs)", core.PortType_EventFloat, adsrPortDecay},
+			{"sustain", "sustain level 0..1", core.PortType_EventFloat, adsrPortSustain},
+			{"release", "release time (secs)", core.PortType_EventFloat, adsrPortRelease},
 		},
 		Out: []core.PortInfo{
 			{"out", "output", core.PortType_AudioBuffer, 0},
@@ -88,6 +88,11 @@ func NewADSR() core.Module {
 	return &adsrModule{}
 }
 
+// Return the child modules.
+func (m *adsrModule) Child() []core.Module {
+	return nil
+}
+
 // Stop stops and performs any cleanup of a module.
 func (m *adsrModule) Stop() {
 	log.Info.Printf("")
@@ -102,7 +107,7 @@ func (m *adsrModule) Event(e *core.Event) {
 	if fe != nil {
 		val := fe.Val
 		switch fe.Id {
-		case adsrGate: // attack (!= 0) or release (==0)
+		case adsrPortGate: // attack (!= 0) or release (==0)
 			log.Info.Printf("set gate %f", val)
 			if val != 0 {
 				// enter the attack segment
@@ -119,19 +124,19 @@ func (m *adsrModule) Event(e *core.Event) {
 					}
 				}
 			}
-		case adsrAttack: // set the attack time
+		case adsrPortAttack: // set the attack time
 			log.Info.Printf("set attack %f", val)
 			if val < 0 {
 				panic(fmt.Sprintf("bad attack time %f", fe.Val))
 			}
 			m.ka = getK(val, core.AUDIO_FS)
-		case adsrDecay: // set the decay time
+		case adsrPortDecay: // set the decay time
 			log.Info.Printf("set decay %f", val)
 			if val < 0 {
 				panic(fmt.Sprintf("bad decay time %f", val))
 			}
 			m.kd = getK(val, core.AUDIO_FS)
-		case adsrSustain: // set the sustain level
+		case adsrPortSustain: // set the sustain level
 			log.Info.Printf("set sustain %f", val)
 			if val < 0 || val > 1 {
 				panic(fmt.Sprintf("bad sustain level %f", val))
@@ -140,7 +145,7 @@ func (m *adsrModule) Event(e *core.Event) {
 			m.dTrigger = 1.0 - adsrEpsilon
 			m.sTrigger = val + (1.0-val)*adsrEpsilon
 			m.iTrigger = val * adsrEpsilon
-		case adsrRelease: // set the release time
+		case adsrPortRelease: // set the release time
 			log.Info.Printf("set release %f", val)
 			if val < 0 {
 				panic(fmt.Sprintf("bad release time %f", val))

@@ -25,10 +25,10 @@ import (
 //-----------------------------------------------------------------------------
 
 const (
-	ks_port_null = iota
-	ks_port_gate
-	ks_port_attenuation
-	ks_port_frequency
+	ksPortNull = iota
+	ksPortGate
+	ksPortAttenuation
+	ksPortFrequency
 )
 
 // Info returns the module information.
@@ -36,9 +36,9 @@ func (m *ksModule) Info() *core.ModuleInfo {
 	return &core.ModuleInfo{
 		Name: "karplus_strong",
 		In: []core.PortInfo{
-			{"gate", "oscillator gate, attack(>0) or mute(=0)", core.PortType_EventFloat, ks_port_gate},
-			{"frequency", "frequency (Hz)", core.PortType_EventFloat, ks_port_frequency},
-			{"attenuation", "attenuation (0..1)", core.PortType_EventFloat, ks_port_attenuation},
+			{"gate", "oscillator gate, attack(>0) or mute(=0)", core.PortType_EventFloat, ksPortGate},
+			{"frequency", "frequency (Hz)", core.PortType_EventFloat, ksPortFrequency},
+			{"attenuation", "attenuation (0..1)", core.PortType_EventFloat, ksPortAttenuation},
 		},
 		Out: []core.PortInfo{
 			{"out", "output", core.PortType_AudioBuffer, 0},
@@ -76,6 +76,11 @@ func NewKarplusStrong() core.Module {
 	}
 }
 
+// Return the child modules.
+func (m *ksModule) Child() []core.Module {
+	return nil
+}
+
 // Stop performs any cleanup of a module.
 func (m *ksModule) Stop() {
 	log.Info.Printf("")
@@ -90,7 +95,8 @@ func (m *ksModule) Event(e *core.Event) {
 	if fe != nil {
 		val := fe.Val
 		switch fe.Id {
-		case ks_port_gate: // attack(>0) or mute(=0)
+		case ksPortGate: // attack(>0) or mute(=0)
+			log.Info.Printf("gate %f", val)
 			if val > 0 {
 				// Initialise the delay buffer with random samples between -1 and 1.
 				// The values should sum to zero so that multiple rounds of filtering
@@ -111,9 +117,11 @@ func (m *ksModule) Event(e *core.Event) {
 					m.delay[i] = 0
 				}
 			}
-		case ks_port_attenuation: // set the attenuation
+		case ksPortAttenuation: // set the attenuation
+			log.Info.Printf("set attenuation %f", val)
 			m.k = 0.5 * core.Clamp(val, 0, 1)
-		case ks_port_frequency: // set the oscillator frequency
+		case ksPortFrequency: // set the oscillator frequency
+			log.Info.Printf("set frequency %f", val)
 			m.freq = val
 			m.xstep = uint32(val * ks_fscale)
 		default:

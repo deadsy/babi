@@ -62,6 +62,17 @@ func NewPoly(ch uint8, sm func() core.Module, maxvoices uint) core.Module {
 	}
 }
 
+// Return the child modules.
+func (m *polyModule) Child() []core.Module {
+	var children []core.Module
+	for i := range m.voice {
+		if m.voice[i].module != nil {
+			children = append(children, m.voice[i].module)
+		}
+	}
+	return children
+}
+
 // Stop performs any cleanup of a module.
 func (m *polyModule) Stop() {
 	log.Info.Printf("")

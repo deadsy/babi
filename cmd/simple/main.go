@@ -23,7 +23,7 @@ func main() {
 	}
 	defer audio.Close()
 
-	m0 := patches.NewSimple()
+	m0 := patches.NewKarplusStrongPatch()
 
 	// create the synth
 	s := core.NewSynth(m0, audio)

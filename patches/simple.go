@@ -35,10 +35,6 @@ func (m *simplePatch) Info() *core.ModuleInfo {
 
 //-----------------------------------------------------------------------------
 
-const midiCh = 0
-const midiNote = 69
-const midiCtrl = 6
-
 type simplePatch struct {
 	ch      uint8       // MIDI channel
 	adsr    core.Module // adsr envelope
@@ -49,9 +45,13 @@ type simplePatch struct {
 	volCtrl core.Module // MIDI to volume control
 }
 
-// NewSimple returns a simple sine/adsr patch.
-func NewSimple() core.Module {
+// NewSimplePatch returns a simple sine/adsr patch.
+func NewSimplePatch() core.Module {
 	log.Info.Printf("")
+
+	const midiCh = 0
+	const midiNote = 69
+	const midiCtrl = 6
 
 	adsr := env.NewADSR()
 	sine := osc.NewSine()
@@ -82,15 +82,14 @@ func NewSimple() core.Module {
 	}
 }
 
+// Return the child modules.
+func (m *simplePatch) Child() []core.Module {
+	return []core.Module{m.adsr, m.sine, m.pan, m.note, m.panCtrl, m.volCtrl}
+}
+
 // Stop and performs any cleanup of a module.
 func (m *simplePatch) Stop() {
 	log.Info.Printf("")
-	m.adsr.Stop()
-	m.sine.Stop()
-	m.pan.Stop()
-	m.note.Stop()
-	m.panCtrl.Stop()
-	m.volCtrl.Stop()
 }
 
 //-----------------------------------------------------------------------------
