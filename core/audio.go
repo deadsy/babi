@@ -11,8 +11,8 @@ package core
 import (
 	"errors"
 
-	"github.com/deadsy/babi/log"
 	"github.com/deadsy/babi/pulse"
+	"github.com/deadsy/babi/utils/log"
 )
 
 //-----------------------------------------------------------------------------

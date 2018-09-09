@@ -19,7 +19,7 @@ package osc
 
 import (
 	"github.com/deadsy/babi/core"
-	"github.com/deadsy/babi/log"
+	"github.com/deadsy/babi/utils/log"
 )
 
 //-----------------------------------------------------------------------------

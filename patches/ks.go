@@ -10,10 +10,10 @@ package patches
 
 import (
 	"github.com/deadsy/babi/core"
-	"github.com/deadsy/babi/log"
 	"github.com/deadsy/babi/module/audio"
 	"github.com/deadsy/babi/module/midi"
 	"github.com/deadsy/babi/module/osc"
+	"github.com/deadsy/babi/utils/log"
 )
 
 //-----------------------------------------------------------------------------

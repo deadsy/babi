@@ -8,7 +8,7 @@ Synth
 
 package core
 
-import "github.com/deadsy/babi/log"
+import "github.com/deadsy/babi/utils/log"
 
 //-----------------------------------------------------------------------------
 
