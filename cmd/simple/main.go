@@ -24,9 +24,9 @@ func main() {
 	defer audio.Close()
 
 	s := core.NewSynth(audio)
-	//s.SetPatch(patches.NewKarplusStrongPatch(s))
+	s.SetPatch(patches.NewKarplusStrongPatch(s))
 	//s.SetPatch(patches.NewSimplePatch(s))
-	s.SetPatch(patches.NewNoisePatch(s))
+	//s.SetPatch(patches.NewNoisePatch(s))
 	s.Run()
 }
 
