@@ -44,16 +44,19 @@ func (m *panModule) Info() *core.ModuleInfo {
 //-----------------------------------------------------------------------------
 
 type panModule struct {
-	vol  float32 // overall volume
-	pan  float32 // pan value 0 == left, 1 == right
-	volL float32 // left channel volume
-	volR float32 // right channel volume
+	synth *core.Synth // top-level synth
+	vol   float32     // overall volume
+	pan   float32     // pan value 0 == left, 1 == right
+	volL  float32     // left channel volume
+	volR  float32     // right channel volume
 }
 
 // NewPan returns a left/right pan and volume module.
-func NewPan() core.Module {
+func NewPan(s *core.Synth) core.Module {
 	log.Info.Printf("")
-	return &panModule{}
+	return &panModule{
+		synth: s,
+	}
 }
 
 // Return the child modules.

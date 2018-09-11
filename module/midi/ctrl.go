@@ -31,21 +31,23 @@ func (m *ctrlModule) Info() *core.ModuleInfo {
 //-----------------------------------------------------------------------------
 
 type ctrlModule struct {
-	ch   uint8       // MIDI channel
-	cc   uint8       // MIDI control change number
-	dst  core.Module // destination module
-	ctrl core.PortId // port id for destination module
+	synth *core.Synth // top-level synth
+	ch    uint8       // MIDI channel
+	cc    uint8       // MIDI control change number
+	dst   core.Module // destination module
+	ctrl  core.PortId // port id for destination module
 }
 
 // NewCtrl returns a MIDI control module.
-func NewCtrl(ch, cc uint8, dst core.Module, name string) core.Module {
+func NewCtrl(s *core.Synth, ch, cc uint8, dst core.Module, name string) core.Module {
 	mi := dst.Info()
 	log.Info.Printf("midi ch %d cc %d controlling %s.%s port", ch, cc, mi.Name, name)
 	return &ctrlModule{
-		ch:   ch,
-		cc:   cc,
-		dst:  dst,
-		ctrl: dst.Info().GetPortId(name),
+		synth: s,
+		ch:    ch,
+		cc:    cc,
+		dst:   dst,
+		ctrl:  dst.Info().GetPortId(name),
 	}
 }
 

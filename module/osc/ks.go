@@ -60,6 +60,7 @@ const ks_frac_mask = (1 << ks_frac_bits) - 1
 const ks_frac_scale = 1 / (1 << ks_frac_bits)
 
 type ksModule struct {
+	synth *core.Synth // top-level synth
 	rand  *core.Rand
 	delay [ks_delay_size]float32 // delay line
 	k     float32                // attenuation and averaging constant 0 to 0.5
@@ -69,10 +70,11 @@ type ksModule struct {
 }
 
 // NewKarplusStrong returns a Karplus Strong oscillator module.
-func NewKarplusStrong() core.Module {
+func NewKarplusStrong(s *core.Synth) core.Module {
 	log.Info.Printf("")
 	return &ksModule{
-		rand: core.NewRand(0),
+		synth: s,
+		rand:  core.NewRand(0),
 	}
 }
 

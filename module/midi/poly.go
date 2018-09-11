@@ -41,6 +41,7 @@ type voiceInfo struct {
 }
 
 type polyModule struct {
+	synth     *core.Synth        // top-level synth
 	ch        uint8              // MIDI channel
 	submodule func() core.Module // new function for voice sub-module
 	voice     []voiceInfo        // voices
@@ -51,9 +52,10 @@ type polyModule struct {
 }
 
 // NewPoly returns a MIDI polyphonic voice control module.
-func NewPoly(ch uint8, sm func() core.Module, maxvoices uint) core.Module {
+func NewPoly(s *core.Synth, ch uint8, sm func() core.Module, maxvoices uint) core.Module {
 	log.Info.Printf("")
 	return &polyModule{
+		synth:     s,
 		ch:        ch,
 		submodule: sm,
 		voice:     make([]voiceInfo, maxvoices),

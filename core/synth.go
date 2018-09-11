@@ -18,6 +18,7 @@ const numAudioOut = 2
 
 //-----------------------------------------------------------------------------
 
+// Synthesizer
 type Synth struct {
 	root  Module           // root module
 	audio Audio            // audio output device
@@ -25,23 +26,25 @@ type Synth struct {
 }
 
 // NewSynth creates a synthesizer object.
-func NewSynth(root Module, audio Audio) *Synth {
+func NewSynth(audio Audio) *Synth {
 	log.Info.Printf("")
-
-	err := root.Info().CheckIO(numMIDIIn, numAudioIn, numAudioOut)
-	if err != nil {
-		panic(err)
-	}
-
-	log.Info.Printf(ModuleString(root))
-
 	return &Synth{
-		root:  root,
 		audio: audio,
 	}
 }
 
-// Main loop for the synthesizer.
+// SetPatch sets the root module of the synthesizer.
+func (s *Synth) SetPatch(m Module) error {
+	err := m.Info().CheckIO(numMIDIIn, numAudioIn, numAudioOut)
+	if err != nil {
+		return err
+	}
+	log.Info.Printf(ModuleString(m))
+	s.root = m
+	return nil
+}
+
+// Run runs the main loop for the synthesizer.
 func (s *Synth) Run() {
 
 	s.root.Event(NewEventMIDI(EventMIDI_NoteOn, 0, 69, 127))

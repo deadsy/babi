@@ -39,15 +39,18 @@ func (m *sineModule) Info() *core.ModuleInfo {
 const sine_freq_scale = (1 << 32) / core.AUDIO_FS
 
 type sineModule struct {
-	freq  float32 // base frequency
-	x     uint32  // current x-value
-	xstep uint32  // current x-step
+	synth *core.Synth // top-level synth
+	freq  float32     // base frequency
+	x     uint32      // current x-value
+	xstep uint32      // current x-step
 }
 
 // NewSine returns an sine oscillator module.
-func NewSine() core.Module {
+func NewSine(s *core.Synth) core.Module {
 	log.Info.Printf("")
-	return &sineModule{}
+	return &sineModule{
+		synth: s,
+	}
 }
 
 // Return the child modules.

@@ -36,6 +36,7 @@ func (m *simplePatch) Info() *core.ModuleInfo {
 //-----------------------------------------------------------------------------
 
 type simplePatch struct {
+	synth   *core.Synth // top-level synth
 	ch      uint8       // MIDI channel
 	adsr    core.Module // adsr envelope
 	sine    core.Module // sine oscillator
@@ -46,19 +47,19 @@ type simplePatch struct {
 }
 
 // NewSimplePatch returns a simple sine/adsr patch.
-func NewSimplePatch() core.Module {
+func NewSimplePatch(s *core.Synth) core.Module {
 	log.Info.Printf("")
 
 	const midiCh = 0
 	const midiNote = 69
 	const midiCtrl = 6
 
-	adsr := env.NewADSR()
-	sine := osc.NewSine()
-	pan := audio.NewPan()
-	note := midi.NewNote(midiCh, midiNote, adsr, "gate")
-	panCtrl := midi.NewCtrl(midiCh, midiCtrl+0, pan, "pan")
-	volCtrl := midi.NewCtrl(midiCh, midiCtrl+1, pan, "volume")
+	adsr := env.NewADSR(s)
+	sine := osc.NewSine(s)
+	pan := audio.NewPan(s)
+	note := midi.NewNote(s, midiCh, midiNote, adsr, "gate")
+	panCtrl := midi.NewCtrl(s, midiCh, midiCtrl+0, pan, "pan")
+	volCtrl := midi.NewCtrl(s, midiCh, midiCtrl+1, pan, "volume")
 
 	// adsr defaults
 	core.SendEventFloatName(adsr, "attack", 0.1)
@@ -72,6 +73,7 @@ func NewSimplePatch() core.Module {
 	core.SendEventFloatName(pan, "volume", 1)
 
 	return &simplePatch{
+		synth:   s,
 		ch:      midiCh,
 		adsr:    adsr,
 		sine:    sine,

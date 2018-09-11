@@ -71,21 +71,24 @@ const (
 )
 
 type adsrModule struct {
-	state    adsrState // envelope state
-	s        float32   // sustain level
-	ka       float32   // attack constant
-	kd       float32   // decay constant
-	kr       float32   // release constant
-	dTrigger float32   // attack->decay trigger level
-	sTrigger float32   // decay->sustain trigger level
-	iTrigger float32   // release->idle trigger level
-	val      float32   // output value
+	synth    *core.Synth // top-level synth
+	state    adsrState   // envelope state
+	s        float32     // sustain level
+	ka       float32     // attack constant
+	kd       float32     // decay constant
+	kr       float32     // release constant
+	dTrigger float32     // attack->decay trigger level
+	sTrigger float32     // decay->sustain trigger level
+	iTrigger float32     // release->idle trigger level
+	val      float32     // output value
 }
 
 // NewADSR returns an Attack/Decay/Sustain/Release envelope module.
-func NewADSR() core.Module {
+func NewADSR(s *core.Synth) core.Module {
 	log.Info.Printf("")
-	return &adsrModule{}
+	return &adsrModule{
+		synth: s,
+	}
 }
 
 // Return the child modules.

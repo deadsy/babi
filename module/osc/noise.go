@@ -12,7 +12,7 @@ https://en.wikipedia.org/wiki/Brownian_noise
 */
 //-----------------------------------------------------------------------------
 
-package noise
+package osc
 
 import (
 	"fmt"
@@ -47,43 +47,52 @@ const (
 )
 
 type noiseModule struct {
-	ntype                      noiseType  // noise type
-	r                          *core.Rand // random state
-	b0, b1, b2, b3, b4, b5, b6 float32    // state variables
+	synth          *core.Synth // top-level synth
+	ntype          noiseType   // noise type
+	rand           *core.Rand  // random state
+	b0, b1, b2, b3 float32     // state variables
+	b4, b5, b6     float32     // state variables
 }
 
-func newNoise(ntype noiseType) core.Module {
+func newNoise(s *core.Synth, ntype noiseType) core.Module {
 	return &noiseModule{
+		synth: s,
 		ntype: ntype,
+		rand:  core.NewRand(0),
 	}
 }
 
 // NewWhite returns a white noise generator module.
 // white noise (spectral density = k)
-func NewWhite() core.Module {
+func NewWhite(s *core.Synth) core.Module {
 	log.Info.Printf("")
-	return newNoise(noiseWhite)
+	return newNoise(s, noiseWhite)
 }
 
 // NewBrown returns a brown noise generator module.
 // brown noise (spectral density = k/f*f)
-func NewBrown() core.Module {
+func NewBrown(s *core.Synth) core.Module {
 	log.Info.Printf("")
-	return newNoise(noiseBrown)
+	return newNoise(s, noiseBrown)
 }
 
 // NewPink1 returns a pink noise generator module.
 // pink noise (spectral density = k/f): fast, inaccurate version
-func NewPink1() core.Module {
+func NewPink1(s *core.Synth) core.Module {
 	log.Info.Printf("")
-	return newNoise(noisePink1)
+	return newNoise(s, noisePink1)
 }
 
 // NewPink2 returns a pink noise generator module.
 // pink noise (spectral density = k/f): slow, accurate version
-func NewPink2() core.Module {
+func NewPink2(s *core.Synth) core.Module {
 	log.Info.Printf("")
-	return newNoise(noisePink2)
+	return newNoise(s, noisePink2)
+}
+
+// Return the child modules.
+func (m *noiseModule) Child() []core.Module {
+	return nil
 }
 
 // Stop and performs any cleanup of a module.
@@ -103,14 +112,14 @@ func (m *noiseModule) Event(e *core.Event) {
 
 func (m *noiseModule) generateWhite(out *core.Buf) {
 	for i := 0; i < len(out); i++ {
-		out[i] = m.r.Float()
+		out[i] = m.rand.Float()
 	}
 }
 
 func (m *noiseModule) generateBrown(out *core.Buf) {
 	b0 := m.b0
 	for i := 0; i < len(out); i++ {
-		white := m.r.Float()
+		white := m.rand.Float()
 		b0 = (b0 + (0.02 * white)) * (1.0 / 1.02)
 		out[i] = b0 * (1.0 / 0.38)
 	}
@@ -122,7 +131,7 @@ func (m *noiseModule) generatePink1(out *core.Buf) {
 	b1 := m.b1
 	b2 := m.b2
 	for i := 0; i < len(out); i++ {
-		white := m.r.Float()
+		white := m.rand.Float()
 		b0 = 0.99765*b0 + white*0.0990460
 		b1 = 0.96300*b1 + white*0.2965164
 		b2 = 0.57000*b2 + white*1.0526913
@@ -143,7 +152,7 @@ func (m *noiseModule) generatePink2(out *core.Buf) {
 	b5 := m.b5
 	b6 := m.b6
 	for i := 0; i < len(out); i++ {
-		white := m.r.Float()
+		white := m.rand.Float()
 		b0 = 0.99886*b0 + white*0.0555179
 		b1 = 0.99332*b1 + white*0.0750759
 		b2 = 0.96900*b2 + white*0.1538520

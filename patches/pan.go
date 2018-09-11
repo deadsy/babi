@@ -36,6 +36,7 @@ func (m *panPatch) Info() *core.ModuleInfo {
 //-----------------------------------------------------------------------------
 
 type panPatch struct {
+	synth   *core.Synth // top-level synth
 	ch      uint8       // MIDI channel
 	sm      core.Module // sub-module
 	pan     core.Module // pan module
@@ -44,20 +45,21 @@ type panPatch struct {
 }
 
 // NewPan returns a module that pans the output of a given sub-module.
-func NewPan(ch uint8, sm core.Module) core.Module {
+func NewPan(s *core.Synth, ch uint8, sm core.Module) core.Module {
 	log.Info.Printf("")
 	// check for IO compatibility
 	err := sm.Info().CheckIO(1, 0, 1)
 	if err != nil {
 		panic(err)
 	}
-	pan := audio.NewPan()
+	pan := audio.NewPan(s)
 	return &panPatch{
+		synth:   s,
 		ch:      ch,
 		sm:      sm,
 		pan:     pan,
-		panCtrl: midi.NewCtrl(ch, 10, pan, "pan"),
-		volCtrl: midi.NewCtrl(ch, 11, pan, "volume"),
+		panCtrl: midi.NewCtrl(s, ch, 10, pan, "pan"),
+		volCtrl: midi.NewCtrl(s, ch, 11, pan, "volume"),
 	}
 }
 

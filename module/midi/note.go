@@ -31,21 +31,23 @@ func (m *noteModule) Info() *core.ModuleInfo {
 //-----------------------------------------------------------------------------
 
 type noteModule struct {
-	ch   uint8       // MIDI channel
-	note uint8       // MIDI note number
-	dst  core.Module // destination module
-	gate core.PortId // gate port ID
+	synth *core.Synth // top-level synth
+	ch    uint8       // MIDI channel
+	note  uint8       // MIDI note number
+	dst   core.Module // destination module
+	gate  core.PortId // gate port ID
 }
 
 // NewNote returns a MIDI note on/off gate control module.
-func NewNote(ch, note uint8, dst core.Module, name string) core.Module {
+func NewNote(s *core.Synth, ch, note uint8, dst core.Module, name string) core.Module {
 	mi := dst.Info()
 	log.Info.Printf("midi ch %d note %d controlling %s.%s port", ch, note, mi.Name, name)
 	return &noteModule{
-		ch:   ch,
-		note: note,
-		dst:  dst,
-		gate: mi.GetPortId(name),
+		synth: s,
+		ch:    ch,
+		note:  note,
+		dst:   dst,
+		gate:  mi.GetPortId(name),
 	}
 }
 

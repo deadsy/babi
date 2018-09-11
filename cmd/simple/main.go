@@ -23,10 +23,10 @@ func main() {
 	}
 	defer audio.Close()
 
-	m0 := patches.NewKarplusStrongPatch()
-
-	// create the synth
-	s := core.NewSynth(m0, audio)
+	s := core.NewSynth(audio)
+	//s.SetPatch(patches.NewKarplusStrongPatch(s))
+	//s.SetPatch(patches.NewSimplePatch(s))
+	s.SetPatch(patches.NewNoisePatch(s))
 	s.Run()
 }
 
