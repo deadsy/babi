@@ -9,8 +9,6 @@ Basic Sequencer
 package seq
 
 import (
-	"fmt"
-
 	"github.com/deadsy/babi/core"
 	"github.com/deadsy/babi/utils/log"
 )
@@ -27,87 +25,69 @@ func (m *seqModule) Info() *core.ModuleInfo {
 }
 
 //-----------------------------------------------------------------------------
-// opcodes
+// operations
 
-const (
-	opNOP  = iota // no operation
-	opLoop        // return to beginning
-	opNote        // note on/off
-	opRest        // rest
-)
+// Op is a sequencer operation function.
+type Op func(m *seqModule, sm *seqStateMachine) int
 
-// no operation, (op)
-func (m *seqModule) opNOP(sm *seqStateMachine) int {
-	return 1
+// OpNOP returns a nop operation.
+func OpNOP() Op {
+	return func(m *seqModule, sm *seqStateMachine) int {
+		return 1
+	}
 }
 
-// return to beginning, (op)
-func (m *seqModule) opLoop(sm *seqStateMachine) int {
-	sm.pc = -1
-	return 1
+// OpLoop returns a loop operation.
+func OpLoop() Op {
+	return func(m *seqModule, sm *seqStateMachine) int {
+		sm.pc -= 1
+		return 1
+	}
 }
 
-// note on/off, (op, channel, note, velocity, duration)
-func (m *seqModule) opNote(sm *seqStateMachine) int {
-	/*
-		struct note_args *args = (struct note_args *)&m->prog[m->pc];
-		if (m->op_state == O_STATE_INIT) {
-			// init
-			m->duration = args->dur;
-			m->op_state = O_STATE_WAIT;
-			DBG("note on %d (%d)\r\n", args->note, s->ticks);
-			seq_note_on(s, args);
+// OpNote returns a note operation.
+func OpNote(channel, note, velocity, duration uint8) Op {
+	return func(m *seqModule, sm *seqStateMachine) int {
+		if sm.ostate == opStateInit {
+			sm.duration = uint(duration)
+			sm.ostate = opStateWait
+			log.Info.Printf("note on %d (%d)", note, m.ticks)
+			//seq_note_on(s, args);
 		}
-		m->duration -= 1;
-		if (m->duration == 0) {
+		sm.duration -= 1
+		if sm.duration == 0 {
 			// done
-			m->op_state = O_STATE_INIT;
-			DBG("note off (%d)\r\n", s->ticks);
-			seq_note_off(s, args);
-			return sizeof(struct note_args);
+			sm.ostate = opStateInit
+			log.Info.Printf("note off (%d)", m.ticks)
+			//seq_note_off(s, args);
+			return 1
 		}
-	*/
-
-	// waiting...
-	return 0
+		// waiting...
+		return 0
+	}
 }
 
-// rest (op, duration)
-func (m *seqModule) opRest(sm *seqStateMachine) int {
-	/*
-		struct rest_args *args = (struct rest_args *)&m->prog[m->pc];
-		if (m->op_state == O_STATE_INIT) {
-			// init
-			m->duration = args->dur;
-			m->op_state = O_STATE_WAIT;
+// OpRest returns a rest operation.
+func OpRest(duration uint8) Op {
+	return func(m *seqModule, sm *seqStateMachine) int {
+		if sm.ostate == opStateInit {
+			sm.duration = uint(duration)
+			sm.ostate = opStateWait
 		}
-		m->duration -= 1;
-		if (m->duration == 0) {
+		sm.duration -= 1
+		if sm.duration == 0 {
 			// done
-			m->op_state = O_STATE_INIT;
-			return sizeof(struct rest_args);
+			sm.ostate = opStateInit
+			return 1
 		}
-
-	*/
-	// waiting...
-	return 0
+		// waiting...
+		return 0
+	}
 }
 
 func (m *seqModule) tick(sm *seqStateMachine) {
 	if sm.sstate == seqStateRun {
-		opcode := sm.prog[sm.pc]
-		switch opcode {
-		case opNOP:
-			sm.pc += m.opNOP(sm)
-		case opLoop:
-			sm.pc += m.opLoop(sm)
-		case opNote:
-			sm.pc += m.opNote(sm)
-		case opRest:
-			sm.pc += m.opRest(sm)
-		default:
-			panic(fmt.Sprintf("bad sequencer opcode %d", opcode))
-		}
+		sm.pc += sm.prog[sm.pc](m, sm)
 	}
 }
 
@@ -129,11 +109,11 @@ const (
 
 // per sequence state machine
 type seqStateMachine struct {
-	prog     []uint8  // program memory
+	prog     []Op     // program operations
 	pc       int      // program counter
 	sstate   seqState // sequencer state
 	ostate   opState  // operation state
-	duration int      // operation duration
+	duration uint     // operation duration
 }
 
 type seqModule struct {
