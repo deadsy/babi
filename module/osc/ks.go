@@ -52,7 +52,7 @@ const ks_delay_bits = 6
 const ks_delay_size = 1 << ks_delay_bits
 
 // frequency to x scaling (xrange/fs)
-const ks_fscale = (1 << 32) / core.AUDIO_FS
+const ks_fscale = (1 << 32) / core.AudioSampleFrequency
 
 const ks_delay_mask = ks_delay_size - 1
 const ks_frac_bits = 32 - ks_delay_bits

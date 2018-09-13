@@ -43,7 +43,7 @@ func NewPulse() (Audio, error) {
 		return nil, errors.New("failed to create a new context")
 	}
 
-	st := ctx.NewStream("default", &pulse.PulseSampleSpec{Format: pulse.SAMPLE_FLOAT32LE, Rate: AUDIO_FS, Channels: 2})
+	st := ctx.NewStream("default", &pulse.PulseSampleSpec{Format: pulse.SAMPLE_FLOAT32LE, Rate: AudioSampleFrequency, Channels: 2})
 	if st == nil {
 		ctx.Dispose()
 		pa.Dispose()
@@ -63,8 +63,8 @@ func (p *Pulse) Close() {
 
 func (p *Pulse) Write(l, r *Buf) {
 	// combine left/right channels into a single slice.
-	buf := make([]float32, 2*AUDIO_BUFSIZE)
-	for i := 0; i < AUDIO_BUFSIZE; i += 1 {
+	buf := make([]float32, 2*AudioBufferSize)
+	for i := 0; i < AudioBufferSize; i += 1 {
 		buf[2*i] = l[i]
 		buf[(2*i)+1] = r[i]
 	}

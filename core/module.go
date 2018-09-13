@@ -22,6 +22,7 @@ const (
 	PortType_Null        PortType = iota
 	PortType_AudioBuffer          // audio buffers
 	PortType_EventFloat           // event with float32 values
+	PortType_EventInt             // event with integer values
 	PortType_EventMIDI            // event with MIDI data
 )
 

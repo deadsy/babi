@@ -132,13 +132,13 @@ func (m *adsrModule) Event(e *core.Event) {
 			if val < 0 {
 				panic(fmt.Sprintf("bad attack time %f", fe.Val))
 			}
-			m.ka = getK(val, core.AUDIO_FS)
+			m.ka = getK(val, core.AudioSampleFrequency)
 		case adsrPortDecay: // set the decay time
 			log.Info.Printf("set decay %f", val)
 			if val < 0 {
 				panic(fmt.Sprintf("bad decay time %f", val))
 			}
-			m.kd = getK(val, core.AUDIO_FS)
+			m.kd = getK(val, core.AudioSampleFrequency)
 		case adsrPortSustain: // set the sustain level
 			log.Info.Printf("set sustain %f", val)
 			if val < 0 || val > 1 {
@@ -153,7 +153,7 @@ func (m *adsrModule) Event(e *core.Event) {
 			if val < 0 {
 				panic(fmt.Sprintf("bad release time %f", val))
 			}
-			m.kr = getK(val, core.AUDIO_FS)
+			m.kr = getK(val, core.AudioSampleFrequency)
 		default:
 			log.Info.Printf("bad port number %d", fe.Id)
 		}

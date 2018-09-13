@@ -53,4 +53,9 @@ func Map(x, a, b float32) float32 {
 	return ((b - a) * x) + a
 }
 
+// InRange returns true if a <= x <= b.
+func InRange(x, a, b float32) bool {
+	return x >= a && x <= b
+}
+
 //-----------------------------------------------------------------------------

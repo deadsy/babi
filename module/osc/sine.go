@@ -36,7 +36,7 @@ func (m *sineModule) Info() *core.ModuleInfo {
 //-----------------------------------------------------------------------------
 
 // frequency to x scaling (xrange/fs)
-const sine_freq_scale = (1 << 32) / core.AUDIO_FS
+const sine_freq_scale = (1 << 32) / core.AudioSampleFrequency
 
 type sineModule struct {
 	synth *core.Synth // top-level synth

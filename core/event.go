@@ -19,12 +19,14 @@ const (
 	Event_Null EventType = iota
 	Event_MIDI
 	Event_Float
+	Event_Int
 )
 
 var eventType2String = map[EventType]string{
 	Event_Null:  "null",
 	Event_MIDI:  "midi",
 	Event_Float: "float",
+	Event_Int:   "int",
 }
 
 type Event struct {
@@ -47,6 +49,8 @@ func (e *Event) String() string {
 		s = fmt.Sprintf("%s", e.info.(*EventMIDI))
 	case Event_Float:
 		s = fmt.Sprintf("%s", e.info.(*EventFloat))
+	case Event_Int:
+		s = fmt.Sprintf("%s", e.info.(*EventInt))
 	default:
 		s = "unknown"
 	}
@@ -193,6 +197,42 @@ func SendEventFloatName(m Module, name string, val float32) {
 // SendEventFloatID sends a float event to a port ID on a module.
 func SendEventFloatID(m Module, id PortId, val float32) {
 	m.Event(NewEventFloat(id, val))
+}
+
+//-----------------------------------------------------------------------------
+// Integer Events
+
+type EventInt struct {
+	Id  PortId
+	Val int
+}
+
+// NewEventInt returns a new integer event.
+func NewEventInt(id PortId, val int) *Event {
+	return NewEvent(Event_Int, &EventInt{id, val})
+}
+
+// String returns a descriptive string for the integer event.
+func (e *EventInt) String() string {
+	return fmt.Sprintf("id %d val %d", e.Id, e.Val)
+}
+
+// GetEventInt returns the integer event.
+func (e *Event) GetEventInt() *EventInt {
+	if e.GetType() == Event_Int {
+		return e.info.(*EventInt)
+	}
+	return nil
+}
+
+// SendEventIntName sends a integer event to a named port on a module.
+func SendEventIntName(m Module, name string, val int) {
+	m.Event(NewEventInt(m.Info().GetPortByName(name).Id, val))
+}
+
+// SendEventIntID sends a integer event to a port ID on a module.
+func SendEventIntID(m Module, id PortId, val int) {
+	m.Event(NewEventInt(id, val))
 }
 
 //-----------------------------------------------------------------------------
