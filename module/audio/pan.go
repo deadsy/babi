@@ -30,13 +30,13 @@ func (m *panModule) Info() *core.ModuleInfo {
 	return &core.ModuleInfo{
 		Name: "pan",
 		In: []core.PortInfo{
-			{"in", "input", core.PortType_AudioBuffer, 0},
-			{"volume", "volume (0..1)", core.PortType_EventFloat, panPortVolume},
-			{"pan", "left/right pan (0..1)", core.PortType_EventFloat, panPortPan},
+			{"in", "input", core.PortTypeAudioBuffer, 0},
+			{"volume", "volume (0..1)", core.PortTypeFloat, panPortVolume},
+			{"pan", "left/right pan (0..1)", core.PortTypeFloat, panPortPan},
 		},
 		Out: []core.PortInfo{
-			{"out_left", "left channel output", core.PortType_AudioBuffer, 0},
-			{"out_right", "right channel output", core.PortType_AudioBuffer, 0},
+			{"out_left", "left channel output", core.PortTypeAudioBuffer, 0},
+			{"out_right", "right channel output", core.PortTypeAudioBuffer, 0},
 		},
 	}
 }

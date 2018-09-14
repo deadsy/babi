@@ -36,12 +36,12 @@ func (m *ksModule) Info() *core.ModuleInfo {
 	return &core.ModuleInfo{
 		Name: "karplus_strong",
 		In: []core.PortInfo{
-			{"gate", "oscillator gate, attack(>0) or mute(=0)", core.PortType_EventFloat, ksPortGate},
-			{"frequency", "frequency (Hz)", core.PortType_EventFloat, ksPortFrequency},
-			{"attenuation", "attenuation (0..1)", core.PortType_EventFloat, ksPortAttenuation},
+			{"gate", "oscillator gate, attack(>0) or mute(=0)", core.PortTypeFloat, ksPortGate},
+			{"frequency", "frequency (Hz)", core.PortTypeFloat, ksPortFrequency},
+			{"attenuation", "attenuation (0..1)", core.PortTypeFloat, ksPortAttenuation},
 		},
 		Out: []core.PortInfo{
-			{"out", "output", core.PortType_AudioBuffer, 0},
+			{"out", "output", core.PortTypeAudioBuffer, 0},
 		},
 	}
 }

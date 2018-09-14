@@ -32,14 +32,14 @@ func (m *adsrModule) Info() *core.ModuleInfo {
 	return &core.ModuleInfo{
 		Name: "adsr",
 		In: []core.PortInfo{
-			{"gate", "envelope gate, attack(>0) or release(=0)", core.PortType_EventFloat, adsrPortGate},
-			{"attack", "attack time (secs)", core.PortType_EventFloat, adsrPortAttack},
-			{"decay", "decay time (secs)", core.PortType_EventFloat, adsrPortDecay},
-			{"sustain", "sustain level 0..1", core.PortType_EventFloat, adsrPortSustain},
-			{"release", "release time (secs)", core.PortType_EventFloat, adsrPortRelease},
+			{"gate", "envelope gate, attack(>0) or release(=0)", core.PortTypeFloat, adsrPortGate},
+			{"attack", "attack time (secs)", core.PortTypeFloat, adsrPortAttack},
+			{"decay", "decay time (secs)", core.PortTypeFloat, adsrPortDecay},
+			{"sustain", "sustain level 0..1", core.PortTypeFloat, adsrPortSustain},
+			{"release", "release time (secs)", core.PortTypeFloat, adsrPortRelease},
 		},
 		Out: []core.PortInfo{
-			{"out", "output", core.PortType_AudioBuffer, 0},
+			{"out", "output", core.PortTypeAudioBuffer, 0},
 		},
 	}
 }

@@ -24,11 +24,11 @@ func (m *noisePatch) Info() *core.ModuleInfo {
 	return &core.ModuleInfo{
 		Name: "simple_patch",
 		In: []core.PortInfo{
-			{"midi_in", "midi input", core.PortType_EventMIDI, 0},
+			{"midi_in", "midi input", core.PortTypeMIDI, 0},
 		},
 		Out: []core.PortInfo{
-			{"out_left", "left channel output", core.PortType_AudioBuffer, 0},
-			{"out_right", "right channel output", core.PortType_AudioBuffer, 0},
+			{"out_left", "left channel output", core.PortTypeAudioBuffer, 0},
+			{"out_right", "right channel output", core.PortTypeAudioBuffer, 0},
 		},
 	}
 }

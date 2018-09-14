@@ -22,7 +22,7 @@ func (m *noteModule) Info() *core.ModuleInfo {
 	return &core.ModuleInfo{
 		Name: "midi_note",
 		In: []core.PortInfo{
-			{"midi_in", "midi input", core.PortType_EventMIDI, 0},
+			{"midi_in", "midi input", core.PortTypeMIDI, 0},
 		},
 		Out: nil,
 	}

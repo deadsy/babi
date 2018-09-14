@@ -30,11 +30,11 @@ func (m *seqModule) Info() *core.ModuleInfo {
 	return &core.ModuleInfo{
 		Name: "seq",
 		In: []core.PortInfo{
-			{"bpm", "beats per minute", core.PortType_EventFloat, seqPortBpm},
-			{"ctrl", "control", core.PortType_EventInt, seqPortCtrl},
+			{"bpm", "beats per minute", core.PortTypeFloat, seqPortBpm},
+			{"ctrl", "control", core.PortTypeInt, seqPortCtrl},
 		},
 		Out: []core.PortInfo{
-			{"midi_out", "midi output", core.PortType_EventMIDI, 0},
+			{"midi_out", "midi output", core.PortTypeMIDI, 0},
 		},
 	}
 }

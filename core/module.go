@@ -19,11 +19,11 @@ import (
 type PortType int
 
 const (
-	PortType_Null        PortType = iota
-	PortType_AudioBuffer          // audio buffers
-	PortType_EventFloat           // event with float32 values
-	PortType_EventInt             // event with integer values
-	PortType_EventMIDI            // event with MIDI data
+	PortTypeNull        PortType = iota
+	PortTypeAudioBuffer          // audio buffers
+	PortTypeFloat                // event with float32 values
+	PortTypeInt                  // event with integer values
+	PortTypeMIDI                 // event with MIDI data
 )
 
 type PortId uint
@@ -82,15 +82,15 @@ func (ps PortSet) numPorts(ptype PortType) int {
 // CheckIO checks a module for the required type/number of IO ports.
 func (mi *ModuleInfo) CheckIO(midi_in, audio_in, audio_out int) error {
 	var n int
-	n = mi.In.numPorts(PortType_EventMIDI)
+	n = mi.In.numPorts(PortTypeMIDI)
 	if n != midi_in {
 		return fmt.Errorf("%s needs %d MIDI inputs (has %d)", mi.Name, midi_in, n)
 	}
-	n = mi.In.numPorts(PortType_AudioBuffer)
+	n = mi.In.numPorts(PortTypeAudioBuffer)
 	if n != audio_in {
 		return fmt.Errorf("%s needs %d audio inputs (has %d)", mi.Name, audio_in, n)
 	}
-	n = mi.Out.numPorts(PortType_AudioBuffer)
+	n = mi.Out.numPorts(PortTypeAudioBuffer)
 	if n != audio_out {
 		return fmt.Errorf("%s needs %d audio outputs (has %d)", mi.Name, audio_out, n)
 	}
