@@ -16,23 +16,23 @@ import "math"
 const AudioSampleFrequency = 48000
 
 // Audio Sample Period (seconds).
-const AudioSamplePeriod = 1 / AudioSampleFrequency
+const AudioSamplePeriod = 1.0 / float32(AudioSampleFrequency)
 
 // Number of float32 samples per audio buffer.
 const AudioBufferSize = 64
 
 // Seconds per audio buffer.
-const SecsPerAudioBuffer = AudioBufferSize / AudioSampleFrequency
+const SecsPerAudioBuffer = float32(AudioBufferSize) / float32(AudioSampleFrequency)
 
 //-----------------------------------------------------------------------------
 
 // Seconds per minute.
-const SecsPerMin = 60
+const SecsPerMin = 60.0
 
 //-----------------------------------------------------------------------------
 
-const MinBeatsPerMin = 10
-const MaxBeatsPerMin = 300
+const MinBeatsPerMin = 10.0
+const MaxBeatsPerMin = 300.0
 
 //-----------------------------------------------------------------------------
 

@@ -55,6 +55,7 @@ func OpNOP() Op {
 // OpLoop returns a loop operation.
 func OpLoop() Op {
 	return func(m *seqModule, sm *seqStateMachine) int {
+		log.Info.Printf("loop (%d)", m.ticks)
 		sm.pc = -1
 		return 1
 	}
@@ -101,8 +102,14 @@ func OpRest(duration uint) Op {
 }
 
 func (m *seqModule) tick(sm *seqStateMachine) {
+	// auto stop zero length programs
+	if len(sm.prog) == 0 {
+		sm.sstate = seqStateStop
+	}
+	// run the program
 	if sm.sstate == seqStateRun {
-		sm.pc += sm.prog[sm.pc](m, sm)
+		n := sm.prog[sm.pc](m, sm)
+		sm.pc += n
 	}
 }
 
@@ -139,12 +146,12 @@ type seqModule struct {
 	sm          *seqStateMachine // state machine
 }
 
-// NewSeq returns a basic sequencer module.
-func NewSeq(s *core.Synth, sm *seqStateMachine) core.Module {
+// NewSequencer returns a basic sequencer module.
+func NewSequencer(s *core.Synth, prog []Op) core.Module {
 	log.Info.Printf("")
 	return &seqModule{
 		synth: s,
-		sm:    sm,
+		sm:    &seqStateMachine{prog: prog},
 	}
 }
 
@@ -159,6 +166,13 @@ func (m *seqModule) Stop() {
 
 //-----------------------------------------------------------------------------
 // Events
+
+// Sequencer control values.
+const (
+	CtrlStop  = iota // stop the sequencer
+	CtrlStart        // start the sequencer
+	CtrlReset        // reset the sequencer
+)
 
 // Event processes a module event.
 func (m *seqModule) Event(e *core.Event) {
@@ -184,7 +198,21 @@ func (m *seqModule) Event(e *core.Event) {
 		val := ie.Val
 		switch ie.Id {
 		case seqPortCtrl: // control the sequencer
-			log.Info.Printf("ctrl %d", val)
+			switch val {
+			case CtrlStop: // stop the sequencer
+				log.Info.Printf("ctrl stop")
+				m.sm.sstate = seqStateStop
+			case CtrlStart: // start the sequencer
+				log.Info.Printf("ctrl start")
+				m.sm.sstate = seqStateRun
+			case CtrlReset: // reset the sequencer
+				log.Info.Printf("ctrl reset")
+				m.sm.sstate = seqStateStop
+				m.sm.ostate = opStateInit
+				m.sm.pc = 0
+			default:
+				log.Info.Printf("unknown control value %d", val)
+			}
 		default:
 			log.Info.Printf("bad port number %d", ie.Id)
 		}
