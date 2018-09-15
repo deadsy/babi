@@ -12,31 +12,37 @@ import "math"
 
 //-----------------------------------------------------------------------------
 
-// Audio Sampling Frequency (Hz).
+// AudioSampleFrequency is the sample frequency for audio (Hz).
 const AudioSampleFrequency = 48000
 
-// Audio Sample Period (seconds).
+// AudioSamplePeriod is the sample period for audio (seconds).
 const AudioSamplePeriod = 1.0 / float32(AudioSampleFrequency)
 
-// Number of float32 samples per audio buffer.
+// AudioBufferSize is the number of float32 samples per audio buffer.
 const AudioBufferSize = 64
 
-// Seconds per audio buffer.
+// SecsPerAudioBuffer is the audio duration for a single audio buffer.
 const SecsPerAudioBuffer = float32(AudioBufferSize) / float32(AudioSampleFrequency)
 
 //-----------------------------------------------------------------------------
 
-// Seconds per minute.
+// SecsPerMin
 const SecsPerMin = 60.0
 
 //-----------------------------------------------------------------------------
 
+// MinBeatsPerMin for sequencer.
 const MinBeatsPerMin = 10.0
+
+// MaxBeatsPerMin for sequencer.
 const MaxBeatsPerMin = 300.0
 
 //-----------------------------------------------------------------------------
 
+// Pi
 const PI = math.Pi
+
+// Tau (2 * Pi).
 const TAU = 2 * math.Pi
 
 //-----------------------------------------------------------------------------

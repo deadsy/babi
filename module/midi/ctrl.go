@@ -69,7 +69,7 @@ func (m *ctrlModule) Event(e *core.Event) {
 	if me != nil {
 		if me.GetType() == core.EventMIDI_ControlChange && me.GetCtrlNum() == m.cc {
 			// convert to a float event and send
-			val := core.MIDI_Map(me.GetCtrlVal(), 0, 1)
+			val := core.MIDIMap(me.GetCtrlVal(), 0, 1)
 			log.Info.Printf("send float event to %s port %d val %f", m.dst, m.ctrl, val)
 			core.SendEventFloatID(m.dst, m.ctrl, val)
 		}

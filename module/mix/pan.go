@@ -10,7 +10,7 @@ constant power. The "volume" control sets the overall power output.
 */
 //-----------------------------------------------------------------------------
 
-package audio
+package mix
 
 import (
 	"github.com/deadsy/babi/core"

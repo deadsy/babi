@@ -70,7 +70,7 @@ func (m *noteModule) Event(e *core.Event) {
 		switch me.GetType() {
 		case core.EventMIDI_NoteOn:
 			if me.GetNote() == m.note {
-				vel := core.MIDI_Map(me.GetVelocity(), 0, 1)
+				vel := core.MIDIMap(me.GetVelocity(), 0, 1)
 				core.SendEventFloatID(m.dst, m.gate, vel)
 			}
 		case core.EventMIDI_NoteOff:

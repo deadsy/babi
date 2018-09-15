@@ -15,6 +15,7 @@ import (
 
 //-----------------------------------------------------------------------------
 
+// CircularBuffer structure.
 type CircularBuffer struct {
 	lock   sync.Mutex    // access locking
 	buffer []interface{} // the buffer
@@ -24,7 +25,7 @@ type CircularBuffer struct {
 //-----------------------------------------------------------------------------
 
 // Increment and wrap-around an index value.
-func inc_mod(idx, size int) int {
+func incMod(idx, size int) int {
 	idx += 1
 	if idx == size {
 		return 0
@@ -49,7 +50,7 @@ func (cb *CircularBuffer) Read() (interface{}, error) {
 	defer cb.lock.Unlock()
 	if cb.rd != cb.wr {
 		val := cb.buffer[cb.rd]
-		cb.rd = inc_mod(cb.rd, len(cb.buffer))
+		cb.rd = incMod(cb.rd, len(cb.buffer))
 		return val, nil
 	}
 	return nil, errors.New("empty")
@@ -59,12 +60,12 @@ func (cb *CircularBuffer) Read() (interface{}, error) {
 func (cb *CircularBuffer) Write(val interface{}) error {
 	cb.lock.Lock()
 	defer cb.lock.Unlock()
-	wr_inc := inc_mod(cb.wr, len(cb.buffer))
-	if wr_inc == cb.rd {
+	wrInc := incMod(cb.wr, len(cb.buffer))
+	if wrInc == cb.rd {
 		return errors.New("full")
 	}
 	cb.buffer[cb.wr] = val
-	cb.wr = wr_inc
+	cb.wr = wrInc
 	return nil
 }
 

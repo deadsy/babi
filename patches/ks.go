@@ -10,8 +10,8 @@ package patches
 
 import (
 	"github.com/deadsy/babi/core"
-	"github.com/deadsy/babi/module/audio"
 	"github.com/deadsy/babi/module/midi"
+	"github.com/deadsy/babi/module/mix"
 	"github.com/deadsy/babi/module/osc"
 	"github.com/deadsy/babi/utils/log"
 )
@@ -53,7 +53,7 @@ func NewKarplusStrongPatch(s *core.Synth) core.Module {
 	const midiCtrl = 6
 
 	ks := osc.NewKarplusStrong(s)
-	pan := audio.NewPan(s)
+	pan := mix.NewPan(s)
 	note := midi.NewNote(s, midiCh, midiNote, ks, "gate")
 	panCtrl := midi.NewCtrl(s, midiCh, midiCtrl+0, pan, "pan")
 	volCtrl := midi.NewCtrl(s, midiCh, midiCtrl+1, pan, "volume")
