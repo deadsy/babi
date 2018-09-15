@@ -24,6 +24,9 @@ const AudioBufferSize = 64
 // SecsPerAudioBuffer is the audio duration for a single audio buffer.
 const SecsPerAudioBuffer = float32(AudioBufferSize) / float32(AudioSampleFrequency)
 
+// FrequencyScale scales a frequency value to a uint32 phase step value.
+const FrequencyScale = float32(1<<32) / float32(AudioSampleFrequency)
+
 //-----------------------------------------------------------------------------
 
 // SecsPerMin

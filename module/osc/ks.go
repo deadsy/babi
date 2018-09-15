@@ -51,9 +51,6 @@ func (m *ksModule) Info() *core.ModuleInfo {
 const ks_delay_bits = 6
 const ks_delay_size = 1 << ks_delay_bits
 
-// frequency to x scaling (xrange/fs)
-const ks_fscale = (1 << 32) / core.AudioSampleFrequency
-
 const ks_delay_mask = ks_delay_size - 1
 const ks_frac_bits = 32 - ks_delay_bits
 const ks_frac_mask = (1 << ks_frac_bits) - 1
@@ -85,7 +82,6 @@ func (m *ksModule) Child() []core.Module {
 
 // Stop performs any cleanup of a module.
 func (m *ksModule) Stop() {
-	log.Info.Printf("")
 }
 
 //-----------------------------------------------------------------------------
@@ -125,7 +121,7 @@ func (m *ksModule) Event(e *core.Event) {
 		case ksPortFrequency: // set the oscillator frequency
 			log.Info.Printf("set frequency %f", val)
 			m.freq = val
-			m.xstep = uint32(val * ks_fscale)
+			m.xstep = uint32(val * core.FrequencyScale)
 		default:
 			log.Info.Printf("bad port number %d", fe.Id)
 		}

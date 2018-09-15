@@ -35,9 +35,6 @@ func (m *sineModule) Info() *core.ModuleInfo {
 
 //-----------------------------------------------------------------------------
 
-// frequency to x scaling (xrange/fs)
-const sine_freq_scale = (1 << 32) / core.AudioSampleFrequency
-
 type sineModule struct {
 	synth *core.Synth // top-level synth
 	freq  float32     // base frequency
@@ -60,7 +57,6 @@ func (m *sineModule) Child() []core.Module {
 
 // Stop and performs any cleanup of a module.
 func (m *sineModule) Stop() {
-	log.Info.Printf("")
 }
 
 //-----------------------------------------------------------------------------
@@ -75,7 +71,7 @@ func (m *sineModule) Event(e *core.Event) {
 		case sinePortFrequency: // set the oscillator frequency
 			log.Info.Printf("set frequency %f", val)
 			m.freq = val
-			m.xstep = uint32(val * sine_freq_scale)
+			m.xstep = uint32(val * core.FrequencyScale)
 		default:
 			log.Info.Printf("bad port number %d", fe.Id)
 		}
