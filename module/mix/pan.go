@@ -86,11 +86,11 @@ func (m *panModule) Event(e *core.Event) {
 		case panPortVolume:
 			log.Info.Printf("set volume %f", fe.Val)
 			// convert to a linear volume
-			m.vol = core.Pow2(core.Clamp(fe.Val, 0, 1)) - 1
+			m.vol = core.Pow2(core.Clamp(fe.Val, 0, 1)) - 1.0
 			m.set()
 		case panPortPan:
 			log.Info.Printf("set pan %f", fe.Val)
-			m.pan = core.Clamp(fe.Val, 0, 1) * (core.PI / 2)
+			m.pan = core.Clamp(fe.Val, 0, 1) * (core.Pi / 2.0)
 			m.set()
 		default:
 			log.Info.Printf("bad port number %d", fe.Id)

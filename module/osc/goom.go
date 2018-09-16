@@ -12,7 +12,7 @@ A Goom Wave is a wave shape with the following segments:
 
 Shape is controlled by two parameters:
 duty = split the total period between s0,f0 and s1,f1
-slope = split s0f0 and s1f1 beween slope and flat.
+slope = split s0f0 and s1f1 between slope and flat.
 
 The idea for goom waves comes from: https://www.quinapalus.com/goom.html
 

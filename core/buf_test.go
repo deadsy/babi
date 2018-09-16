@@ -24,7 +24,7 @@ func Test_Mul_SS(t *testing.T) {
 
 	a.Mul(&b)
 
-	if !a.Equals(&c) {
+	if !a.Equal(&c) {
 		t.Error("FAIL")
 	}
 

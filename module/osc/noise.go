@@ -39,11 +39,11 @@ func (m *noiseModule) Info() *core.ModuleInfo {
 type noiseType int
 
 const (
-	noiseNull noiseType = iota
-	noisePink1
-	noisePink2
-	noiseWhite
-	noiseBrown
+	noiseTypeNull noiseType = iota
+	noiseTypePink1
+	noiseTypePink2
+	noiseTypeWhite
+	noiseTypeBrown
 )
 
 type noiseModule struct {
@@ -66,28 +66,28 @@ func newNoise(s *core.Synth, ntype noiseType) core.Module {
 // white noise (spectral density = k)
 func NewWhite(s *core.Synth) core.Module {
 	log.Info.Printf("")
-	return newNoise(s, noiseWhite)
+	return newNoise(s, noiseTypeWhite)
 }
 
 // NewBrown returns a brown noise generator module.
 // brown noise (spectral density = k/f*f)
 func NewBrown(s *core.Synth) core.Module {
 	log.Info.Printf("")
-	return newNoise(s, noiseBrown)
+	return newNoise(s, noiseTypeBrown)
 }
 
 // NewPink1 returns a pink noise generator module.
 // pink noise (spectral density = k/f): fast, inaccurate version
 func NewPink1(s *core.Synth) core.Module {
 	log.Info.Printf("")
-	return newNoise(s, noisePink1)
+	return newNoise(s, noiseTypePink1)
 }
 
 // NewPink2 returns a pink noise generator module.
 // pink noise (spectral density = k/f): slow, accurate version
 func NewPink2(s *core.Synth) core.Module {
 	log.Info.Printf("")
-	return newNoise(s, noisePink2)
+	return newNoise(s, noiseTypePink2)
 }
 
 // Return the child modules.
@@ -176,13 +176,13 @@ func (m *noiseModule) generatePink2(out *core.Buf) {
 func (m *noiseModule) Process(buf ...*core.Buf) {
 	out := buf[0]
 	switch m.ntype {
-	case noiseWhite:
+	case noiseTypeWhite:
 		m.generateWhite(out)
-	case noisePink1:
+	case noiseTypePink1:
 		m.generatePink1(out)
-	case noisePink2:
+	case noiseTypePink2:
 		m.generatePink2(out)
-	case noiseBrown:
+	case noiseTypeBrown:
 		m.generateBrown(out)
 	default:
 		panic(fmt.Sprintf("bad noise type %d", m.ntype))

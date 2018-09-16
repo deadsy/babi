@@ -27,6 +27,9 @@ const SecsPerAudioBuffer = float32(AudioBufferSize) / float32(AudioSampleFrequen
 // FrequencyScale scales a frequency value to a uint32 phase step value.
 const FrequencyScale = float32(1<<32) / float32(AudioSampleFrequency)
 
+// PhaseScale scales a phase value to a uint32 phase step value.
+const PhaseScale = float32(1<<32) / Tau
+
 //-----------------------------------------------------------------------------
 
 // SecsPerMin
@@ -43,9 +46,9 @@ const MaxBeatsPerMin = 300.0
 //-----------------------------------------------------------------------------
 
 // Pi
-const PI = math.Pi
+const Pi = math.Pi
 
 // Tau (2 * Pi).
-const TAU = 2 * math.Pi
+const Tau = 2.0 * math.Pi
 
 //-----------------------------------------------------------------------------

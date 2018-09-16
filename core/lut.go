@@ -15,80 +15,84 @@ import "math"
 //-----------------------------------------------------------------------------
 
 func init() {
-	cos_lut_init()
-	pow_lut_init()
+	cosLUTInit()
+	powLUTInit()
 }
 
 //-----------------------------------------------------------------------------
 // Cosine Lookup
 
-const COS_LUT_BITS = 10
-const COS_LUT_SIZE = 1 << COS_LUT_BITS
-const COS_FRAC_BITS = 32 - COS_LUT_BITS
-const COS_FRAC_MASK = (1 << COS_FRAC_BITS) - 1
+const cosLUTBits = 10
+const cosLUTSize = 1 << cosLUTBits
+const cosFracBits = 32 - cosLUTBits
+const cosFracMask = (1 << cosFracBits) - 1
 
-var COS_LUT_y [COS_LUT_SIZE]float32
-var COS_LUT_dy [COS_LUT_SIZE]float32
+var cosLUTy [cosLUTSize]float32
+var cosLUTdy [cosLUTSize]float32
 
-// cos_lut_init creates y/dy cosine lookup tables for TAU radians.
-func cos_lut_init() {
-	dx := TAU / COS_LUT_SIZE
-	for i := 0; i < COS_LUT_SIZE; i++ {
+// cosLUTInit creates y/dy cosine lookup tables for TAU radians.
+func cosLUTInit() {
+	dx := Tau / cosLUTSize
+	for i := 0; i < cosLUTSize; i++ {
 		y0 := math.Cos(float64(i) * dx)
 		y1 := math.Cos(float64(i+1) * dx)
-		COS_LUT_y[i] = float32(y0)
-		COS_LUT_dy[i] = float32((y1 - y0) / (1 << COS_FRAC_BITS))
+		cosLUTy[i] = float32(y0)
+		cosLUTdy[i] = float32((y1 - y0) / (1 << cosFracBits))
 	}
 }
 
 // CosLookup returns the cosine of x (32 bit unsigned phase value).
 func CosLookup(x uint32) float32 {
-	idx := x >> COS_FRAC_BITS
-	return COS_LUT_y[idx] + float32(x&COS_FRAC_MASK)*COS_LUT_dy[idx]
+	idx := x >> cosFracBits
+	return cosLUTy[idx] + float32(x&cosFracMask)*cosLUTdy[idx]
 }
-
-const PHASE_SCALE = (1 << 32) / TAU
 
 // Cos returns the cosine of x (radians).
 func Cos(x float32) float32 {
-	xi := uint32(Abs(x) * PHASE_SCALE)
+	xi := uint32(Abs(x) * PhaseScale)
 	return CosLookup(xi)
 }
 
 // Sin returns the sine of x (radians).
 func Sin(x float32) float32 {
-	return Cos((PI / 2) - x)
+	return Cos((Pi / 2) - x)
+}
+
+// Tan returns the tangent of x (radians).
+func Tan(x float32) float32 {
+	return Sin(x) / Cos(x)
 }
 
 //-----------------------------------------------------------------------------
 // Power Function
 
-const POW_LUT_BITS = 7
-const POW_LUT_SIZE = 1 << POW_LUT_BITS
-const POW_LUT_MASK = POW_LUT_SIZE - 1
+const powLUTBits = 7
+const powLUTSize = 1 << powLUTBits
+const powLUTMask = powLUTSize - 1
 
-var POW_LUT0 [POW_LUT_SIZE]float32
-var POW_LUT1 [POW_LUT_SIZE]float32
+var powLUT0 [powLUTSize]float32
+var powLUT1 [powLUTSize]float32
 
-func pow_lut_init() {
-	for i := 0; i < POW_LUT_SIZE; i++ {
-		x := float64(i) / POW_LUT_SIZE
-		POW_LUT0[i] = float32(math.Pow(2, x))
-		x = float64(i) / (POW_LUT_SIZE * POW_LUT_SIZE)
-		POW_LUT1[i] = float32(math.Pow(2, x))
+// powLUTInit creates the power lookup tables.
+func powLUTInit() {
+	for i := 0; i < powLUTSize; i++ {
+		x := float64(i) / powLUTSize
+		powLUT0[i] = float32(math.Pow(2, x))
+		x = float64(i) / (powLUTSize * powLUTSize)
+		powLUT1[i] = float32(math.Pow(2, x))
 	}
 }
 
 // pow2_int returns 2 to the x where x is an integer [-126,127]
-func pow2_int(x int) float32 {
+func pow2Int(x int) float32 {
 	return math.Float32frombits((127 + uint32(x)) << 23)
 }
 
 // pow2_frac returns 2 to the x where x is a fraction [0,1)
-func pow2_frac(x float32) float32 {
-	n := int(x * (1 << (POW_LUT_BITS * 2)))
-	x0 := POW_LUT0[(n>>POW_LUT_BITS)&POW_LUT_MASK]
-	x1 := POW_LUT1[n&POW_LUT_MASK]
+func pow2Frac(x float32) float32 {
+	n := int(x * (1 << (powLUTBits * 2)))
+	x0 := powLUT0[(n>>powLUTBits)&powLUTMask]
+	x1 := powLUT1[n&powLUTMask]
 	return x0 * x1
 }
 
@@ -103,14 +107,14 @@ func Pow2(x float32) float32 {
 		nf -= 1
 		ff += 1
 	}
-	return pow2_int(nf) * pow2_frac(ff)
+	return pow2Int(nf) * pow2Frac(ff)
 }
 
-const LOG_E2 = 1.4426950408889634 // 1.0 / math.log(2)
+const logE2 = 1.4426950408889634 // 1.0 / math.log(2)
 
 // PowE returns e to the x.
 func PowE(x float32) float32 {
-	return Pow2(LOG_E2 * x)
+	return Pow2(logE2 * x)
 }
 
 //-----------------------------------------------------------------------------

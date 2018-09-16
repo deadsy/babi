@@ -20,7 +20,7 @@ const TEST_LIMIT = 5 * TEST_SIZE
 const MAX_COS_ERR = 1e-5 // 1 part in 100000 - should be fine for 16 bit sound
 
 func Test_Cos(t *testing.T) {
-	dx := TAU / TEST_SIZE
+	dx := Tau / TEST_SIZE
 	for i := -TEST_LIMIT; i < TEST_LIMIT; i++ {
 		x := float64(i) * dx
 		y0 := float64(Cos(float32(x)))
@@ -34,7 +34,7 @@ func Test_Cos(t *testing.T) {
 }
 
 func Test_Sin(t *testing.T) {
-	dx := TAU / TEST_SIZE
+	dx := Tau / TEST_SIZE
 	for i := -TEST_LIMIT; i < TEST_LIMIT; i++ {
 		x := float64(i) * dx
 		y0 := float64(Sin(float32(x)))
