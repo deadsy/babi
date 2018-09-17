@@ -120,7 +120,7 @@ func (m *polyModule) Event(e *core.Event) {
 	me := e.GetEventMIDIChannel(m.ch)
 	if me != nil {
 		switch me.GetType() {
-		case core.EventMIDI_NoteOn:
+		case core.EventMIDINoteOn:
 			v := m.voiceLookup(me.GetNote())
 			vel := core.MIDIMap(me.GetVelocity(), 0, 1)
 			if v != nil {
@@ -136,14 +136,14 @@ func (m *polyModule) Event(e *core.Event) {
 					}
 				}
 			}
-		case core.EventMIDI_NoteOff:
+		case core.EventMIDINoteOff:
 			v := m.voiceLookup(me.GetNote())
 			if v != nil {
 				// send a note off control event
 				// ignoring the note off velocity (for now)
 				core.SendEventFloatID(v.module, m.gate, 0)
 			}
-		case core.EventMIDI_PitchWheel:
+		case core.EventMIDIPitchWheel:
 			// get the pitch bend value
 			m.bend = core.MIDIPitchBend(me.GetPitchWheel())
 			// update all active voices

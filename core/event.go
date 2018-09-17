@@ -13,48 +13,30 @@ import "fmt"
 //-----------------------------------------------------------------------------
 // general event
 
-type eventType uint
-
-const (
-	eventTypeNull eventType = iota
-	eventTypeMIDI
-	eventTypeFloat
-	eventTypeInt
-)
-
-var eventType2String = map[eventType]string{
-	eventTypeNull:  "null",
-	eventTypeMIDI:  "midi",
-	eventTypeFloat: "float",
-	eventTypeInt:   "int",
-}
-
 type Event struct {
-	etype eventType   // event type
-	info  interface{} // event information
+	info interface{} // event information
 }
 
 // NewEvent returns a new event.
-func NewEvent(etype eventType, info interface{}) *Event {
-	return &Event{etype, info}
+func NewEvent(info interface{}) *Event {
+	return &Event{info}
 }
 
 // String returns a descriptive string for the event.
 func (e *Event) String() string {
-	var s string
-	switch e.etype {
-	case eventTypeNull:
-		s = "null"
-	case eventTypeMIDI:
-		s = fmt.Sprintf("%s", e.info.(*EventMIDI))
-	case eventTypeFloat:
-		s = fmt.Sprintf("%s", e.info.(*EventFloat))
-	case eventTypeInt:
-		s = fmt.Sprintf("%s", e.info.(*EventInt))
-	default:
-		s = "unknown"
+	me := e.GetEventMIDI()
+	if me != nil {
+		return me.String()
 	}
-	return fmt.Sprintf("%s: %s", eventType2String[e.etype], s)
+	fe := e.GetEventFloat()
+	if fe != nil {
+		return fe.String()
+	}
+	ie := e.GetEventInt()
+	if ie != nil {
+		return ie.String()
+	}
+	return "unknown event"
 }
 
 //-----------------------------------------------------------------------------
@@ -63,25 +45,25 @@ func (e *Event) String() string {
 type EventTypeMIDI uint
 
 const (
-	EventMIDI_Null EventTypeMIDI = iota
-	EventMIDI_NoteOn
-	EventMIDI_NoteOff
-	EventMIDI_ControlChange
-	EventMIDI_PitchWheel
-	EventMIDI_PolyphonicAftertouch
-	EventMIDI_ProgramChange
-	EventMIDI_ChannelAftertouch
+	EventMIDINull EventTypeMIDI = iota
+	EventMIDINoteOn
+	EventMIDINoteOff
+	EventMIDIControlChange
+	EventMIDIPitchWheel
+	EventMIDIPolyphonicAftertouch
+	EventMIDIProgramChange
+	EventMIDIChannelAftertouch
 )
 
 var midiEventType2String = map[EventTypeMIDI]string{
-	EventMIDI_Null:                 "null",
-	EventMIDI_NoteOn:               "note_on",
-	EventMIDI_NoteOff:              "note_off",
-	EventMIDI_ControlChange:        "control_change",
-	EventMIDI_PitchWheel:           "pitch_wheel",
-	EventMIDI_PolyphonicAftertouch: "polyphonic_aftertouch",
-	EventMIDI_ProgramChange:        "program_change",
-	EventMIDI_ChannelAftertouch:    "channel_aftertouch",
+	EventMIDINull:                 "null",
+	EventMIDINoteOn:               "note_on",
+	EventMIDINoteOff:              "note_off",
+	EventMIDIControlChange:        "control_change",
+	EventMIDIPitchWheel:           "pitch_wheel",
+	EventMIDIPolyphonicAftertouch: "polyphonic_aftertouch",
+	EventMIDIProgramChange:        "program_change",
+	EventMIDIChannelAftertouch:    "channel_aftertouch",
 }
 
 type EventMIDI struct {
@@ -93,18 +75,18 @@ type EventMIDI struct {
 
 // NewEventMIDI returns a new MIDI event.
 func NewEventMIDI(etype EventTypeMIDI, status, arg0, arg1 uint8) *Event {
-	return NewEvent(eventTypeMIDI, &EventMIDI{etype, status, arg0, arg1})
+	return NewEvent(&EventMIDI{etype, status, arg0, arg1})
 }
 
 // String returns a descriptive string for the MIDI event.
 func (e *EventMIDI) String() string {
 	descr := midiEventType2String[e.etype]
 	switch e.GetType() {
-	case EventMIDI_NoteOn, EventMIDI_NoteOff:
+	case EventMIDINoteOn, EventMIDINoteOff:
 		return fmt.Sprintf("%s ch %d note %d vel %d", descr, e.GetChannel(), e.GetNote(), e.GetVelocity())
-	case EventMIDI_ControlChange:
+	case EventMIDIControlChange:
 		return fmt.Sprintf("%s ch %d ctrl %d val %d", descr, e.GetChannel(), e.GetCtrlNum(), e.GetCtrlVal())
-	case EventMIDI_PitchWheel:
+	case EventMIDIPitchWheel:
 		return fmt.Sprintf("%s ch %d val %d", descr, e.GetChannel(), e.GetPitchWheel())
 		//case EventMIDI_PolyphonicAftertouch:
 		//case EventMIDI_ProgramChange:
@@ -113,12 +95,19 @@ func (e *EventMIDI) String() string {
 	return fmt.Sprintf("%s status %02x arg0 %02x arg1 %02x", midiEventType2String[e.etype], e.status, e.arg0, e.arg1)
 }
 
+// GetEventMIDI returns a MIDI event (or nil).
+func (e *Event) GetEventMIDI() *EventMIDI {
+	if me, ok := e.info.(*EventMIDI); ok {
+		return me
+	}
+	return nil
+}
+
 // GetEventMIDIChannel returns the MIDI event for the MIDI channel.
 func (e *Event) GetEventMIDIChannel(ch uint8) *EventMIDI {
-	if me, ok := e.info.(*EventMIDI); ok {
-		if me.GetChannel() == ch {
-			return me
-		}
+	me := e.GetEventMIDI()
+	if me != nil && me.GetChannel() == ch {
+		return me
 	}
 	return nil
 }
@@ -168,7 +157,7 @@ type EventFloat struct {
 
 // NewEventFloat returns a new control event.
 func NewEventFloat(id PortId, val float32) *Event {
-	return NewEvent(eventTypeFloat, &EventFloat{id, val})
+	return NewEvent(&EventFloat{id, val})
 }
 
 // String returns a descriptive string for the float event.
@@ -204,7 +193,7 @@ type EventInt struct {
 
 // NewEventInt returns a new integer event.
 func NewEventInt(id PortId, val int) *Event {
-	return NewEvent(eventTypeInt, &EventInt{id, val})
+	return NewEvent(&EventInt{id, val})
 }
 
 // String returns a descriptive string for the integer event.

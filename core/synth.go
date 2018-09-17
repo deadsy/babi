@@ -61,7 +61,7 @@ func (s *Synth) PushEvent(e *Event) {
 // Run runs the main loop for the synthesizer.
 func (s *Synth) Run() {
 
-	s.PushEvent(NewEventMIDI(EventMIDI_NoteOn, 0, 69, 127))
+	s.PushEvent(NewEventMIDI(EventMIDINoteOn, 0, 69, 127))
 
 	for {
 		// process all queued events

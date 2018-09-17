@@ -68,14 +68,14 @@ func OpNote(channel, note, velocity uint8, duration uint) Op {
 			sm.duration = duration
 			sm.ostate = opStateWait
 			log.Info.Printf("note on %d (%d)", note, m.ticks)
-			m.synth.PushEvent(core.NewEventMIDI(core.EventMIDI_NoteOn, channel, note, velocity))
+			m.synth.PushEvent(core.NewEventMIDI(core.EventMIDINoteOn, channel, note, velocity))
 		}
 		sm.duration -= 1
 		if sm.duration == 0 {
 			// done
 			sm.ostate = opStateInit
 			log.Info.Printf("note off (%d)", m.ticks)
-			m.synth.PushEvent(core.NewEventMIDI(core.EventMIDI_NoteOff, channel, note, 0))
+			m.synth.PushEvent(core.NewEventMIDI(core.EventMIDINoteOff, channel, note, 0))
 			return 1
 		}
 		// waiting...
