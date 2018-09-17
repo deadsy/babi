@@ -13,29 +13,29 @@ import "fmt"
 //-----------------------------------------------------------------------------
 // general event
 
-type EventType uint
+type eventType uint
 
 const (
-	Event_Null EventType = iota
-	Event_MIDI
-	Event_Float
-	Event_Int
+	eventTypeNull eventType = iota
+	eventTypeMIDI
+	eventTypeFloat
+	eventTypeInt
 )
 
-var eventType2String = map[EventType]string{
-	Event_Null:  "null",
-	Event_MIDI:  "midi",
-	Event_Float: "float",
-	Event_Int:   "int",
+var eventType2String = map[eventType]string{
+	eventTypeNull:  "null",
+	eventTypeMIDI:  "midi",
+	eventTypeFloat: "float",
+	eventTypeInt:   "int",
 }
 
 type Event struct {
-	etype EventType   // event type
+	etype eventType   // event type
 	info  interface{} // event information
 }
 
 // NewEvent returns a new event.
-func NewEvent(etype EventType, info interface{}) *Event {
+func NewEvent(etype eventType, info interface{}) *Event {
 	return &Event{etype, info}
 }
 
@@ -43,22 +43,18 @@ func NewEvent(etype EventType, info interface{}) *Event {
 func (e *Event) String() string {
 	var s string
 	switch e.etype {
-	case Event_Null:
+	case eventTypeNull:
 		s = "null"
-	case Event_MIDI:
+	case eventTypeMIDI:
 		s = fmt.Sprintf("%s", e.info.(*EventMIDI))
-	case Event_Float:
+	case eventTypeFloat:
 		s = fmt.Sprintf("%s", e.info.(*EventFloat))
-	case Event_Int:
+	case eventTypeInt:
 		s = fmt.Sprintf("%s", e.info.(*EventInt))
 	default:
 		s = "unknown"
 	}
 	return fmt.Sprintf("%s: %s", eventType2String[e.etype], s)
-}
-
-func (e *Event) GetType() EventType {
-	return e.etype
 }
 
 //-----------------------------------------------------------------------------
@@ -97,7 +93,7 @@ type EventMIDI struct {
 
 // NewEventMIDI returns a new MIDI event.
 func NewEventMIDI(etype EventTypeMIDI, status, arg0, arg1 uint8) *Event {
-	return NewEvent(Event_MIDI, &EventMIDI{etype, status, arg0, arg1})
+	return NewEvent(eventTypeMIDI, &EventMIDI{etype, status, arg0, arg1})
 }
 
 // String returns a descriptive string for the MIDI event.
@@ -119,8 +115,7 @@ func (e *EventMIDI) String() string {
 
 // GetEventMIDIChannel returns the MIDI event for the MIDI channel.
 func (e *Event) GetEventMIDIChannel(ch uint8) *EventMIDI {
-	if e.GetType() == Event_MIDI {
-		me := e.info.(*EventMIDI)
+	if me, ok := e.info.(*EventMIDI); ok {
 		if me.GetChannel() == ch {
 			return me
 		}
@@ -173,7 +168,7 @@ type EventFloat struct {
 
 // NewEventFloat returns a new control event.
 func NewEventFloat(id PortId, val float32) *Event {
-	return NewEvent(Event_Float, &EventFloat{id, val})
+	return NewEvent(eventTypeFloat, &EventFloat{id, val})
 }
 
 // String returns a descriptive string for the float event.
@@ -183,8 +178,8 @@ func (e *EventFloat) String() string {
 
 // GetEventFloat returns the float event.
 func (e *Event) GetEventFloat() *EventFloat {
-	if e.GetType() == Event_Float {
-		return e.info.(*EventFloat)
+	if fe, ok := e.info.(*EventFloat); ok {
+		return fe
 	}
 	return nil
 }
@@ -209,7 +204,7 @@ type EventInt struct {
 
 // NewEventInt returns a new integer event.
 func NewEventInt(id PortId, val int) *Event {
-	return NewEvent(Event_Int, &EventInt{id, val})
+	return NewEvent(eventTypeInt, &EventInt{id, val})
 }
 
 // String returns a descriptive string for the integer event.
@@ -219,8 +214,8 @@ func (e *EventInt) String() string {
 
 // GetEventInt returns the integer event.
 func (e *Event) GetEventInt() *EventInt {
-	if e.GetType() == Event_Int {
-		return e.info.(*EventInt)
+	if ie, ok := e.info.(*EventInt); ok {
+		return ie
 	}
 	return nil
 }
