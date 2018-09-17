@@ -11,13 +11,14 @@ package core
 import "fmt"
 
 //-----------------------------------------------------------------------------
-// general event
+// generic events
 
+// Event is a generic event.
 type Event struct {
 	info interface{} // event information
 }
 
-// NewEvent returns a new event.
+// NewEvent returns an event.
 func NewEvent(info interface{}) *Event {
 	return &Event{info}
 }
@@ -42,6 +43,8 @@ func (e *Event) String() string {
 //-----------------------------------------------------------------------------
 // MIDI Events
 
+// EventTypeMIDI is the MIDI event type.
+// See: https://www.midi.org/specifications
 type EventTypeMIDI uint
 
 const (
@@ -66,6 +69,7 @@ var midiEventType2String = map[EventTypeMIDI]string{
 	EventMIDIChannelAftertouch:    "channel_aftertouch",
 }
 
+// EventMIDI is an event with MIDI data.
 type EventMIDI struct {
 	etype  EventTypeMIDI
 	status uint8 // message status byte
@@ -88,9 +92,9 @@ func (e *EventMIDI) String() string {
 		return fmt.Sprintf("%s ch %d ctrl %d val %d", descr, e.GetChannel(), e.GetCtrlNum(), e.GetCtrlVal())
 	case EventMIDIPitchWheel:
 		return fmt.Sprintf("%s ch %d val %d", descr, e.GetChannel(), e.GetPitchWheel())
-		//case EventMIDI_PolyphonicAftertouch:
-		//case EventMIDI_ProgramChange:
-		//case EventMIDI_ChannelAftertouch:
+		//case EventMIDIPolyphonicAftertouch:
+		//case EventMIDIProgramChange:
+		//case EventMIDIChannelAftertouch:
 	}
 	return fmt.Sprintf("%s status %02x arg0 %02x arg1 %02x", midiEventType2String[e.etype], e.status, e.arg0, e.arg1)
 }
@@ -150,6 +154,7 @@ func (e *EventMIDI) GetPitchWheel() uint16 {
 //-----------------------------------------------------------------------------
 // Float Events
 
+// EventFloat is an event with a 32-bit floating point value.
 type EventFloat struct {
 	Id  PortId
 	Val float32
@@ -186,6 +191,7 @@ func SendEventFloatID(m Module, id PortId, val float32) {
 //-----------------------------------------------------------------------------
 // Integer Events
 
+// EventInt is an event with a 32-bit signed integer value.
 type EventInt struct {
 	Id  PortId
 	Val int
