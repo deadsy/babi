@@ -109,7 +109,7 @@ func (m *adsrModule) Event(e *core.Event) {
 	fe := e.GetEventFloat()
 	if fe != nil {
 		val := fe.Val
-		switch fe.Id {
+		switch fe.ID {
 		case adsrPortGate: // attack (!= 0) or release (==0)
 			log.Info.Printf("set gate %f", val)
 			if val != 0 {
@@ -155,7 +155,7 @@ func (m *adsrModule) Event(e *core.Event) {
 			}
 			m.kr = getK(val, core.AudioSampleFrequency)
 		default:
-			log.Info.Printf("bad port number %d", fe.Id)
+			log.Info.Printf("bad port number %d", fe.ID)
 		}
 	}
 }

@@ -104,8 +104,8 @@ func Pow2(x float32) float32 {
 	nf := int(math.Trunc(float64(x)))
 	ff := x - float32(nf)
 	if ff < 0 {
-		nf -= 1
-		ff += 1
+		nf--
+		ff++
 	}
 	return pow2Int(nf) * pow2Frac(ff)
 }

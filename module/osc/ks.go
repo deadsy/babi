@@ -92,7 +92,7 @@ func (m *ksModule) Event(e *core.Event) {
 	fe := e.GetEventFloat()
 	if fe != nil {
 		val := fe.Val
-		switch fe.Id {
+		switch fe.ID {
 		case ksPortGate: // attack(>0) or mute(=0)
 			log.Info.Printf("gate %f", val)
 			if val > 0 {
@@ -123,7 +123,7 @@ func (m *ksModule) Event(e *core.Event) {
 			m.freq = val
 			m.xstep = uint32(val * core.FrequencyScale)
 		default:
-			log.Info.Printf("bad port number %d", fe.Id)
+			log.Info.Printf("bad port number %d", fe.ID)
 		}
 	}
 }

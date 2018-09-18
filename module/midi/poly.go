@@ -47,8 +47,8 @@ type polyModule struct {
 	voice     []voiceInfo        // voices
 	idx       int                // round-robin index for voice slice
 	bend      float32            // pitch bending value (for all voices)
-	freq      core.PortId        // sub-module frequency port id
-	gate      core.PortId        // sub-module gate port id
+	freq      core.PortID        // sub-module frequency port id
+	gate      core.PortID        // sub-module gate port id
 }
 
 // NewPoly returns a MIDI polyphonic voice control module.
@@ -59,8 +59,8 @@ func NewPoly(s *core.Synth, ch uint8, sm func() core.Module, maxvoices uint) cor
 		ch:        ch,
 		submodule: sm,
 		voice:     make([]voiceInfo, maxvoices),
-		freq:      sm().Info().GetPortId("frequency"),
-		gate:      sm().Info().GetPortId("gate"),
+		freq:      sm().Info().GetPortID("frequency"),
+		gate:      sm().Info().GetPortID("gate"),
 	}
 }
 
@@ -98,7 +98,7 @@ func (m *polyModule) voiceAlloc(note uint8) *voiceInfo {
 	log.Info.Printf("")
 	// Currently doing simple round robin allocation.
 	v := &m.voice[m.idx]
-	m.idx += 1
+	m.idx++
 	if m.idx == len(m.voice) {
 		m.idx = 0
 	}

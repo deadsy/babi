@@ -35,7 +35,7 @@ type noteModule struct {
 	ch    uint8       // MIDI channel
 	note  uint8       // MIDI note number
 	dst   core.Module // destination module
-	gate  core.PortId // gate port ID
+	gate  core.PortID // gate port ID
 }
 
 // NewNote returns a MIDI note on/off gate control module.
@@ -47,7 +47,7 @@ func NewNote(s *core.Synth, ch, note uint8, dst core.Module, name string) core.M
 		ch:    ch,
 		note:  note,
 		dst:   dst,
-		gate:  mi.GetPortId(name),
+		gate:  mi.GetPortID(name),
 	}
 }
 

@@ -97,7 +97,7 @@ func (m *goomModule) Event(e *core.Event) {
 	fe := e.GetEventFloat()
 	if fe != nil {
 		val := fe.Val
-		switch fe.Id {
+		switch fe.ID {
 		case goomPortFrequency: // set the oscillator frequency
 			log.Info.Printf("set frequency %f", val)
 			m.freq = val
@@ -116,7 +116,7 @@ func (m *goomModule) Event(e *core.Event) {
 			// scaling constant for s1, map the slope to the LUT.
 			m.k1 = 1.0 / (float32(goomFullCycle-m.tp) * slope)
 		default:
-			log.Info.Printf("bad port number %d", fe.Id)
+			log.Info.Printf("bad port number %d", fe.ID)
 		}
 	}
 }

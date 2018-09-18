@@ -82,7 +82,7 @@ func (m *panModule) set() {
 func (m *panModule) Event(e *core.Event) {
 	fe := e.GetEventFloat()
 	if fe != nil {
-		switch fe.Id {
+		switch fe.ID {
 		case panPortVolume:
 			log.Info.Printf("set volume %f", fe.Val)
 			// convert to a linear volume
@@ -93,7 +93,7 @@ func (m *panModule) Event(e *core.Event) {
 			m.pan = core.Clamp(fe.Val, 0, 1) * (core.Pi / 2.0)
 			m.set()
 		default:
-			log.Info.Printf("bad port number %d", fe.Id)
+			log.Info.Printf("bad port number %d", fe.ID)
 		}
 	}
 }

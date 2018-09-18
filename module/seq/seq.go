@@ -70,7 +70,7 @@ func OpNote(channel, note, velocity uint8, duration uint) Op {
 			log.Info.Printf("note on %d (%d)", note, m.ticks)
 			m.synth.PushEvent(core.NewEventMIDI(core.EventMIDINoteOn, channel, note, velocity))
 		}
-		sm.duration -= 1
+		sm.duration--
 		if sm.duration == 0 {
 			// done
 			sm.ostate = opStateInit
@@ -90,7 +90,7 @@ func OpRest(duration uint) Op {
 			sm.duration = duration
 			sm.ostate = opStateWait
 		}
-		sm.duration -= 1
+		sm.duration--
 		if sm.duration == 0 {
 			// done
 			sm.ostate = opStateInit
@@ -180,7 +180,7 @@ func (m *seqModule) Event(e *core.Event) {
 	fe := e.GetEventFloat()
 	if fe != nil {
 		val := fe.Val
-		switch fe.Id {
+		switch fe.ID {
 		case seqPortBpm: // set the beats per minute
 			log.Info.Printf("set bpm %f", val)
 			if core.InRange(val, core.MinBeatsPerMin, core.MaxBeatsPerMin) {
@@ -189,14 +189,14 @@ func (m *seqModule) Event(e *core.Event) {
 				log.Info.Printf("bpm is out of range")
 			}
 		default:
-			log.Info.Printf("bad port number %d", fe.Id)
+			log.Info.Printf("bad port number %d", fe.ID)
 		}
 	}
 	// integer events
 	ie := e.GetEventInt()
 	if ie != nil {
 		val := ie.Val
-		switch ie.Id {
+		switch ie.ID {
 		case seqPortCtrl: // control the sequencer
 			switch val {
 			case CtrlStop: // stop the sequencer
@@ -214,7 +214,7 @@ func (m *seqModule) Event(e *core.Event) {
 				log.Info.Printf("unknown control value %d", val)
 			}
 		default:
-			log.Info.Printf("bad port number %d", ie.Id)
+			log.Info.Printf("bad port number %d", ie.ID)
 		}
 	}
 }
@@ -232,7 +232,7 @@ func (m *seqModule) Process(buf ...*core.Buf) {
 	m.tickError += core.SecsPerAudioBuffer
 	if m.tickError > m.secsPerTick {
 		m.tickError -= m.secsPerTick
-		m.ticks += 1
+		m.ticks++
 		// tick the state machine
 		m.tick(m.sm)
 	}

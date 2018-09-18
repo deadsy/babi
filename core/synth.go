@@ -22,7 +22,7 @@ const numEvents = 32
 
 //-----------------------------------------------------------------------------
 
-// Synthesizer
+// Synth is the top-level synthesizer object.
 type Synth struct {
 	root  Module               // root module
 	audio Audio                // audio output device

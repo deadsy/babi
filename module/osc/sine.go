@@ -67,13 +67,13 @@ func (m *sineModule) Event(e *core.Event) {
 	fe := e.GetEventFloat()
 	if fe != nil {
 		val := fe.Val
-		switch fe.Id {
+		switch fe.ID {
 		case sinePortFrequency: // set the oscillator frequency
 			log.Info.Printf("set frequency %f", val)
 			m.freq = val
 			m.xstep = uint32(val * core.FrequencyScale)
 		default:
-			log.Info.Printf("bad port number %d", fe.Id)
+			log.Info.Printf("bad port number %d", fe.ID)
 		}
 	}
 }

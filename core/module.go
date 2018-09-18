@@ -19,6 +19,7 @@ import (
 // PortType represents the type of data sent or received on a module port.
 type PortType int
 
+// PortType enumeration.
 const (
 	PortTypeNull        PortType = iota
 	PortTypeAudioBuffer          // audio buffers
@@ -28,14 +29,14 @@ const (
 )
 
 // PortID is a numeric identifier for a module port.
-type PortId uint
+type PortID uint
 
 // PortInfo contains the information describing a port.
 type PortInfo struct {
 	Name        string   // standard port name
 	Description string   // description of port
 	Ptype       PortType // port type
-	Id          PortId   // numeric port id
+	ID          PortID   // numeric port id
 }
 
 // PortSet is a collection of ports.
@@ -68,9 +69,9 @@ func (mi *ModuleInfo) GetPortByName(name string) *PortInfo {
 	panic(fmt.Sprintf("no port named \"%s\" in module \"%s\"", name, mi.Name))
 }
 
-// GetPortId returns the module port ID by port name.
-func (mi *ModuleInfo) GetPortId(name string) PortId {
-	return mi.GetPortByName(name).Id
+// GetPortID returns the module port ID by port name.
+func (mi *ModuleInfo) GetPortID(name string) PortID {
+	return mi.GetPortByName(name).ID
 }
 
 // numPorts return the number of ports within a set matching a specific type.
@@ -78,26 +79,26 @@ func (ps PortSet) numPorts(ptype PortType) int {
 	var count int
 	for _, pi := range ps {
 		if pi.Ptype == ptype {
-			count += 1
+			count++
 		}
 	}
 	return count
 }
 
 // CheckIO checks a module for the required type/number of IO ports.
-func (mi *ModuleInfo) CheckIO(midi_in, audio_in, audio_out int) error {
+func (mi *ModuleInfo) CheckIO(midiIn, audioIn, audioOut int) error {
 	var n int
 	n = mi.In.numPorts(PortTypeMIDI)
-	if n != midi_in {
-		return fmt.Errorf("%s needs %d MIDI inputs (has %d)", mi.Name, midi_in, n)
+	if n != midiIn {
+		return fmt.Errorf("%s needs %d MIDI inputs (has %d)", mi.Name, midiIn, n)
 	}
 	n = mi.In.numPorts(PortTypeAudioBuffer)
-	if n != audio_in {
-		return fmt.Errorf("%s needs %d audio inputs (has %d)", mi.Name, audio_in, n)
+	if n != audioIn {
+		return fmt.Errorf("%s needs %d audio inputs (has %d)", mi.Name, audioIn, n)
 	}
 	n = mi.Out.numPorts(PortTypeAudioBuffer)
-	if n != audio_out {
-		return fmt.Errorf("%s needs %d audio outputs (has %d)", mi.Name, audio_out, n)
+	if n != audioOut {
+		return fmt.Errorf("%s needs %d audio outputs (has %d)", mi.Name, audioOut, n)
 	}
 	return nil
 }
