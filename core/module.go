@@ -16,6 +16,7 @@ import (
 //-----------------------------------------------------------------------------
 // Module Ports
 
+// PortType represents the type of data sent or received on a module port.
 type PortType int
 
 const (
@@ -26,8 +27,10 @@ const (
 	PortTypeMIDI                 // event with MIDI data
 )
 
+// PortID is a numeric identifier for a module port.
 type PortId uint
 
+// PortInfo contains the information describing a port.
 type PortInfo struct {
 	Name        string   // standard port name
 	Description string   // description of port
@@ -35,11 +38,13 @@ type PortInfo struct {
 	Id          PortId   // numeric port id
 }
 
+// PortSet is a collection of ports.
 type PortSet []PortInfo
 
 //-----------------------------------------------------------------------------
 // Module Information
 
+// ModuleInfo contains the information describing a module.
 type ModuleInfo struct {
 	Name string  // module name
 	In   PortSet // input ports
@@ -63,7 +68,7 @@ func (mi *ModuleInfo) GetPortByName(name string) *PortInfo {
 	panic(fmt.Sprintf("no port named \"%s\" in module \"%s\"", name, mi.Name))
 }
 
-// GetPortID returns the module port ID by port name.
+// GetPortId returns the module port ID by port name.
 func (mi *ModuleInfo) GetPortId(name string) PortId {
 	return mi.GetPortByName(name).Id
 }
@@ -100,6 +105,7 @@ func (mi *ModuleInfo) CheckIO(midi_in, audio_in, audio_out int) error {
 //-----------------------------------------------------------------------------
 // Modules
 
+// Module is the interface for an audio/event processing module.
 type Module interface {
 	Process(buf ...*Buf) // run the module dsp
 	Event(e *Event)      // process an event
@@ -109,7 +115,7 @@ type Module interface {
 	Child() []Module     // return the child modules
 }
 
-// Return a string for the module tree of this module.
+// ModuleString returns the string for the module tree of this module.
 func ModuleString(m Module) string {
 	mi := m.Info()
 	children := m.Child()

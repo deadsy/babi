@@ -48,22 +48,22 @@ func (m *ksModule) Info() *core.ModuleInfo {
 
 //-----------------------------------------------------------------------------
 
-const ks_delay_bits = 6
-const ks_delay_size = 1 << ks_delay_bits
+const ksDelayBits = 6
+const ksDelaySize = 1 << ksDelayBits
 
-const ks_delay_mask = ks_delay_size - 1
-const ks_frac_bits = 32 - ks_delay_bits
-const ks_frac_mask = (1 << ks_frac_bits) - 1
-const ks_frac_scale = 1 / (1 << ks_frac_bits)
+const ksDelayMask = ksDelaySize - 1
+const ksFracBits = 32 - ksDelayBits
+const ksFracMask = (1 << ksFracBits) - 1
+const ksFracScale = 1 / (1 << ksFracBits)
 
 type ksModule struct {
 	synth *core.Synth // top-level synth
 	rand  *core.Rand
-	delay [ks_delay_size]float32 // delay line
-	k     float32                // attenuation and averaging constant 0 to 0.5
-	freq  float32                // base frequency
-	x     uint32                 // phase position
-	xstep uint32                 // phase step per sample
+	delay [ksDelaySize]float32 // delay line
+	k     float32              // attenuation and averaging constant 0 to 0.5
+	freq  float32              // base frequency
+	x     uint32               // phase position
+	xstep uint32               // phase step per sample
 }
 
 // NewKarplusStrong returns a Karplus Strong oscillator module.
@@ -100,7 +100,7 @@ func (m *ksModule) Event(e *core.Event) {
 				// The values should sum to zero so that multiple rounds of filtering
 				// will make all values fall to zero.
 				var sum float32
-				for i := 0; i < ks_delay_size-1; i++ {
+				for i := 0; i < ksDelaySize-1; i++ {
 					val := m.rand.Float()
 					x := sum + val
 					if x > 1 || x < -1 {
@@ -109,9 +109,9 @@ func (m *ksModule) Event(e *core.Event) {
 					sum += val
 					m.delay[i] = val
 				}
-				m.delay[ks_delay_size-1] = -sum
+				m.delay[ksDelaySize-1] = -sum
 			} else {
-				for i := 0; i < ks_delay_size; i++ {
+				for i := 0; i < ksDelaySize; i++ {
 					m.delay[i] = 0
 				}
 			}
@@ -134,17 +134,17 @@ func (m *ksModule) Event(e *core.Event) {
 func (m *ksModule) Process(buf ...*core.Buf) {
 	out := buf[0]
 	for i := 0; i < len(out); i++ {
-		x0 := m.x >> ks_frac_bits
-		x1 := (x0 + 1) & ks_delay_mask
+		x0 := m.x >> ksFracBits
+		x1 := (x0 + 1) & ksDelayMask
 		y0 := m.delay[x0]
 		y1 := m.delay[x1]
 		// interpolate
-		out[i] = y0 + (y1-y0)*ks_frac_scale*float32(m.x&ks_frac_mask)
+		out[i] = y0 + (y1-y0)*ksFracScale*float32(m.x&ksFracMask)
 		// step the x position
 		m.x += m.xstep
 		// filter - once we have moved beyond the delay line index we
 		// will average it's amplitude with the next value.
-		if x0 != (m.x >> ks_frac_bits) {
+		if x0 != (m.x >> ksFracBits) {
 			m.delay[x0] = m.k * (y0 + y1)
 		}
 	}
