@@ -26,7 +26,7 @@ type CircularBuffer struct {
 
 // Increment and wrap-around an index value.
 func incMod(idx, size int) int {
-	idx += 1
+	idx++
 	if idx == size {
 		return 0
 	}

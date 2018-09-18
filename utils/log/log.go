@@ -17,15 +17,17 @@ import (
 
 //-----------------------------------------------------------------------------
 
-type LogWriter struct{}
+// Writer is the log writer.
+type Writer struct{}
 
+// Logging types.
 var (
-	Info  = log.New(LogWriter{}, "INFO ", 0)
-	Debug = log.New(LogWriter{}, "DEBUG ", 0)
-	Error = log.New(LogWriter{}, "ERROR ", 0)
+	Info  = log.New(Writer{}, "INFO ", 0)
+	Debug = log.New(Writer{}, "DEBUG ", 0)
+	Error = log.New(Writer{}, "ERROR ", 0)
 )
 
-func (f LogWriter) Write(p []byte) (n int, err error) {
+func (f Writer) Write(p []byte) (n int, err error) {
 	pc, file, line, ok := runtime.Caller(4)
 	if !ok {
 		file = "?"

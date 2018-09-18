@@ -13,20 +13,20 @@ import "unsafe"
 
 //-----------------------------------------------------------------------------
 
-type ProcessCallback func(uint32) int
-type BufferSizeCallback func(uint32) int
-type SampleRateCallback func(uint32) int
-type PortRegistrationCallback func(PortId, bool)
-type PortRenameCallback func(PortId, string, string)
-type PortConnectCallback func(PortId, PortId, bool)
-type ClientRegistrationCallback func()
-type FreewheelCallback func()
-type GraphOrderCallback func() int
-type XrunCallback func() int
-type ShutdownCallback func()
-type InfoShutdownCallback func()
-type ErrorFunction func(string)
-type InfoFunction func(string)
+type funcProcessCallback func(uint32) int
+type funcBufferSizeCallback func(uint32) int
+type funcSampleRateCallback func(uint32) int
+type funcPortRegistrationCallback func(PortID, bool)
+type funcPortRenameCallback func(PortID, string, string)
+type funcPortConnectCallback func(PortID, PortID, bool)
+type funcClientRegistrationCallback func()
+type funcFreewheelCallback func()
+type funcGraphOrderCallback func() int
+type funcXrunCallback func() int
+type funcShutdownCallback func()
+type funcInfoShutdownCallback func()
+type funcErrorFunction func(string)
+type funcInfoFunction func(string)
 
 //export goProcess
 func goProcess(nframes uint, arg unsafe.Pointer) int {
@@ -49,19 +49,19 @@ func goSampleRate(nframes uint, arg unsafe.Pointer) int {
 //export goPortRegistration
 func goPortRegistration(port uint, register int, arg unsafe.Pointer) {
 	client := (*C.struct__jack_client)(arg)
-	clientMap[client].portRegistrationCallback(PortId(port), register != 0)
+	clientMap[client].portRegistrationCallback(PortID(port), register != 0)
 }
 
 //export goPortRename
 func goPortRename(port uint, oldName, newName *C.char, arg unsafe.Pointer) {
 	client := (*C.struct__jack_client)(arg)
-	clientMap[client].portRenameCallback(PortId(port), C.GoString(oldName), C.GoString(newName))
+	clientMap[client].portRenameCallback(PortID(port), C.GoString(oldName), C.GoString(newName))
 }
 
 //export goPortConnect
 func goPortConnect(aport, bport uint, connect int, arg unsafe.Pointer) {
 	client := (*C.struct__jack_client)(arg)
-	clientMap[client].portConnectCallback(PortId(aport), PortId(bport), connect != 0)
+	clientMap[client].portConnectCallback(PortID(aport), PortID(bport), connect != 0)
 }
 
 //export goClientRegistration

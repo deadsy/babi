@@ -102,8 +102,8 @@ import (
 
 //-----------------------------------------------------------------------------
 
+// JACK options.
 const (
-	// options
 	NullOption    = C.JackNullOption
 	NoStartServer = C.JackNoStartServer
 	UseExactName  = C.JackUseExactName
@@ -111,13 +111,19 @@ const (
 	LoadName      = C.JackLoadName
 	LoadInit      = C.JackLoadInit
 	SessionID     = C.JackSessionID
-	// port flags
+)
+
+// JACK port flags.
+const (
 	PortIsInput    = C.JackPortIsInput
 	PortIsOutput   = C.JackPortIsOutput
 	PortIsPhysical = C.JackPortIsPhysical
 	PortCanMonitor = C.JackPortCanMonitor
 	PortIsTerminal = C.JackPortIsTerminal
-	// default audio/midi types
+)
+
+// JACK default audio/midi types.
+const (
 	DefaultAudio = "32 bit float mono audio"
 	DefaultMIDI  = "8 bit raw midi"
 )
@@ -125,8 +131,10 @@ const (
 //-----------------------------------------------------------------------------
 // status bitfield
 
+// Status is the go type for the JACK status bitmap.
 type Status uint
 
+// Status bits.
 const (
 	Failure       Status = C.JackFailure
 	InvalidOption        = C.JackInvalidOption
@@ -210,31 +218,33 @@ func GetClientPID(name string) int {
 
 //-----------------------------------------------------------------------------
 
-type PortId uint32
+// PortID is the Go type for the JACK port identifier.
+type PortID uint32
 
 //-----------------------------------------------------------------------------
 
+// Client is the Go type for the JACK client structure.
 type Client struct {
 	ptr                        *C.struct__jack_client
-	processCallback            ProcessCallback
-	bufferSizeCallback         BufferSizeCallback
-	sampleRateCallback         SampleRateCallback
-	portRegistrationCallback   PortRegistrationCallback
-	portRenameCallback         PortRenameCallback
-	portConnectCallback        PortConnectCallback
-	clientRegistrationCallback ClientRegistrationCallback
-	freewheelCallback          FreewheelCallback
-	graphOrderCallback         GraphOrderCallback
-	xrunCallback               XrunCallback
-	shutdownCallback           ShutdownCallback
-	infoShutdownCallback       InfoShutdownCallback
+	processCallback            funcProcessCallback
+	bufferSizeCallback         funcBufferSizeCallback
+	sampleRateCallback         funcSampleRateCallback
+	portRegistrationCallback   funcPortRegistrationCallback
+	portRenameCallback         funcPortRenameCallback
+	portConnectCallback        funcPortConnectCallback
+	clientRegistrationCallback funcClientRegistrationCallback
+	freewheelCallback          funcFreewheelCallback
+	graphOrderCallback         funcGraphOrderCallback
+	xrunCallback               funcXrunCallback
+	shutdownCallback           funcShutdownCallback
+	infoShutdownCallback       funcInfoShutdownCallback
 }
 
 var (
 	clientMap     map[*C.struct__jack_client]*Client
 	clientMapLock sync.Mutex
-	errorFunction ErrorFunction = nil
-	infoFunction  InfoFunction  = nil
+	errorFunction funcErrorFunction
+	infoFunction  funcInfoFunction
 )
 
 // ClientOpen opens an external client session with a JACK server.
@@ -312,13 +322,13 @@ func (c *Client) Deactivate() int {
 // int jack_set_thread_init_callback (jack_client_t *client,
 
 // OnShutdown registers a function to be called if the JACK server shuts down the client thread.
-func (c *Client) OnShutdown(cb ShutdownCallback) {
+func (c *Client) OnShutdown(cb funcShutdownCallback) {
 	c.shutdownCallback = cb
 	C.jack_on_shutdown_go(c.ptr)
 }
 
 // OnInfoShutdown registers a function to be called if the JACK server shuts down the client thread.
-func (c *Client) OnInfoShutdown(cb InfoShutdownCallback) {
+func (c *Client) OnInfoShutdown(cb funcInfoShutdownCallback) {
 	c.infoShutdownCallback = cb
 	C.jack_on_info_shutdown_go(c.ptr)
 }
@@ -326,61 +336,61 @@ func (c *Client) OnInfoShutdown(cb InfoShutdownCallback) {
 //-----------------------------------------------------------------------------
 
 // SetProcessCallback tells JACK to call the process callback whenever there is work be done.
-func (c *Client) SetProcessCallback(cb ProcessCallback) int {
+func (c *Client) SetProcessCallback(cb funcProcessCallback) int {
 	c.processCallback = cb
 	return int(C.jack_set_process_callback_go(c.ptr))
 }
 
 // SetFreewheelCallback tells JACK to call the freewheel callback whenever we enter or leave "freewheel" mode.
-func (c *Client) SetFreewheelCallback(cb FreewheelCallback) int {
+func (c *Client) SetFreewheelCallback(cb funcFreewheelCallback) int {
 	c.freewheelCallback = cb
 	return int(C.jack_set_freewheel_callback_go(c.ptr))
 }
 
 // SetBufferSizeCallback tells JACK to call the bufsize callback whenever the size of the the buffer passed to the process callback is about to change.
-func (c *Client) SetBufferSizeCallback(cb BufferSizeCallback) int {
+func (c *Client) SetBufferSizeCallback(cb funcBufferSizeCallback) int {
 	c.bufferSizeCallback = cb
 	return int(C.jack_set_buffer_size_callback_go(c.ptr))
 }
 
 // SetSampleRateCallback tells JACK to call srate callback whenever the system sample rate changes.
-func (c *Client) SetSampleRateCallback(cb SampleRateCallback) int {
+func (c *Client) SetSampleRateCallback(cb funcSampleRateCallback) int {
 	c.sampleRateCallback = cb
 	return int(C.jack_set_sample_rate_callback_go(c.ptr))
 }
 
 // SetClientRegistrationCallback tells JACK to call client registration callback whenever a client is registered or unregistered.
-func (c *Client) SetClientRegistrationCallback(cb ClientRegistrationCallback) int {
+func (c *Client) SetClientRegistrationCallback(cb funcClientRegistrationCallback) int {
 	c.clientRegistrationCallback = cb
 	return int(C.jack_set_client_registration_callback_go(c.ptr))
 }
 
 // SetPortRegistrationCallback tells JACK to call registration callback whenever a port is registered or unregistered.
-func (c *Client) SetPortRegistrationCallback(cb PortRegistrationCallback) int {
+func (c *Client) SetPortRegistrationCallback(cb funcPortRegistrationCallback) int {
 	c.portRegistrationCallback = cb
 	return int(C.jack_set_port_registration_callback_go(c.ptr))
 }
 
 // SetPortConnectCallback tells JACK to call connect callback whenever a port is connected or disconnected.
-func (c *Client) SetPortConnectCallback(cb PortConnectCallback) int {
+func (c *Client) SetPortConnectCallback(cb funcPortConnectCallback) int {
 	c.portConnectCallback = cb
 	return int(C.jack_set_port_connect_callback_go(c.ptr))
 }
 
 // SetPortRenameCallback tells JACK to call rename callback whenever a port is renamed.
-func (c *Client) SetPortRenameCallback(cb PortRenameCallback) int {
+func (c *Client) SetPortRenameCallback(cb funcPortRenameCallback) int {
 	c.portRenameCallback = cb
 	return int(C.jack_set_port_rename_callback_go(c.ptr))
 }
 
 // SetGraphOrderCallback tells JACK to call graph callback whenever the processing graph is reordered.
-func (c *Client) SetGraphOrderCallback(cb GraphOrderCallback) int {
+func (c *Client) SetGraphOrderCallback(cb funcGraphOrderCallback) int {
 	c.graphOrderCallback = cb
 	return int(C.jack_set_graph_order_callback_go(c.ptr))
 }
 
 // SetXrunCallback tells JACK to call xrun callback whenever there is an xrun.
-func (c *Client) SetXrunCallback(cb XrunCallback) int {
+func (c *Client) SetXrunCallback(cb funcXrunCallback) int {
 	c.xrunCallback = cb
 	return int(C.jack_set_xrun_callback_go(c.ptr))
 }
@@ -455,3 +465,5 @@ func (c *Client) GetBufferSize() uint32 {
 // extern void (*jack_info_callback)(const char *msg) JACK_OPTIONAL_WEAK_EXPORT;
 // void jack_set_info_function (void (*func)(const char *)) JACK_OPTIONAL_WEAK_EXPORT;
 // void jack_free(void* ptr) JACK_OPTIONAL_WEAK_EXPORT;
+
+//-----------------------------------------------------------------------------
