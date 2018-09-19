@@ -267,6 +267,16 @@ int main(void) {
 	double signal[WINDOW_SIZE];
 	double realCepstrum[WINDOW_SIZE];
 	double minimumPhase[WINDOW_SIZE];
+	double x[WINDOW_SIZE];
+	double y[WINDOW_SIZE];
+
+	// sinc
+	rand_buf(x, WINDOW_SIZE);
+	for (int i = 0; i < WINDOW_SIZE; i++) {
+		y[i] = SINC(x[i]);
+	}
+	dump_buf("xi", x, WINDOW_SIZE);
+	dump_buf("yi", y, WINDOW_SIZE);
 
 	// blackman
 	BlackmanWindow(WINDOW_SIZE, w);
@@ -274,21 +284,21 @@ int main(void) {
 
 	// dft
 	rand_buf(realTime, WINDOW_SIZE);
-	dump_buf("realTime", realTime, WINDOW_SIZE);
 	rand_buf(imagTime, WINDOW_SIZE);
-	dump_buf("imagTime", imagTime, WINDOW_SIZE);
 	DFT(WINDOW_SIZE, realTime, imagTime, realFreq, imagFreq);
-	dump_buf("realFreq", realFreq, WINDOW_SIZE);
-	dump_buf("imagFreq", imagFreq, WINDOW_SIZE);
+	dump_buf("realTimei", realTime, WINDOW_SIZE);
+	dump_buf("imagTimei", imagTime, WINDOW_SIZE);
+	dump_buf("realFreqi", realFreq, WINDOW_SIZE);
+	dump_buf("imagFreqi", imagFreq, WINDOW_SIZE);
 
 	// idft
 	rand_buf(realFreq, WINDOW_SIZE);
-	dump_buf("realFreq", realFreq, WINDOW_SIZE);
 	rand_buf(imagFreq, WINDOW_SIZE);
-	dump_buf("imagFreq", imagFreq, WINDOW_SIZE);
 	InverseDFT(WINDOW_SIZE, realTime, imagTime, realFreq, imagFreq);
-	dump_buf("realTime", realTime, WINDOW_SIZE);
-	dump_buf("imagTime", imagTime, WINDOW_SIZE);
+	dump_buf("realFreqi", realFreq, WINDOW_SIZE);
+	dump_buf("imagFreqi", imagFreq, WINDOW_SIZE);
+	dump_buf("realTimei", realTime, WINDOW_SIZE);
+	dump_buf("imagTimei", imagTime, WINDOW_SIZE);
 
 	// real cepstrum
 	rand_buf(signal, WINDOW_SIZE);

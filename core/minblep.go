@@ -21,8 +21,8 @@ func Sinc(x float64) float64 {
 	if x == 0 {
 		return 1
 	}
-	px := Pi * x
-	return math.Sin(px) / px
+	x *= Pi
+	return math.Sin(x) / x
 }
 
 // BlackmanWindow returns a Blackman window with n elements
@@ -95,19 +95,16 @@ func Cexp(r, i float64) (zr, zi float64) {
 // RealCepstrum computes the real cepstrum of a real signal.
 func RealCepstrum(signal []float64) []float64 {
 	n := len(signal)
-	// create complex time domain input
-	realTime := make([]float64, n)
-	imagTime := make([]float64, n)
-	copy(realTime, signal)
 	// convert to frequency domain
-	realFreq, imagFreq := DFT(realTime, imagTime)
+	imagTime := make([]float64, n)
+	realFreq, imagFreq := DFT(signal, imagTime)
 	// calculate the log of the absolute value
 	for i := 0; i < n; i++ {
 		realFreq[i] = math.Log(Cabs(realFreq[i], imagFreq[i]))
 		imagFreq[i] = 0
 	}
 	// back to time domain
-	realTime, imagTime = InverseDFT(realFreq, imagFreq)
+	realTime, _ := InverseDFT(realFreq, imagFreq)
 	// output the real part
 	return realTime
 }
@@ -171,10 +168,9 @@ func GenerateMinBLEP(zeroCrossings, overSampling int) []float64 {
 		minBLEP[i] = a
 	}
 	// Normalize
-	a = minBLEP[n-1]
-	a = 1.0 / a
+	scale := 1.0 / minBLEP[n-1]
 	for i := 0; i < n; i++ {
-		minBLEP[i] *= a
+		minBLEP[i] *= scale
 	}
 	return minBLEP
 }
