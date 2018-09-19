@@ -15,32 +15,32 @@ import (
 
 //-----------------------------------------------------------------------------
 
-const TEST_SIZE = 10007 // prime to give the LERP a workout
-const TEST_LIMIT = 5 * TEST_SIZE
-const MAX_COS_ERR = 1e-5 // 1 part in 100000 - should be fine for 16 bit sound
+const testSize = 10007 // prime to give the LERP a workout
+const testLimit = 5 * testSize
+const maxCosError = 1e-5 // 1 part in 100000 - should be fine for 16 bit sound
 
-func Test_Cos(t *testing.T) {
-	dx := Tau / TEST_SIZE
-	for i := -TEST_LIMIT; i < TEST_LIMIT; i++ {
+func TestCos(t *testing.T) {
+	dx := Tau / testSize
+	for i := -testLimit; i < testLimit; i++ {
 		x := float64(i) * dx
 		y0 := float64(Cos(float32(x)))
 		y1 := math.Cos(x)
 		err := math.Abs(y0 - y1)
-		if err >= MAX_COS_ERR {
+		if err >= maxCosError {
 			t.Logf("i %d x %e y0 %e y1 %e err %e", i, x, y0, y1, err)
 			t.Error("FAIL")
 		}
 	}
 }
 
-func Test_Sin(t *testing.T) {
-	dx := Tau / TEST_SIZE
-	for i := -TEST_LIMIT; i < TEST_LIMIT; i++ {
+func TestSin(t *testing.T) {
+	dx := Tau / testSize
+	for i := -testLimit; i < testLimit; i++ {
 		x := float64(i) * dx
 		y0 := float64(Sin(float32(x)))
 		y1 := math.Sin(x)
 		err := math.Abs(y0 - y1)
-		if err >= MAX_COS_ERR {
+		if err >= maxCosError {
 			t.Logf("i %d x %e y0 %e y1 %e err %e", i, x, y0, y1, err)
 			t.Error("FAIL")
 		}
@@ -50,41 +50,41 @@ func Test_Sin(t *testing.T) {
 // benchmarking
 
 // LUT based babi.Cos
-func benchmark_babi_Cos(theta float32, b *testing.B) {
+func benchmarkBabiCos(theta float32, b *testing.B) {
 	for n := 0; n < b.N; n++ {
 		Cos(theta)
 	}
 }
 
-func Benchmark_babi_Cos0(b *testing.B)   { benchmark_babi_Cos(0, b) }
-func Benchmark_babi_Cos1(b *testing.B)   { benchmark_babi_Cos(1, b) }
-func Benchmark_babi_Cos10(b *testing.B)  { benchmark_babi_Cos(10, b) }
-func Benchmark_babi_Cos100(b *testing.B) { benchmark_babi_Cos(100, b) }
+func BenchmarkBabiCos0(b *testing.B)   { benchmarkBabiCos(0, b) }
+func BenchmarkBabiCos1(b *testing.B)   { benchmarkBabiCos(1, b) }
+func BenchmarkBabiCos10(b *testing.B)  { benchmarkBabiCos(10, b) }
+func BenchmarkBabiCos100(b *testing.B) { benchmarkBabiCos(100, b) }
 
 // standard math.Cos
-func benchmark_math_Cos(theta float32, b *testing.B) {
+func benchmarkMathCos(theta float32, b *testing.B) {
 	for n := 0; n < b.N; n++ {
 		math.Cos(float64(theta))
 	}
 }
 
-func Benchmark_math_Cos0(b *testing.B)   { benchmark_math_Cos(0, b) }
-func Benchmark_math_Cos1(b *testing.B)   { benchmark_math_Cos(1, b) }
-func Benchmark_math_Cos10(b *testing.B)  { benchmark_math_Cos(10, b) }
-func Benchmark_math_Cos100(b *testing.B) { benchmark_math_Cos(100, b) }
+func BenchmarkMathCos0(b *testing.B)   { benchmarkMathCos(0, b) }
+func BenchmarkMathCos1(b *testing.B)   { benchmarkMathCos(1, b) }
+func BenchmarkMathCos10(b *testing.B)  { benchmarkMathCos(10, b) }
+func BenchmarkMathCos100(b *testing.B) { benchmarkMathCos(100, b) }
 
 //-----------------------------------------------------------------------------
 
-const MAX_POW_ERR = 5e-5
+const maxPowError = 5e-5
 
-func Test_Pow2(t *testing.T) {
-	dx := 1.0 / TEST_SIZE
-	for i := -TEST_LIMIT; i < TEST_LIMIT; i++ {
+func TestPow2(t *testing.T) {
+	dx := 1.0 / testSize
+	for i := -testLimit; i < testLimit; i++ {
 		x := float64(i) * dx
 		y0 := float64(Pow2(float32(x)))
 		y1 := math.Pow(2, x)
 		err := math.Abs(y0-y1) / y1
-		if err >= MAX_POW_ERR {
+		if err >= maxPowError {
 			t.Logf("i %d x %e y0 %e y1 %e err %e", i, x, y0, y1, err)
 			t.Error("FAIL")
 		}
@@ -94,27 +94,27 @@ func Test_Pow2(t *testing.T) {
 // benchmarking
 
 // LUT based babi.Pow2
-func benchmark_babi_Pow2(x float32, b *testing.B) {
+func benchmarkBabiPow2(x float32, b *testing.B) {
 	for n := 0; n < b.N; n++ {
 		Pow2(x)
 	}
 }
 
-func Benchmark_babi_Pow2_0(b *testing.B)  { benchmark_babi_Pow2(0.0, b) }
-func Benchmark_babi_Pow2_11(b *testing.B) { benchmark_babi_Pow2(1.1, b) }
-func Benchmark_babi_Pow2_22(b *testing.B) { benchmark_babi_Pow2(2.2, b) }
-func Benchmark_babi_Pow2_73(b *testing.B) { benchmark_babi_Pow2(7.3, b) }
+func BenchmarkBabiPow2_0(b *testing.B)  { benchmarkBabiPow2(0.0, b) }
+func BenchmarkBabiPow2_11(b *testing.B) { benchmarkBabiPow2(1.1, b) }
+func BenchmarkBabiPow2_22(b *testing.B) { benchmarkBabiPow2(2.2, b) }
+func BenchmarkBabiPow2_73(b *testing.B) { benchmarkBabiPow2(7.3, b) }
 
 // standard math.Pow
-func benchmark_math_Pow2(x float64, b *testing.B) {
+func benchmarkMathPow2(x float64, b *testing.B) {
 	for n := 0; n < b.N; n++ {
 		math.Pow(2, x)
 	}
 }
 
-func Benchmark_math_Pow2_0(b *testing.B)  { benchmark_math_Pow2(0.0, b) }
-func Benchmark_math_Pow2_11(b *testing.B) { benchmark_math_Pow2(1.1, b) }
-func Benchmark_math_Pow2_22(b *testing.B) { benchmark_math_Pow2(2.2, b) }
-func Benchmark_math_Pow2_73(b *testing.B) { benchmark_math_Pow2(7.3, b) }
+func BenchmarkMathPow2_0(b *testing.B)  { benchmarkMathPow2(0.0, b) }
+func BenchmarkMathPow2_11(b *testing.B) { benchmarkMathPow2(1.1, b) }
+func BenchmarkMathPow2_22(b *testing.B) { benchmarkMathPow2(2.2, b) }
+func BenchmarkMathPow2_73(b *testing.B) { benchmarkMathPow2(7.3, b) }
 
 //-----------------------------------------------------------------------------

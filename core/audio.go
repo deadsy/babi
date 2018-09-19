@@ -17,6 +17,7 @@ import (
 
 //-----------------------------------------------------------------------------
 
+// Audio is a generic audio interface.
 type Audio interface {
 	Close()
 	Write(l, r *Buf)
@@ -25,12 +26,14 @@ type Audio interface {
 //-----------------------------------------------------------------------------
 // pulse audio
 
+// Pulse contains state for the pulse audio stream.
 type Pulse struct {
 	pa  *pulse.PulseMainLoop
 	ctx *pulse.PulseContext
 	st  *pulse.PulseStream
 }
 
+// NewPulse returns an audio interface using the pulse audio stream.
 func NewPulse() (Audio, error) {
 	log.Info.Printf("")
 
@@ -54,6 +57,7 @@ func NewPulse() (Audio, error) {
 	return &Pulse{pa, ctx, st}, nil
 }
 
+// Close closes a pulse audio stream.
 func (p *Pulse) Close() {
 	log.Info.Printf("")
 	p.st.Dispose()
@@ -61,10 +65,11 @@ func (p *Pulse) Close() {
 	p.pa.Dispose()
 }
 
+// Write writes to a pulse audio stream.
 func (p *Pulse) Write(l, r *Buf) {
 	// combine left/right channels into a single slice.
 	buf := make([]float32, 2*AudioBufferSize)
-	for i := 0; i < AudioBufferSize; i += 1 {
+	for i := 0; i < AudioBufferSize; i++ {
 		buf[2*i] = l[i]
 		buf[(2*i)+1] = r[i]
 	}
