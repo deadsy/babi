@@ -14,12 +14,18 @@ import (
 
 //-----------------------------------------------------------------------------
 
-func Test_Float(t *testing.T) {
-	r := NewRand(0)
+func TestFloat32(t *testing.T) {
+	r := NewRand32(0)
 	for i := 0; i < 100; i++ {
-		t.Logf("%f", r.Float())
+		t.Logf("%f", r.Float32())
 	}
+}
 
+func TestFloat64(t *testing.T) {
+	r := NewRand64(0)
+	for i := 0; i < 100; i++ {
+		t.Logf("%f", r.Float64())
+	}
 }
 
 //-----------------------------------------------------------------------------
