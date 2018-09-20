@@ -141,31 +141,29 @@ func MinimumPhase(realCepstrum []float64) []float64 {
 	return realTime
 }
 
-// GenerateMinBLEP returns a MinBLEP as an array of floats.
+// GenerateMinBLEP returns a specified MinBlep slice.
 func GenerateMinBLEP(zeroCrossings, overSampling int) []float64 {
-	n := (zeroCrossings * 2 * overSampling) + 1
+	n := (2 * zeroCrossings * overSampling) + 1
 	// generate sinc
-	buffer1 := make([]float64, n)
-	a := float64(-zeroCrossings)
-	b := float64(zeroCrossings)
+	sinc := make([]float64, n)
+	k := 1.0 / float64(overSampling)
 	for i := 0; i < n; i++ {
-		r := float64(i) / float64(n-1)
-		buffer1[i] = Sinc(a + (r * (b - a)))
+		sinc[i] = Sinc(k*float64(i) - float64(zeroCrossings))
 	}
 	// window the sinc
-	buffer2 := BlackmanWindow(n)
+	window := BlackmanWindow(n)
 	for i := 0; i < n; i++ {
-		buffer1[i] *= buffer2[i]
+		sinc[i] *= window[i]
 	}
 	// minimum phase reconstruction
-	buffer2 = RealCepstrum(buffer1)
-	buffer1 = MinimumPhase(buffer2)
+	realCepstrum := RealCepstrum(sinc)
+	minPhase := MinimumPhase(realCepstrum)
 	// integrate into minBLEP
 	minBLEP := make([]float64, n)
-	a = 0
+	sum := 0.0
 	for i := 0; i < n; i++ {
-		a += buffer1[i]
-		minBLEP[i] = a
+		sum += minPhase[i]
+		minBLEP[i] = sum
 	}
 	// Normalize
 	scale := 1.0 / minBLEP[n-1]
