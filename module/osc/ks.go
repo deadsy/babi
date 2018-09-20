@@ -58,7 +58,7 @@ const ksFracScale = 1 / (1 << ksFracBits)
 
 type ksModule struct {
 	synth *core.Synth // top-level synth
-	rand  *core.Rand
+	rand  *core.Rand32
 	delay [ksDelaySize]float32 // delay line
 	k     float32              // attenuation and averaging constant 0 to 0.5
 	freq  float32              // base frequency
@@ -71,7 +71,7 @@ func NewKarplusStrong(s *core.Synth) core.Module {
 	log.Info.Printf("")
 	return &ksModule{
 		synth: s,
-		rand:  core.NewRand(0),
+		rand:  core.NewRand32(0),
 	}
 }
 
@@ -101,7 +101,7 @@ func (m *ksModule) Event(e *core.Event) {
 				// will make all values fall to zero.
 				var sum float32
 				for i := 0; i < ksDelaySize-1; i++ {
-					val := m.rand.Float()
+					val := m.rand.Float32()
 					x := sum + val
 					if x > 1 || x < -1 {
 						val = -val

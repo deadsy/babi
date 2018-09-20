@@ -3,6 +3,9 @@
 
 Random Functions
 
+See:
+https://en.wikipedia.org/wiki/Linear_congruential_generator
+
 */
 //-----------------------------------------------------------------------------
 
@@ -12,29 +15,56 @@ import "math"
 
 //-----------------------------------------------------------------------------
 
-// Rand contains the state for a simple PRNG.
-type Rand struct {
+// Rand32 is a simple LCG PRNG.
+type Rand32 struct {
 	state uint32
 }
 
-// NewRand returns a simple PRNG object.
-func NewRand(seed uint32) *Rand {
+// NewRand32 returns a 32-bit LCG PRNG.
+func NewRand32(seed uint32) *Rand32 {
 	if seed == 0 {
 		seed = 1
 	}
-	return &Rand{seed}
+	return &Rand32{seed}
 }
 
-// Uint32 returns a random uint32_t (0..0x7fffffff)
-func (r *Rand) Uint32() uint32 {
-	r.state = ((r.state * 1103515245) + 12345) & 0x7fffffff
+// Uint32 returns a pseudo-random uint32.
+func (r *Rand32) Uint32() uint32 {
+	r.state = (r.state * 214013) + 2531011
 	return r.state
 }
 
-// Float returns a random float from -1..1
-func (r *Rand) Float() float32 {
-	i := (r.Uint32() & 0x007fffff) | (128 << 23)
-	return math.Float32frombits(i) - 3
+// Float32 returns a random float32 from -1..1
+func (r *Rand32) Float32() float32 {
+	i := (r.Uint32() & 0x007fffff) | (128 << 23) // 2..4
+	return math.Float32frombits(i) - 3           // -1..1
+}
+
+//-----------------------------------------------------------------------------
+
+// Rand64 is a simple LCG PRNG.
+type Rand64 struct {
+	state uint64
+}
+
+// NewRand64 returns a 64-bit LCG PRNG.
+func NewRand64(seed uint64) *Rand64 {
+	if seed == 0 {
+		seed = 1
+	}
+	return &Rand64{seed}
+}
+
+// Uint64 returns a pseudo-random uint64.
+func (r *Rand64) Uint64() uint64 {
+	r.state = (r.state * 6364136223846793005) + 1442695040888963407
+	return r.state
+}
+
+// Float64 returns a random float64 from -1..1
+func (r *Rand64) Float64() float64 {
+	i := (r.Uint64() & 0x000fffffffffffff) | (1024 << 52) // 2..4
+	return math.Float64frombits(i) - 3                    // -1..1
 }
 
 //-----------------------------------------------------------------------------

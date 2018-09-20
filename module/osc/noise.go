@@ -47,18 +47,18 @@ const (
 )
 
 type noiseModule struct {
-	synth          *core.Synth // top-level synth
-	ntype          noiseType   // noise type
-	rand           *core.Rand  // random state
-	b0, b1, b2, b3 float32     // state variables
-	b4, b5, b6     float32     // state variables
+	synth          *core.Synth  // top-level synth
+	ntype          noiseType    // noise type
+	rand           *core.Rand32 // random state
+	b0, b1, b2, b3 float32      // state variables
+	b4, b5, b6     float32      // state variables
 }
 
 func newNoise(s *core.Synth, ntype noiseType) core.Module {
 	return &noiseModule{
 		synth: s,
 		ntype: ntype,
-		rand:  core.NewRand(0),
+		rand:  core.NewRand32(0),
 	}
 }
 
@@ -112,14 +112,14 @@ func (m *noiseModule) Event(e *core.Event) {
 
 func (m *noiseModule) generateWhite(out *core.Buf) {
 	for i := 0; i < len(out); i++ {
-		out[i] = m.rand.Float()
+		out[i] = m.rand.Float32()
 	}
 }
 
 func (m *noiseModule) generateBrown(out *core.Buf) {
 	b0 := m.b0
 	for i := 0; i < len(out); i++ {
-		white := m.rand.Float()
+		white := m.rand.Float32()
 		b0 = (b0 + (0.02 * white)) * (1.0 / 1.02)
 		out[i] = b0 * (1.0 / 0.38)
 	}
@@ -131,7 +131,7 @@ func (m *noiseModule) generatePink1(out *core.Buf) {
 	b1 := m.b1
 	b2 := m.b2
 	for i := 0; i < len(out); i++ {
-		white := m.rand.Float()
+		white := m.rand.Float32()
 		b0 = 0.99765*b0 + white*0.0990460
 		b1 = 0.96300*b1 + white*0.2965164
 		b2 = 0.57000*b2 + white*1.0526913
@@ -152,7 +152,7 @@ func (m *noiseModule) generatePink2(out *core.Buf) {
 	b5 := m.b5
 	b6 := m.b6
 	for i := 0; i < len(out); i++ {
-		white := m.rand.Float()
+		white := m.rand.Float32()
 		b0 = 0.99886*b0 + white*0.0555179
 		b1 = 0.99332*b1 + white*0.0750759
 		b2 = 0.96900*b2 + white*0.1538520
