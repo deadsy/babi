@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
 /*
 
-Simple Patch: an ADSR envelope on a sine wave.
+Sine Patch: an ADSR envelope on a sine wave.
 
 */
 //-----------------------------------------------------------------------------
@@ -20,9 +20,9 @@ import (
 //-----------------------------------------------------------------------------
 
 // Info returns the module information.
-func (m *simplePatch) Info() *core.ModuleInfo {
+func (m *sinePatch) Info() *core.ModuleInfo {
 	return &core.ModuleInfo{
-		Name: "simple_patch",
+		Name: "sine_patch",
 		In: []core.PortInfo{
 			{"midi_in", "midi input", core.PortTypeMIDI, 0},
 		},
@@ -35,7 +35,7 @@ func (m *simplePatch) Info() *core.ModuleInfo {
 
 //-----------------------------------------------------------------------------
 
-type simplePatch struct {
+type sinePatch struct {
 	synth   *core.Synth // top-level synth
 	ch      uint8       // MIDI channel
 	adsr    core.Module // adsr envelope
@@ -46,8 +46,8 @@ type simplePatch struct {
 	volCtrl core.Module // MIDI to volume control
 }
 
-// NewSimplePatch returns a simple sine/adsr patch.
-func NewSimplePatch(s *core.Synth) core.Module {
+// NewSinePatch returns a simple sine/adsr patch.
+func NewSinePatch(s *core.Synth) core.Module {
 	log.Info.Printf("")
 
 	const midiCh = 0
@@ -72,7 +72,7 @@ func NewSimplePatch(s *core.Synth) core.Module {
 	core.SendEventFloatName(pan, "pan", 0.5)
 	core.SendEventFloatName(pan, "volume", 1)
 
-	return &simplePatch{
+	return &sinePatch{
 		synth:   s,
 		ch:      midiCh,
 		adsr:    adsr,
@@ -85,12 +85,12 @@ func NewSimplePatch(s *core.Synth) core.Module {
 }
 
 // Return the child modules.
-func (m *simplePatch) Child() []core.Module {
+func (m *sinePatch) Child() []core.Module {
 	return []core.Module{m.adsr, m.sine, m.pan, m.note, m.panCtrl, m.volCtrl}
 }
 
 // Stop and performs any cleanup of a module.
-func (m *simplePatch) Stop() {
+func (m *sinePatch) Stop() {
 	log.Info.Printf("")
 }
 
@@ -98,7 +98,7 @@ func (m *simplePatch) Stop() {
 // Events
 
 // Event processes a module event.
-func (m *simplePatch) Event(e *core.Event) {
+func (m *sinePatch) Event(e *core.Event) {
 	me := e.GetEventMIDIChannel(m.ch)
 	if me != nil {
 		m.note.Event(e)
@@ -110,7 +110,7 @@ func (m *simplePatch) Event(e *core.Event) {
 //-----------------------------------------------------------------------------
 
 // Process runs the module DSP.
-func (m *simplePatch) Process(buf ...*core.Buf) {
+func (m *sinePatch) Process(buf ...*core.Buf) {
 	outL := buf[0]
 	outR := buf[1]
 	// generate sine
@@ -126,7 +126,7 @@ func (m *simplePatch) Process(buf ...*core.Buf) {
 }
 
 // Active return true if the module has non-zero output.
-func (m *simplePatch) Active() bool {
+func (m *sinePatch) Active() bool {
 	return m.adsr.Active()
 }
 

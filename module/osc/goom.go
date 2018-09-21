@@ -56,12 +56,6 @@ func (m *goomModule) Info() *core.ModuleInfo {
 const goomFullCycle = (1 << 32) - 1
 const goomHalfCycle = 1 << 31
 
-// Limit how close the duty cycle can get to 0/100%.
-const tpMin = 0.05
-
-// Limit how fast the slope can rise.
-const slopeMin = 0.1
-
 type goomModule struct {
 	synth *core.Synth // top-level synth
 	freq  float32     // base frequency
@@ -105,12 +99,12 @@ func (m *goomModule) Event(e *core.Event) {
 		case goomPortDuty: // set the wave duty cycle
 			log.Info.Printf("set duty cycle %f", val)
 			duty := core.Clamp(val, 0, 1)
-			m.tp = uint32(goomFullCycle * core.Map(duty, tpMin, 0.5))
+			m.tp = uint32(goomFullCycle * core.Map(duty, 0.05, 0.5))
 		case goomPortSlope: // set the wave slope
 			log.Info.Printf("set slope %f", val)
 			// Work out the portion of s0f0/s1f1 that is sloped.
 			slope := core.Clamp(val, 0, 1)
-			slope = core.Map(slope, slopeMin, 1)
+			slope = core.Map(slope, 0.1, 1)
 			// scaling constant for s0, map the slope to the LUT.
 			m.k0 = 1.0 / (float32(m.tp) * slope)
 			// scaling constant for s1, map the slope to the LUT.
