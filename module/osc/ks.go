@@ -34,7 +34,7 @@ const (
 // Info returns the module information.
 func (m *ksModule) Info() *core.ModuleInfo {
 	return &core.ModuleInfo{
-		Name: "karplus_strong",
+		Name: "ks",
 		In: []core.PortInfo{
 			{"gate", "oscillator gate, attack(>0) or mute(=0)", core.PortTypeFloat, ksPortGate},
 			{"frequency", "frequency (Hz)", core.PortTypeFloat, ksPortFrequency},

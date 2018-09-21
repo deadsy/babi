@@ -62,30 +62,30 @@ func newNoise(s *core.Synth, ntype noiseType) core.Module {
 	}
 }
 
-// NewWhite returns a white noise generator module.
+// NewNoiseWhite returns a white noise generator module.
 // white noise (spectral density = k)
-func NewWhite(s *core.Synth) core.Module {
+func NewNoiseWhite(s *core.Synth) core.Module {
 	log.Info.Printf("")
 	return newNoise(s, noiseTypeWhite)
 }
 
-// NewBrown returns a brown noise generator module.
+// NewNoiseBrown returns a brown noise generator module.
 // brown noise (spectral density = k/f*f)
-func NewBrown(s *core.Synth) core.Module {
+func NewNoiseBrown(s *core.Synth) core.Module {
 	log.Info.Printf("")
 	return newNoise(s, noiseTypeBrown)
 }
 
-// NewPink1 returns a pink noise generator module.
+// NewNoisePink1 returns a pink noise generator module.
 // pink noise (spectral density = k/f): fast, inaccurate version
-func NewPink1(s *core.Synth) core.Module {
+func NewNoisePink1(s *core.Synth) core.Module {
 	log.Info.Printf("")
 	return newNoise(s, noiseTypePink1)
 }
 
-// NewPink2 returns a pink noise generator module.
+// NewNoisePink2 returns a pink noise generator module.
 // pink noise (spectral density = k/f): slow, accurate version
-func NewPink2(s *core.Synth) core.Module {
+func NewNoisePink2(s *core.Synth) core.Module {
 	log.Info.Printf("")
 	return newNoise(s, noiseTypePink2)
 }
@@ -97,7 +97,6 @@ func (m *noiseModule) Child() []core.Module {
 
 // Stop and performs any cleanup of a module.
 func (m *noiseModule) Stop() {
-	log.Info.Printf("")
 }
 
 //-----------------------------------------------------------------------------

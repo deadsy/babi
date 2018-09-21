@@ -26,7 +26,7 @@ const (
 // Info returns the module information.
 func (m *sqrModule) Info() *core.ModuleInfo {
 	return &core.ModuleInfo{
-		Name: "square",
+		Name: "sqr",
 		In: []core.PortInfo{
 			{"frequency", "frequency (Hz)", core.PortTypeFloat, sqrPortFrequency},
 			{"duty", "duty cycle (0..1)", core.PortTypeFloat, sqrPortDuty},

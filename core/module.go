@@ -11,6 +11,8 @@ package core
 import (
 	"fmt"
 	"strings"
+
+	"github.com/deadsy/babi/utils/log"
 )
 
 //-----------------------------------------------------------------------------
@@ -66,12 +68,17 @@ func (mi *ModuleInfo) GetPortByName(name string) *PortInfo {
 			return &mi.Out[i]
 		}
 	}
-	panic(fmt.Sprintf("no port named \"%s\" in module \"%s\"", name, mi.Name))
+	log.Info.Printf("no port named \"%s\" in module \"%s\"", name, mi.Name)
+	return nil
 }
 
 // GetPortID returns the module port ID by port name.
 func (mi *ModuleInfo) GetPortID(name string) PortID {
-	return mi.GetPortByName(name).ID
+	pi := mi.GetPortByName(name)
+	if pi != nil {
+		return pi.ID
+	}
+	return 0
 }
 
 // numPorts return the number of ports within a set matching a specific type.

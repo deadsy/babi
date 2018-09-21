@@ -39,11 +39,13 @@ func main() {
 	defer audio.Close()
 
 	s := core.NewSynth(audio)
-	//s.SetPatch(patches.NewKarplusStrongPatch(s))
+
+	//s.SetPatch(patches.NewBasicPatch(s, osc.NewSine(s)))
+	//s.SetPatch(patches.NewBasicPatch(s, osc.NewSquareBasic(s)))
+	//s.SetPatch(patches.NewBasicPatch(s, osc.NewNoisePink2(s)))
+	s.SetPatch(patches.NewKarplusStrongPatch(s))
 	//s.SetPatch(patches.NewSequencerTest(s, metronome))
-	//s.SetPatch(patches.NewSinePatch(s))
-	//s.SetPatch(patches.NewNoisePatch(s))
-	s.SetPatch(patches.NewSquarePatch(s))
+
 	s.Run()
 }
 
