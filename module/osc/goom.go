@@ -53,9 +53,6 @@ func (m *goomModule) Info() *core.ModuleInfo {
 
 //-----------------------------------------------------------------------------
 
-const goomFullCycle = (1 << 32) - 1
-const goomHalfCycle = 1 << 31
-
 type goomModule struct {
 	synth *core.Synth // top-level synth
 	freq  float32     // base frequency
@@ -99,7 +96,7 @@ func (m *goomModule) Event(e *core.Event) {
 		case goomPortDuty: // set the wave duty cycle
 			log.Info.Printf("set duty cycle %f", val)
 			duty := core.Clamp(val, 0, 1)
-			m.tp = uint32(goomFullCycle * core.Map(duty, 0.05, 0.5))
+			m.tp = uint32(float32(core.FullCycle) * core.Map(duty, 0.05, 0.5))
 		case goomPortSlope: // set the wave slope
 			log.Info.Printf("set slope %f", val)
 			// Work out the portion of s0f0/s1f1 that is sloped.
@@ -108,7 +105,7 @@ func (m *goomModule) Event(e *core.Event) {
 			// scaling constant for s0, map the slope to the LUT.
 			m.k0 = 1.0 / (float32(m.tp) * slope)
 			// scaling constant for s1, map the slope to the LUT.
-			m.k1 = 1.0 / (float32(goomFullCycle-m.tp) * slope)
+			m.k1 = 1.0 / (float32(core.FullCycle-1-m.tp) * slope)
 		default:
 			log.Info.Printf("bad port number %d", fe.ID)
 		}
@@ -131,13 +128,13 @@ func (m *goomModule) Process(buf ...*core.Buf) {
 		} else {
 			// we are in the s1/f1 portion
 			x = float32(m.x-m.tp) * m.k1
-			ofs = goomHalfCycle
+			ofs = core.HalfCycle
 		}
 		// clamp x to 1
 		if x > 1 {
 			x = 1
 		}
-		out[i] = core.CosLookup(uint32(x*float32(goomHalfCycle)) + ofs)
+		out[i] = core.CosLookup(uint32(x*float32(core.HalfCycle)) + ofs)
 		// step the phase
 		if fm != nil {
 			m.x += uint32((m.freq + fm[i]) * core.FrequencyScale)

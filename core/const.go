@@ -24,11 +24,17 @@ const AudioBufferSize = 64
 // SecsPerAudioBuffer is the audio duration for a single audio buffer.
 const SecsPerAudioBuffer = float32(AudioBufferSize) / float32(AudioSampleFrequency)
 
+// FullCycle is a full uint32 phase count.
+const FullCycle = 1 << 32
+
+// HalfCycle is a half uint32 phase count.
+const HalfCycle = 1 << 31
+
 // FrequencyScale scales a frequency value to a uint32 phase step value.
-const FrequencyScale = float32(1<<32) / float32(AudioSampleFrequency)
+const FrequencyScale = float32(FullCycle) / float32(AudioSampleFrequency)
 
 // PhaseScale scales a phase value to a uint32 phase step value.
-const PhaseScale = float32(1<<32) / Tau
+const PhaseScale = float32(FullCycle) / Tau
 
 //-----------------------------------------------------------------------------
 
@@ -49,6 +55,6 @@ const MaxBeatsPerMin = 300.0
 const Pi = math.Pi
 
 // Tau (2 * Pi).
-const Tau = 2.0 * math.Pi
+const Tau = 2 * math.Pi
 
 //-----------------------------------------------------------------------------

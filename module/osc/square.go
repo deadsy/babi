@@ -39,8 +39,6 @@ func (m *sqrModule) Info() *core.ModuleInfo {
 
 //-----------------------------------------------------------------------------
 
-const sqrFullCycle = float32(1 << 32)
-
 type sqrType int
 
 const (
@@ -99,7 +97,7 @@ func (m *sqrModule) Event(e *core.Event) {
 		case sqrPortDuty: // set the duty cycle
 			log.Info.Printf("set duty cycle %f", val)
 			duty := core.Clamp(val, 0, 1)
-			m.tp = uint32(sqrFullCycle * core.Map(duty, 0.05, 0.5))
+			m.tp = uint32(float32(core.FullCycle) * core.Map(duty, 0.05, 0.5))
 		case sqrPortFrequency: // set the oscillator frequency
 			log.Info.Printf("set frequency %f", val)
 			m.freq = val
