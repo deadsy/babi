@@ -40,7 +40,7 @@ func (m *goomModule) Info() *core.ModuleInfo {
 	return &core.ModuleInfo{
 		Name: "goom",
 		In: []core.PortInfo{
-			{"fm", "frequency modulation", core.PortTypeAudioBuffer, 0},
+			//{"fm", "frequency modulation", core.PortTypeAudioBuffer, 0},
 			{"frequency", "frequency (Hz)", core.PortTypeFloat, goomPortFrequency},
 			{"duty", "duty cycle (0..1)", core.PortTypeFloat, goomPortDuty},
 			{"slope", "slope (0..1)", core.PortTypeFloat, goomPortSlope},
@@ -116,8 +116,8 @@ func (m *goomModule) Event(e *core.Event) {
 
 // Process runs the module DSP.
 func (m *goomModule) Process(buf ...*core.Buf) {
-	fm := buf[0]
-	out := buf[1]
+	//fm := buf[0]
+	out := buf[0]
 	for i := 0; i < len(out); i++ {
 		var ofs uint32
 		var x float32
@@ -136,11 +136,14 @@ func (m *goomModule) Process(buf ...*core.Buf) {
 		}
 		out[i] = core.CosLookup(uint32(x*float32(core.HalfCycle)) + ofs)
 		// step the phase
-		if fm != nil {
-			m.x += uint32((m.freq + fm[i]) * core.FrequencyScale)
-		} else {
-			m.x += m.xstep
-		}
+		m.x += m.xstep
+		/*
+			if fm != nil {
+				m.x += uint32((m.freq + fm[i]) * core.FrequencyScale)
+			} else {
+				m.x += m.xstep
+			}
+		*/
 	}
 }
 

@@ -63,6 +63,7 @@ func NewBasicPatch(s *core.Synth, osc core.Module) core.Module {
 	core.SendEventFloatName(osc, "frequency", 440.0)
 	core.SendEventFloatName(osc, "duty", 0.1)
 	core.SendEventFloatName(osc, "attenuation", 1.0)
+	core.SendEventFloatName(osc, "slope", 0.5)
 	// adsr defaults
 	core.SendEventFloatName(adsr, "attack", 0.1)
 	core.SendEventFloatName(adsr, "decay", 0.5)
