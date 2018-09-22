@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
 /*
 
-Square Wave Oscillator Module
+Sawtooth Oscillator Module
 
 */
 //-----------------------------------------------------------------------------
@@ -18,18 +18,16 @@ import (
 //-----------------------------------------------------------------------------
 
 const (
-	sqrPortNull = iota
-	sqrPortFrequency
-	sqrPortDuty
+	sawPortNull = iota
+	sawPortFrequency
 )
 
 // Info returns the module information.
-func (m *sqrModule) Info() *core.ModuleInfo {
+func (m *sawModule) Info() *core.ModuleInfo {
 	return &core.ModuleInfo{
-		Name: "sqr",
+		Name: "saw",
 		In: []core.PortInfo{
-			{"frequency", "frequency (Hz)", core.PortTypeFloat, sqrPortFrequency},
-			{"duty", "duty cycle (0..1)", core.PortTypeFloat, sqrPortDuty},
+			{"frequency", "frequency (Hz)", core.PortTypeFloat, sawPortFrequency},
 		},
 		Out: []core.PortInfo{
 			{"out", "output", core.PortTypeAudioBuffer, 0},
@@ -39,65 +37,60 @@ func (m *sqrModule) Info() *core.ModuleInfo {
 
 //-----------------------------------------------------------------------------
 
-type sqrType int
+type sawType int
 
 const (
-	sqrTypeNull sqrType = iota
-	sqrTypeBasic
-	sqrTypeBLEP
+	sawTypeNull sawType = iota
+	sawTypeBasic
+	sawTypeBLEP
 )
 
-type sqrModule struct {
+type sawModule struct {
 	synth *core.Synth // top-level synth
-	stype sqrType     // square type
-	tp    uint32      // 1/0 transition point
+	stype sawType     // sawtooth type
 	freq  float32     // base frequency
 	x     uint32      // phase position
 	xstep uint32      // phase step per sample
 }
 
-func newSquare(s *core.Synth, stype sqrType) core.Module {
-	return &sqrModule{
+func newSawtooth(s *core.Synth, stype sawType) core.Module {
+	return &sawModule{
 		synth: s,
 		stype: stype,
 	}
 }
 
-// NewSquareBasic returns a non bandwidth limited square wave oscillator.
-func NewSquareBasic(s *core.Synth) core.Module {
+// NewSawtoothBasic returns a non bandwidth limited sawtooth oscillator.
+func NewSawtoothBasic(s *core.Synth) core.Module {
 	log.Info.Printf("")
-	return newSquare(s, sqrTypeBasic)
+	return newSawtooth(s, sawTypeBasic)
 }
 
-// NewSquareBLEP returns a bandwidth limited square wave oscillator.
-func NewSquareBLEP(s *core.Synth) core.Module {
+// NewSawtoothBLEP returns a bandwidth limited sawtooth oscillator.
+func NewSawtoothBLEP(s *core.Synth) core.Module {
 	log.Info.Printf("")
-	return newSquare(s, sqrTypeBLEP)
+	return newSawtooth(s, sawTypeBLEP)
 }
 
 // Child returns the child modules of this module.
-func (m *sqrModule) Child() []core.Module {
+func (m *sawModule) Child() []core.Module {
 	return nil
 }
 
 // Stop performs any cleanup of a module.
-func (m *sqrModule) Stop() {
+func (m *sawModule) Stop() {
 }
 
 //-----------------------------------------------------------------------------
 // Events
 
 // Event processes a module event.
-func (m *sqrModule) Event(e *core.Event) {
+func (m *sawModule) Event(e *core.Event) {
 	fe := e.GetEventFloat()
 	if fe != nil {
 		val := fe.Val
 		switch fe.ID {
-		case sqrPortDuty: // set the duty cycle
-			log.Info.Printf("set duty cycle %f", val)
-			duty := core.Clamp(val, 0, 1)
-			m.tp = uint32(float32(core.FullCycle) * core.Map(duty, 0.05, 0.5))
-		case sqrPortFrequency: // set the oscillator frequency
+		case sawPortFrequency: // set the oscillator frequency
 			log.Info.Printf("set frequency %f", val)
 			m.freq = val
 			m.xstep = uint32(val * core.FrequencyScale)
@@ -109,38 +102,33 @@ func (m *sqrModule) Event(e *core.Event) {
 
 //-----------------------------------------------------------------------------
 
-func (m *sqrModule) generateBasic(out *core.Buf) {
+func (m *sawModule) generateBasic(out *core.Buf) {
 	for i := 0; i < len(out); i++ {
-		// what portion of the cycle are we in?
-		if m.x < m.tp {
-			out[i] = 1
-		} else {
-			out[i] = -1
-		}
+		out[i] = (2.0/float32(core.FullCycle))*float32(m.x) - 1.0
 		// step the phase
 		m.x += m.xstep
 	}
 }
 
-func (m *sqrModule) generateBLEP(out *core.Buf) {
+func (m *sawModule) generateBLEP(out *core.Buf) {
 	// TODO
 }
 
 // Process runs the module DSP.
-func (m *sqrModule) Process(buf ...*core.Buf) {
+func (m *sawModule) Process(buf ...*core.Buf) {
 	out := buf[0]
 	switch m.stype {
-	case sqrTypeBasic:
+	case sawTypeBasic:
 		m.generateBasic(out)
-	case sqrTypeBLEP:
+	case sawTypeBLEP:
 		m.generateBLEP(out)
 	default:
-		panic(fmt.Sprintf("bad square type %d", m.stype))
+		panic(fmt.Sprintf("bad sawtooth type %d", m.stype))
 	}
 }
 
 // Active returns true if the module has non-zero output.
-func (m *sqrModule) Active() bool {
+func (m *sawModule) Active() bool {
 	return true
 }
 
