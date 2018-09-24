@@ -83,8 +83,8 @@ type adsrModule struct {
 	val      float32     // output value
 }
 
-// NewADSR returns an Attack/Decay/Sustain/Release envelope module.
-func NewADSR(s *core.Synth) core.Module {
+// NewADSREnv returns an Attack/Decay/Sustain/Release envelope module.
+func NewADSREnv(s *core.Synth) core.Module {
 	log.Info.Printf("")
 	return &adsrModule{
 		synth: s,

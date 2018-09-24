@@ -36,11 +36,10 @@ const (
 )
 
 // Info returns the module information.
-func (m *goomModule) Info() *core.ModuleInfo {
+func (m *goomOsc) Info() *core.ModuleInfo {
 	return &core.ModuleInfo{
 		Name: "goom",
 		In: []core.PortInfo{
-			//{"fm", "frequency modulation", core.PortTypeAudioBuffer, 0},
 			{"frequency", "frequency (Hz)", core.PortTypeFloat, goomPortFrequency},
 			{"duty", "duty cycle (0..1)", core.PortTypeFloat, goomPortDuty},
 			{"slope", "slope (0..1)", core.PortTypeFloat, goomPortSlope},
@@ -53,7 +52,7 @@ func (m *goomModule) Info() *core.ModuleInfo {
 
 //-----------------------------------------------------------------------------
 
-type goomModule struct {
+type goomOsc struct {
 	synth *core.Synth // top-level synth
 	freq  float32     // base frequency
 	tp    uint32      // s0f0 to s1f1 transition point
@@ -63,28 +62,28 @@ type goomModule struct {
 	xstep uint32      // phase step per sample
 }
 
-// NewGoom returns a goom oscillator module.
-func NewGoom(s *core.Synth) core.Module {
+// NewGoomOsc returns a goom oscillator module.
+func NewGoomOsc(s *core.Synth) core.Module {
 	log.Info.Printf("")
-	return &goomModule{
+	return &goomOsc{
 		synth: s,
 	}
 }
 
 // Child returns the child modules of this module.
-func (m *goomModule) Child() []core.Module {
+func (m *goomOsc) Child() []core.Module {
 	return nil
 }
 
 // Stop performs any cleanup of a module.
-func (m *goomModule) Stop() {
+func (m *goomOsc) Stop() {
 }
 
 //-----------------------------------------------------------------------------
 // Events
 
 // Event processes a module event.
-func (m *goomModule) Event(e *core.Event) {
+func (m *goomOsc) Event(e *core.Event) {
 	fe := e.GetEventFloat()
 	if fe != nil {
 		val := fe.Val
@@ -115,8 +114,7 @@ func (m *goomModule) Event(e *core.Event) {
 //-----------------------------------------------------------------------------
 
 // Process runs the module DSP.
-func (m *goomModule) Process(buf ...*core.Buf) {
-	//fm := buf[0]
+func (m *goomOsc) Process(buf ...*core.Buf) {
 	out := buf[0]
 	for i := 0; i < len(out); i++ {
 		var ofs uint32
@@ -137,18 +135,11 @@ func (m *goomModule) Process(buf ...*core.Buf) {
 		out[i] = core.CosLookup(uint32(x*float32(core.HalfCycle)) + ofs)
 		// step the phase
 		m.x += m.xstep
-		/*
-			if fm != nil {
-				m.x += uint32((m.freq + fm[i]) * core.FrequencyScale)
-			} else {
-				m.x += m.xstep
-			}
-		*/
 	}
 }
 
 // Active returns true if the module has non-zero output.
-func (m *goomModule) Active() bool {
+func (m *goomOsc) Active() bool {
 	return true
 }
 

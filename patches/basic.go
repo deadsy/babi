@@ -53,7 +53,7 @@ func NewBasicPatch(s *core.Synth, osc core.Module) core.Module {
 	const midiNote = 69
 	const midiCtrl = 6
 
-	adsr := env.NewADSR(s)
+	adsr := env.NewADSREnv(s)
 	pan := mix.NewPan(s)
 	note := midi.NewNote(s, midiCh, midiNote, adsr, "gate")
 	panCtrl := midi.NewCtrl(s, midiCh, midiCtrl+0, pan, "pan")

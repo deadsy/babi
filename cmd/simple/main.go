@@ -45,7 +45,7 @@ func main() {
 	//s.SetPatch(patches.NewBasicPatch(s, osc.NewSquareBasic(s)))
 	//s.SetPatch(patches.NewBasicPatch(s, osc.NewNoisePink2(s)))
 	//s.SetPatch(patches.NewBasicPatch(s, osc.NewSawtoothBasic(s)))
-	s.SetPatch(patches.NewBasicPatch(s, osc.NewGoom(s)))
+	s.SetPatch(patches.NewBasicPatch(s, osc.NewGoomOsc(s)))
 	//s.SetPatch(patches.NewKarplusStrongPatch(s))
 	//s.SetPatch(patches.NewSequencerTest(s, metronome))
 

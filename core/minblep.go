@@ -16,7 +16,7 @@ import "math"
 
 //-----------------------------------------------------------------------------
 
-// Sinc Function
+// Sinc function (pi * x variant).
 func Sinc(x float64) float64 {
 	if x == 0 {
 		return 1
@@ -25,7 +25,7 @@ func Sinc(x float64) float64 {
 	return math.Sin(x) / x
 }
 
-// BlackmanWindow returns a Blackman window with n elements
+// BlackmanWindow returns a Blackman window with n elements.
 func BlackmanWindow(n int) []float64 {
 	w := make([]float64, n)
 	m := float64(n - 1)
@@ -79,12 +79,12 @@ func InverseDFT(realFreq, imagFreq []float64) (realTime, imagTime []float64) {
 	return
 }
 
-// Cabs returns the complex absolute value.
+// Cabs returns absolute value (magnitude) of a complex number.
 func Cabs(r, i float64) float64 {
 	return math.Sqrt((r * r) + (i * i))
 }
 
-// Cexp returns the complex exponential.
+// Cexp returns e raised to a complex number.
 func Cexp(r, i float64) (zr, zi float64) {
 	er := math.Exp(r)
 	zr = er * math.Cos(i)
@@ -92,7 +92,7 @@ func Cexp(r, i float64) (zr, zi float64) {
 	return
 }
 
-// RealCepstrum computes the real cepstrum of a real signal.
+// RealCepstrum returns the real cepstrum of a real signal.
 func RealCepstrum(signal []float64) []float64 {
 	n := len(signal)
 	// convert to frequency domain
@@ -109,7 +109,7 @@ func RealCepstrum(signal []float64) []float64 {
 	return realTime
 }
 
-// MinimumPhase computes the minimum phase reconstruction of a signal.
+// MinimumPhase returns the minimum phase reconstruction of a signal.
 func MinimumPhase(realCepstrum []float64) []float64 {
 	n := len(realCepstrum)
 	nd2 := n / 2
@@ -141,7 +141,7 @@ func MinimumPhase(realCepstrum []float64) []float64 {
 	return realTime
 }
 
-// GenerateMinBLEP returns a specified MinBlep slice.
+// GenerateMinBLEP returns a minimum phase bandwidth limited step.
 func GenerateMinBLEP(zeroCrossings, overSampling int) []float64 {
 	n := (2 * zeroCrossings * overSampling) + 1
 	// generate sinc

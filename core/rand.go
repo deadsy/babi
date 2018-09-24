@@ -20,7 +20,7 @@ type Rand32 struct {
 	state uint32
 }
 
-// NewRand32 returns a 32-bit LCG PRNG.
+// NewRand32 returns the state for a 32-bit PRNG.
 func NewRand32(seed uint32) *Rand32 {
 	if seed == 0 {
 		seed = 1
@@ -28,7 +28,7 @@ func NewRand32(seed uint32) *Rand32 {
 	return &Rand32{seed}
 }
 
-// Uint32 returns a pseudo-random uint32.
+// Uint32 returns a random uint32.
 func (r *Rand32) Uint32() uint32 {
 	r.state = (r.state * 214013) + 2531011
 	return r.state
@@ -47,7 +47,7 @@ type Rand64 struct {
 	state uint64
 }
 
-// NewRand64 returns a 64-bit LCG PRNG.
+// NewRand64 returns the state for a 64-bit PRNG.
 func NewRand64(seed uint64) *Rand64 {
 	if seed == 0 {
 		seed = 1
@@ -55,7 +55,7 @@ func NewRand64(seed uint64) *Rand64 {
 	return &Rand64{seed}
 }
 
-// Uint64 returns a pseudo-random uint64.
+// Uint64 returns a random uint64.
 func (r *Rand64) Uint64() uint64 {
 	r.state = (r.state * 6364136223846793005) + 1442695040888963407
 	return r.state

@@ -50,7 +50,7 @@ func (s *Synth) SetPatch(m Module) error {
 	return nil
 }
 
-// PushEvent pushes an event onto the event queue for future processing.
+// PushEvent pushes an event onto the synth event queue for future processing.
 func (s *Synth) PushEvent(e *Event) {
 	err := s.event.Write(e)
 	if err != nil {

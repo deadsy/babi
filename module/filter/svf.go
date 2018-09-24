@@ -6,7 +6,7 @@ State Variable Filters
 */
 //-----------------------------------------------------------------------------
 
-package module
+package filter
 
 import (
 	"fmt"
@@ -100,7 +100,7 @@ func (m *svfModule) hcEvent(e *core.Event) {
 	fe := e.GetEventFloat()
 	if fe != nil {
 		val := fe.Val
-		switch fe.Id {
+		switch fe.ID {
 		case svfPortCutoff:
 			log.Info.Printf("set cutoff %f", val)
 			cutoff := core.Clamp(val, 0, 0.5*core.AudioSampleFrequency)
@@ -110,7 +110,7 @@ func (m *svfModule) hcEvent(e *core.Event) {
 			resonance := core.Clamp(val, 0, 1)
 			m.kq = 2.0 - 2.0*resonance
 		default:
-			log.Info.Printf("bad port number %d", fe.Id)
+			log.Info.Printf("bad port number %d", fe.ID)
 		}
 	}
 }
@@ -119,7 +119,7 @@ func (m *svfModule) trapezoidalEvent(e *core.Event) {
 	fe := e.GetEventFloat()
 	if fe != nil {
 		val := fe.Val
-		switch fe.Id {
+		switch fe.ID {
 		case svfPortCutoff:
 			log.Info.Printf("set cutoff %f", val)
 			cutoff := core.Clamp(val, 0, 0.5*core.AudioSampleFrequency)
@@ -129,7 +129,7 @@ func (m *svfModule) trapezoidalEvent(e *core.Event) {
 			resonance := core.Clamp(val, 0, 1)
 			m.k = 2.0 - 2.0*resonance
 		default:
-			log.Info.Printf("bad port number %d", fe.Id)
+			log.Info.Printf("bad port number %d", fe.ID)
 		}
 	}
 }
