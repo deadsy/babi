@@ -58,4 +58,9 @@ func InRange(x, a, b float32) bool {
 	return x >= a && x <= b
 }
 
+// InEnum returns true if x is in [0:max)
+func InEnum(x, max int) bool {
+	return x >= 0 && x < max
+}
+
 //-----------------------------------------------------------------------------
