@@ -156,59 +156,130 @@ func (m *goomVoice) Stop() {
 //-----------------------------------------------------------------------------
 // Events
 
+func goomPortOscillatorMode(m *goomVoice, e *core.Event) {
+	val := e.GetEventInt().Val
+	if !core.InEnum(val, int(oModeMax)) {
+		log.Info.Printf("bad value for oscillator mode %d", val)
+		return
+	}
+	m.oMode = oModeType(val)
+}
+
+func goomPortFrequencyrMode(m *goomVoice, e *core.Event) {
+	val := e.GetEventInt().Val
+	if !core.InEnum(val, int(fModeMax)) {
+		log.Info.Printf("bad value for frequency mode %d", val)
+	}
+	m.fMode = fModeType(val)
+}
+
+func goomPortNote(m *goomVoice, e *core.Event) {
+	val := e.GetEventFloat().Val
+	_ = val
+}
+
+func goomPortGate(m *goomVoice, e *core.Event) {
+	val := e.GetEventFloat().Val
+	_ = val
+}
+
+func goomPortAmplitudeAttack(m *goomVoice, e *core.Event) {
+	val := e.GetEventFloat().Val
+	_ = val
+}
+
+func goomPortAmplitudeDecay(m *goomVoice, e *core.Event) {
+	val := e.GetEventFloat().Val
+	_ = val
+}
+
+func goomPortAmplitudeSustain(m *goomVoice, e *core.Event) {
+	val := e.GetEventFloat().Val
+	_ = val
+}
+
+func goomPortAmplitudeRelease(m *goomVoice, e *core.Event) {
+	val := e.GetEventFloat().Val
+	_ = val
+}
+
+func goomPortWaveDuty(m *goomVoice, e *core.Event) {
+	val := e.GetEventFloat().Val
+	_ = val
+}
+
+func goomPortWaveSlope(m *goomVoice, e *core.Event) {
+	val := e.GetEventFloat().Val
+	_ = val
+}
+
+func goomPortModulationAttack(m *goomVoice, e *core.Event) {
+	val := e.GetEventFloat().Val
+	_ = val
+}
+
+func goomPortModulationDecay(m *goomVoice, e *core.Event) {
+	val := e.GetEventFloat().Val
+	_ = val
+}
+
+func goomPortModulationDuty(m *goomVoice, e *core.Event) {
+	val := e.GetEventFloat().Val
+	_ = val
+}
+
+func goomPortModulationSlope(m *goomVoice, e *core.Event) {
+	val := e.GetEventFloat().Val
+	_ = val
+}
+
+func goomPortModulationTuning(m *goomVoice, e *core.Event) {
+	val := e.GetEventFloat().Val
+	_ = val
+}
+
+func goomPortModulationLevel(m *goomVoice, e *core.Event) {
+	val := e.GetEventFloat().Val
+	_ = val
+}
+
+func goomPortFilterAttack(m *goomVoice, e *core.Event) {
+	val := e.GetEventFloat().Val
+	_ = val
+}
+
+func goomPortFilterDecay(m *goomVoice, e *core.Event) {
+	val := e.GetEventFloat().Val
+	_ = val
+}
+
+func goomPortFilterSustain(m *goomVoice, e *core.Event) {
+	val := e.GetEventFloat().Val
+	_ = val
+}
+
+func goomPortFilterRelease(m *goomVoice, e *core.Event) {
+	val := e.GetEventFloat().Val
+	_ = val
+}
+
+func goomPortFilterSensitivity(m *goomVoice, e *core.Event) {
+	val := e.GetEventFloat().Val
+	_ = val
+}
+
+func goomPortFilterCutoff(m *goomVoice, e *core.Event) {
+	val := e.GetEventFloat().Val
+	_ = val
+}
+
+func goomPortFilterResonance(m *goomVoice, e *core.Event) {
+	val := e.GetEventFloat().Val
+	_ = val
+}
+
 // Event processes a module event.
 func (m *goomVoice) Event(e *core.Event) {
-
-	// integer events
-	ie := e.GetEventInt()
-	if ie != nil {
-		val := ie.Val
-		switch ie.ID {
-		case gvPortOscillatorMode:
-			if core.InEnum(val, int(oModeMax)) {
-				m.oMode = oModeType(val)
-			} else {
-			}
-		case gvPortFrequencyMode:
-			if core.InEnum(val, int(fModeMax)) {
-				m.fMode = fModeType(val)
-			} else {
-			}
-		default:
-			log.Info.Printf("bad port number %d", ie.ID)
-		}
-	}
-
-	// float events
-	fe := e.GetEventFloat()
-	if fe != nil {
-		//val := fe.Val
-		switch fe.ID {
-		case gvPortNote:
-		case gvPortGate:
-		case gvPortAmplitudeAttack:
-		case gvPortAmplitudeDecay:
-		case gvPortAmplitudeSustain:
-		case gvPortAmplitudeRelease:
-		case gvPortWaveDuty:
-		case gvPortWaveSlope:
-		case gvPortModulationAttack:
-		case gvPortModulationDecay:
-		case gvPortModulationDuty:
-		case gvPortModulationSlope:
-		case gvPortModulationTuning:
-		case gvPortModulationLevel:
-		case gvPortFilterAttack:
-		case gvPortFilterDecay:
-		case gvPortFilterSustain:
-		case gvPortFilterRelease:
-		case gvPortFilterSensitivity:
-		case gvPortFilterCutoff:
-		case gvPortFilterResonance:
-		default:
-			log.Info.Printf("bad port number %d", fe.ID)
-		}
-	}
 }
 
 //-----------------------------------------------------------------------------
