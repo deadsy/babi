@@ -41,7 +41,7 @@ func (m *ksModule) Info() *core.ModuleInfo {
 			{"attenuation", "attenuation (0..1)", core.PortTypeFloat, ksPortAttenuation},
 		},
 		Out: []core.PortInfo{
-			{"out", "output", core.PortTypeAudioBuffer, 0},
+			{"out", "output", core.PortTypeAudioBuffer, nil},
 		},
 	}
 }

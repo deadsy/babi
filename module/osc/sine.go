@@ -28,7 +28,7 @@ func (m *sineModule) Info() *core.ModuleInfo {
 			{"frequency", "frequency (Hz)", core.PortTypeFloat, sinePortFrequency},
 		},
 		Out: []core.PortInfo{
-			{"out", "output", core.PortTypeAudioBuffer, 0},
+			{"out", "output", core.PortTypeAudioBuffer, nil},
 		},
 	}
 }

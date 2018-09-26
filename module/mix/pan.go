@@ -19,24 +19,18 @@ import (
 
 //-----------------------------------------------------------------------------
 
-const (
-	panPortNull = iota
-	panPortVolume
-	panPortPan
-)
-
 // Info returns the module information.
 func (m *panModule) Info() *core.ModuleInfo {
 	return &core.ModuleInfo{
 		Name: "pan",
 		In: []core.PortInfo{
-			{"in", "input", core.PortTypeAudioBuffer, 0},
+			{"in", "input", core.PortTypeAudioBuffer, nil},
 			{"volume", "volume (0..1)", core.PortTypeFloat, panPortVolume},
 			{"pan", "left/right pan (0..1)", core.PortTypeFloat, panPortPan},
 		},
 		Out: []core.PortInfo{
-			{"out_left", "left channel output", core.PortTypeAudioBuffer, 0},
-			{"out_right", "right channel output", core.PortTypeAudioBuffer, 0},
+			{"out_left", "left channel output", core.PortTypeAudioBuffer, nil},
+			{"out_right", "right channel output", core.PortTypeAudioBuffer, nil},
 		},
 	}
 }
@@ -70,7 +64,7 @@ func (m *panModule) Stop() {
 }
 
 //-----------------------------------------------------------------------------
-// Events
+// Port Events
 
 func (m *panModule) set() {
 	// Use sin/cos so that l*l + r*r = K (constant power)
@@ -78,24 +72,25 @@ func (m *panModule) set() {
 	m.volR = m.vol * core.Sin(m.pan)
 }
 
+func panPortVolume(cm core.Module, e *core.Event) {
+	m := cm.(*panModule)
+	vol := core.Clamp(e.GetEventFloat().Val, 0, 1)
+	log.Info.Printf("set volume %f", vol)
+	// convert to a linear volume
+	m.vol = core.Pow2(vol) - 1.0
+	m.set()
+}
+
+func panPortPan(cm core.Module, e *core.Event) {
+	m := cm.(*panModule)
+	pan := core.Clamp(e.GetEventFloat().Val, 0, 1)
+	log.Info.Printf("set pan %f", pan)
+	m.pan = pan * (core.Pi / 2.0)
+	m.set()
+}
+
 // Event processes a module event.
 func (m *panModule) Event(e *core.Event) {
-	fe := e.GetEventFloat()
-	if fe != nil {
-		switch fe.ID {
-		case panPortVolume:
-			log.Info.Printf("set volume %f", fe.Val)
-			// convert to a linear volume
-			m.vol = core.Pow2(core.Clamp(fe.Val, 0, 1)) - 1.0
-			m.set()
-		case panPortPan:
-			log.Info.Printf("set pan %f", fe.Val)
-			m.pan = core.Clamp(fe.Val, 0, 1) * (core.Pi / 2.0)
-			m.set()
-		default:
-			log.Info.Printf("bad port number %d", fe.ID)
-		}
-	}
 }
 
 //-----------------------------------------------------------------------------

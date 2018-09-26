@@ -29,7 +29,7 @@ func (m *noiseModule) Info() *core.ModuleInfo {
 		Name: "noise",
 		In:   nil,
 		Out: []core.PortInfo{
-			{"out", "output", core.PortTypeAudioBuffer, 0},
+			{"out", "output", core.PortTypeAudioBuffer, nil},
 		},
 	}
 }

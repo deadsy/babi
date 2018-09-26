@@ -19,12 +19,6 @@ const ticksPerBeat = 16
 
 //-----------------------------------------------------------------------------
 
-const (
-	seqPortNull = iota
-	seqPortBpm
-	seqPortCtrl
-)
-
 // Info returns the module information.
 func (m *seqModule) Info() *core.ModuleInfo {
 	return &core.ModuleInfo{
@@ -34,7 +28,7 @@ func (m *seqModule) Info() *core.ModuleInfo {
 			{"ctrl", "control", core.PortTypeInt, seqPortCtrl},
 		},
 		Out: []core.PortInfo{
-			{"midi_out", "midi output", core.PortTypeMIDI, 0},
+			{"midi_out", "midi output", core.PortTypeMIDI, nil},
 		},
 	}
 }
@@ -174,49 +168,35 @@ const (
 	CtrlReset        // reset the sequencer
 )
 
+func seqPortBpm(cm core.Module, e *core.Event) {
+	m := cm.(*seqModule)
+	bpm := core.Clamp(e.GetEventFloat().Val, core.MinBeatsPerMin, core.MaxBeatsPerMin)
+	log.Info.Printf("set bpm %f", bpm)
+	m.secsPerTick = core.SecsPerMin / (bpm * ticksPerBeat)
+}
+
+func seqPortCtrl(cm core.Module, e *core.Event) {
+	m := cm.(*seqModule)
+	ctrl := e.GetEventInt().Val
+	switch ctrl {
+	case CtrlStop: // stop the sequencer
+		log.Info.Printf("ctrl stop")
+		m.sm.sstate = seqStateStop
+	case CtrlStart: // start the sequencer
+		log.Info.Printf("ctrl start")
+		m.sm.sstate = seqStateRun
+	case CtrlReset: // reset the sequencer
+		log.Info.Printf("ctrl reset")
+		m.sm.sstate = seqStateStop
+		m.sm.ostate = opStateInit
+		m.sm.pc = 0
+	default:
+		log.Info.Printf("unknown control value %d", ctrl)
+	}
+}
+
 // Event processes a module event.
 func (m *seqModule) Event(e *core.Event) {
-	// float events
-	fe := e.GetEventFloat()
-	if fe != nil {
-		val := fe.Val
-		switch fe.ID {
-		case seqPortBpm: // set the beats per minute
-			log.Info.Printf("set bpm %f", val)
-			if core.InRange(val, core.MinBeatsPerMin, core.MaxBeatsPerMin) {
-				m.secsPerTick = core.SecsPerMin / (val * ticksPerBeat)
-			} else {
-				log.Info.Printf("bpm is out of range")
-			}
-		default:
-			log.Info.Printf("bad port number %d", fe.ID)
-		}
-	}
-	// integer events
-	ie := e.GetEventInt()
-	if ie != nil {
-		val := ie.Val
-		switch ie.ID {
-		case seqPortCtrl: // control the sequencer
-			switch val {
-			case CtrlStop: // stop the sequencer
-				log.Info.Printf("ctrl stop")
-				m.sm.sstate = seqStateStop
-			case CtrlStart: // start the sequencer
-				log.Info.Printf("ctrl start")
-				m.sm.sstate = seqStateRun
-			case CtrlReset: // reset the sequencer
-				log.Info.Printf("ctrl reset")
-				m.sm.sstate = seqStateStop
-				m.sm.ostate = opStateInit
-				m.sm.pc = 0
-			default:
-				log.Info.Printf("unknown control value %d", val)
-			}
-		default:
-			log.Info.Printf("bad port number %d", ie.ID)
-		}
-	}
 }
 
 //-----------------------------------------------------------------------------
