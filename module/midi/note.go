@@ -22,7 +22,7 @@ func (m *noteModule) Info() *core.ModuleInfo {
 	return &core.ModuleInfo{
 		Name: "midi_note",
 		In: []core.PortInfo{
-			{"midi_in", "midi input", core.PortTypeMIDI, 0},
+			{"midi_in", "midi input", core.PortTypeMIDI, notePortMidiIn},
 		},
 		Out: nil,
 	}
@@ -35,7 +35,7 @@ type noteModule struct {
 	ch    uint8       // MIDI channel
 	note  uint8       // MIDI note number
 	dst   core.Module // destination module
-	gate  core.PortID // gate port ID
+	name  string      // gate port name
 }
 
 // NewNote returns a MIDI note on/off gate control module.
@@ -47,7 +47,7 @@ func NewNote(s *core.Synth, ch, note uint8, dst core.Module, name string) core.M
 		ch:    ch,
 		note:  note,
 		dst:   dst,
-		gate:  mi.GetPortID(name),
+		name:  name,
 	}
 }
 
@@ -62,24 +62,29 @@ func (m *noteModule) Stop() {
 }
 
 //-----------------------------------------------------------------------------
+// Port Events
 
-// Event processes a module event.
-func (m *noteModule) Event(e *core.Event) {
+func notePortMidiIn(cm core.Module, e *core.Event) {
+	m := cm.(*noteModule)
 	me := e.GetEventMIDIChannel(m.ch)
 	if me != nil {
 		switch me.GetType() {
 		case core.EventMIDINoteOn:
 			if me.GetNote() == m.note {
 				vel := core.MIDIMap(me.GetVelocity(), 0, 1)
-				core.SendEventFloatID(m.dst, m.gate, vel)
+				core.SendEventFloatName(m.dst, m.name, vel)
 			}
 		case core.EventMIDINoteOff:
 			if me.GetNote() == m.note {
-				core.SendEventFloatID(m.dst, m.gate, 0)
+				core.SendEventFloatName(m.dst, m.name, 0)
 			}
 		default:
 		}
 	}
+}
+
+// Event processes a module event.
+func (m *noteModule) Event(e *core.Event) {
 }
 
 //-----------------------------------------------------------------------------
