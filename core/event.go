@@ -165,18 +165,17 @@ func (e *EventMIDI) GetPitchWheel() uint16 {
 
 // EventFloat is an event with a 32-bit floating point value.
 type EventFloat struct {
-	ID  PortID
 	Val float32
 }
 
 // NewEventFloat returns a new control event.
-func NewEventFloat(id PortID, val float32) *Event {
-	return NewEvent(&EventFloat{id, val})
+func NewEventFloat(val float32) *Event {
+	return NewEvent(&EventFloat{val})
 }
 
 // String returns a descriptive string for the float event.
 func (e *EventFloat) String() string {
-	return fmt.Sprintf("id %d val %f", e.ID, e.Val)
+	return fmt.Sprintf("val %f", e.Val)
 }
 
 // GetEventFloat returns the float event.
@@ -191,13 +190,8 @@ func (e *Event) GetEventFloat() *EventFloat {
 func SendEventFloatName(m Module, name string, val float32) {
 	pi := m.Info().GetPortByName(name)
 	if pi != nil {
-		m.Event(NewEventFloat(pi.ID, val))
+		m.Event(NewEventFloat(val))
 	}
-}
-
-// SendEventFloatID sends a float event to a port ID on a module.
-func SendEventFloatID(m Module, id PortID, val float32) {
-	m.Event(NewEventFloat(id, val))
 }
 
 //-----------------------------------------------------------------------------
@@ -205,18 +199,17 @@ func SendEventFloatID(m Module, id PortID, val float32) {
 
 // EventInt is an event with a 32-bit signed integer value.
 type EventInt struct {
-	ID  PortID
 	Val int
 }
 
 // NewEventInt returns a new integer event.
-func NewEventInt(id PortID, val int) *Event {
-	return NewEvent(&EventInt{id, val})
+func NewEventInt(val int) *Event {
+	return NewEvent(&EventInt{val})
 }
 
 // String returns a descriptive string for the integer event.
 func (e *EventInt) String() string {
-	return fmt.Sprintf("id %d val %d", e.ID, e.Val)
+	return fmt.Sprintf("val %d", e.Val)
 }
 
 // GetEventInt returns the integer event.
@@ -231,13 +224,8 @@ func (e *Event) GetEventInt() *EventInt {
 func SendEventIntName(m Module, name string, val int) {
 	pi := m.Info().GetPortByName(name)
 	if pi != nil {
-		m.Event(NewEventInt(pi.ID, val))
+		m.Event(NewEventInt(val))
 	}
-}
-
-// SendEventIntID sends a integer event to a port ID on a module.
-func SendEventIntID(m Module, id PortID, val int) {
-	m.Event(NewEventInt(id, val))
 }
 
 //-----------------------------------------------------------------------------

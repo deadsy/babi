@@ -33,16 +33,12 @@ const (
 	PortTypeMIDI                 // event with MIDI data
 )
 
-// PortID is a numeric identifier for a module port.
-type PortID uint
-
 // PortInfo contains the information describing a port.
 type PortInfo struct {
-	Name        string   // standard port name
-	Description string   // description of port
-	Ptype       PortType // port type
-	ID          PortID   // numeric port id
-	//EventFunc EventFuncType // event function
+	Name        string        // standard port name
+	Description string        // description of port
+	Ptype       PortType      // port type
+	EventFunc   EventFuncType // event function
 }
 
 // PortSet is a collection of ports.
@@ -74,15 +70,6 @@ func (mi *ModuleInfo) GetPortByName(name string) *PortInfo {
 	}
 	log.Info.Printf("no port named \"%s\" in module \"%s\"", name, mi.Name)
 	return nil
-}
-
-// GetPortID returns the module port ID by port name.
-func (mi *ModuleInfo) GetPortID(name string) PortID {
-	pi := mi.GetPortByName(name)
-	if pi != nil {
-		return pi.ID
-	}
-	return 0
 }
 
 // numPorts return the number of ports within a set matching a specific type.

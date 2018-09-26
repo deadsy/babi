@@ -17,23 +17,17 @@ import (
 
 //-----------------------------------------------------------------------------
 
-const (
-	svfPortNull = iota
-	svfPortCutoff
-	svfPortResonance
-)
-
 // Info returns the module information.
 func (m *svfModule) Info() *core.ModuleInfo {
 	return &core.ModuleInfo{
 		Name: "svf",
 		In: []core.PortInfo{
-			{"in", "input", core.PortTypeAudioBuffer, 0},
+			{"in", "input", core.PortTypeAudioBuffer, nil},
 			{"cutoff", "cutoff frequency (Hz)", core.PortTypeFloat, svfPortCutoff},
 			{"resonance", "resonance (0..1)", core.PortTypeFloat, svfPortResonance},
 		},
 		Out: []core.PortInfo{
-			{"out", "output", core.PortTypeAudioBuffer, 0},
+			{"out", "output", core.PortTypeAudioBuffer, nil},
 		},
 	}
 }
@@ -94,56 +88,38 @@ func (m *svfModule) Stop() {
 }
 
 //-----------------------------------------------------------------------------
-// Events
+// Port Events
 
-func (m *svfModule) hcEvent(e *core.Event) {
-	fe := e.GetEventFloat()
-	if fe != nil {
-		val := fe.Val
-		switch fe.ID {
-		case svfPortCutoff:
-			log.Info.Printf("set cutoff %f", val)
-			cutoff := core.Clamp(val, 0, 0.5*core.AudioSampleFrequency)
-			m.kf = 2.0 * core.Sin(core.Pi*cutoff*core.AudioSamplePeriod)
-		case svfPortResonance:
-			log.Info.Printf("set resonance %f", val)
-			resonance := core.Clamp(val, 0, 1)
-			m.kq = 2.0 - 2.0*resonance
-		default:
-			log.Info.Printf("bad port number %d", fe.ID)
-		}
+func svfPortCutoff(cm core.Module, e *core.Event) {
+	m := cm.(*svfModule)
+	cutoff := core.Clamp(e.GetEventFloat().Val, 0, 0.5*core.AudioSampleFrequency)
+	log.Info.Printf("set cutoff frequency %f Hz", cutoff)
+	switch m.ftype {
+	case svfTypeHC:
+		m.kf = 2.0 * core.Sin(core.Pi*cutoff*core.AudioSamplePeriod)
+	case svfTypeTrapezoidal:
+		m.g = core.Tan(core.Pi * cutoff * core.AudioSamplePeriod)
+	default:
+		panic(fmt.Sprintf("bad filter type %d", m.ftype))
 	}
 }
 
-func (m *svfModule) trapezoidalEvent(e *core.Event) {
-	fe := e.GetEventFloat()
-	if fe != nil {
-		val := fe.Val
-		switch fe.ID {
-		case svfPortCutoff:
-			log.Info.Printf("set cutoff %f", val)
-			cutoff := core.Clamp(val, 0, 0.5*core.AudioSampleFrequency)
-			m.g = core.Tan(core.Pi * cutoff * core.AudioSamplePeriod)
-		case svfPortResonance:
-			log.Info.Printf("set resonance %f", val)
-			resonance := core.Clamp(val, 0, 1)
-			m.k = 2.0 - 2.0*resonance
-		default:
-			log.Info.Printf("bad port number %d", fe.ID)
-		}
+func svfPortResonance(cm core.Module, e *core.Event) {
+	m := cm.(*svfModule)
+	resonance := core.Clamp(e.GetEventFloat().Val, 0, 1)
+	log.Info.Printf("set resonance %f", resonance)
+	switch m.ftype {
+	case svfTypeHC:
+		m.kq = 2.0 - 2.0*resonance
+	case svfTypeTrapezoidal:
+		m.k = 2.0 - 2.0*resonance
+	default:
+		panic(fmt.Sprintf("bad filter type %d", m.ftype))
 	}
 }
 
 // Event processes a module event.
 func (m *svfModule) Event(e *core.Event) {
-	switch m.ftype {
-	case svfTypeHC:
-		m.hcEvent(e)
-	case svfTypeTrapezoidal:
-		m.trapezoidalEvent(e)
-	default:
-		panic(fmt.Sprintf("bad filter type %d", m.ftype))
-	}
 }
 
 //-----------------------------------------------------------------------------
