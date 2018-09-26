@@ -40,6 +40,14 @@ func (e *Event) String() string {
 	return "unknown event"
 }
 
+// SendEvent sends an event to a named port on a module.
+func SendEvent(m Module, name string, e *Event) {
+	pi := m.Info().GetPortByName(name)
+	if pi != nil {
+		m.Event(e)
+	}
+}
+
 //-----------------------------------------------------------------------------
 // MIDI Events
 

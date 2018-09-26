@@ -18,6 +18,9 @@ import (
 //-----------------------------------------------------------------------------
 // Module Ports
 
+// EventFuncType is a function used to send a specific event to a module.
+type EventFuncType func(m Module, e *Event)
+
 // PortType represents the type of data sent or received on a module port.
 type PortType int
 
@@ -39,6 +42,7 @@ type PortInfo struct {
 	Description string   // description of port
 	Ptype       PortType // port type
 	ID          PortID   // numeric port id
+	//EventFunc EventFuncType // event function
 }
 
 // PortSet is a collection of ports.
