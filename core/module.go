@@ -18,8 +18,8 @@ import (
 //-----------------------------------------------------------------------------
 // Module Ports
 
-// EventFuncType is a function used to send a specific event to a module.
-type EventFuncType func(m Module, e *Event)
+// PortFuncType is a function used to send an event to the port of a module.
+type PortFuncType func(m Module, e *Event)
 
 // PortType represents the type of data sent or received on a module port.
 type PortType int
@@ -35,10 +35,10 @@ const (
 
 // PortInfo contains the information describing a port.
 type PortInfo struct {
-	Name        string        // standard port name
-	Description string        // description of port
-	Ptype       PortType      // port type
-	EventFunc   EventFuncType // event function
+	Name        string       // standard port name
+	Description string       // description of port
+	Ptype       PortType     // port type
+	PortFunc    PortFuncType // port event function
 }
 
 // PortSet is a collection of ports.
@@ -49,24 +49,37 @@ type PortSet []PortInfo
 
 // ModuleInfo contains the information describing a module.
 type ModuleInfo struct {
-	Name string  // module name
-	In   PortSet // input ports
-	Out  PortSet // output ports
+	Name string                  // module name
+	In   PortSet                 // input ports
+	Out  PortSet                 // output ports
+	n2p  map[string]PortFuncType // port name to port function mapping
 }
 
-// GetPortByName returns the module port information by port name.
-func (mi *ModuleInfo) GetPortByName(name string) *PortInfo {
-	// input ports
-	for i := range mi.In {
-		if name == mi.In[i].Name {
-			return &mi.In[i]
+// GetPortFunc returns the port function associated with the the port name.
+func (mi *ModuleInfo) GetPortFunc(name string) PortFuncType {
+
+	// build the name to port function map
+	if mi.n2p == nil {
+		// TODO detect duplicate port names
+		mi.n2p = make(map[string]PortFuncType)
+		// input ports
+		for i := range mi.In {
+			pf := mi.In[i].PortFunc
+			if pf != nil {
+				mi.n2p[mi.In[i].Name] = pf
+			}
+		}
+		// output ports
+		for i := range mi.Out {
+			pf := mi.Out[i].PortFunc
+			if pf != nil {
+				mi.n2p[mi.Out[i].Name] = pf
+			}
 		}
 	}
-	// output ports
-	for i := range mi.Out {
-		if name == mi.Out[i].Name {
-			return &mi.Out[i]
-		}
+	// lookup the name
+	if pf, ok := mi.n2p[name]; ok {
+		return pf
 	}
 	log.Info.Printf("no port named \"%s\" in module \"%s\"", name, mi.Name)
 	return nil

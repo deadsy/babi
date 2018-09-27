@@ -42,9 +42,9 @@ func (e *Event) String() string {
 
 // SendEvent sends an event to a named port on a module.
 func SendEvent(m Module, name string, e *Event) {
-	pi := m.Info().GetPortByName(name)
-	if pi != nil {
-		pi.EventFunc(m, e)
+	portFunc := m.Info().GetPortFunc(name)
+	if portFunc != nil {
+		portFunc(m, e)
 	}
 }
 
@@ -188,9 +188,9 @@ func (e *Event) GetEventFloat() *EventFloat {
 
 // SendEventFloat sends a float event to a named port on a module.
 func SendEventFloat(m Module, name string, val float32) {
-	pi := m.Info().GetPortByName(name)
-	if pi != nil {
-		pi.EventFunc(m, NewEventFloat(val))
+	portFunc := m.Info().GetPortFunc(name)
+	if portFunc != nil {
+		portFunc(m, NewEventFloat(val))
 	}
 }
 
@@ -222,9 +222,9 @@ func (e *Event) GetEventInt() *EventInt {
 
 // SendEventInt sends a integer event to a named port on a module.
 func SendEventInt(m Module, name string, val int) {
-	pi := m.Info().GetPortByName(name)
-	if pi != nil {
-		pi.EventFunc(m, NewEventInt(val))
+	portFunc := m.Info().GetPortFunc(name)
+	if portFunc != nil {
+		portFunc(m, NewEventInt(val))
 	}
 }
 
