@@ -118,10 +118,6 @@ func svfPortResonance(cm core.Module, e *core.Event) {
 	}
 }
 
-// Event processes a module event.
-func (m *svfModule) Event(e *core.Event) {
-}
-
 //-----------------------------------------------------------------------------
 
 func (m *svfModule) filterHC(in, out *core.Buf) {

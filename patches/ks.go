@@ -21,13 +21,13 @@ import (
 // Info returns the module information.
 func (m *ksPatch) Info() *core.ModuleInfo {
 	return &core.ModuleInfo{
-		Name: "ks_patch",
+		Name: "ks",
 		In: []core.PortInfo{
-			{"midi_in", "midi input", core.PortTypeMIDI, 0},
+			{"midi_in", "midi input", core.PortTypeMIDI, ksPortMidiIn},
 		},
 		Out: []core.PortInfo{
-			{"out_left", "left channel output", core.PortTypeAudioBuffer, 0},
-			{"out_right", "right channel output", core.PortTypeAudioBuffer, 0},
+			{"out_left", "left channel output", core.PortTypeAudioBuffer, nil},
+			{"out_right", "right channel output", core.PortTypeAudioBuffer, nil},
 		},
 	}
 }
@@ -87,15 +87,15 @@ func (m *ksPatch) Stop() {
 }
 
 //-----------------------------------------------------------------------------
-// Events
+// Port Events
 
-// Event processes a module event.
-func (m *ksPatch) Event(e *core.Event) {
+func ksPortMidiIn(cm core.Module, e *core.Event) {
+	m := cm.(*ksPatch)
 	me := e.GetEventMIDIChannel(m.ch)
 	if me != nil {
-		m.note.Event(e)
-		m.panCtrl.Event(e)
-		m.volCtrl.Event(e)
+		core.SendEvent(m.note, "midi_in", e)
+		core.SendEvent(m.panCtrl, "midi_in", e)
+		core.SendEvent(m.volCtrl, "midi_in", e)
 	}
 }
 

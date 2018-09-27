@@ -66,8 +66,9 @@ func (s *Synth) Run() {
 	for {
 		// process all queued events
 		for !s.event.Empty() {
-			e, _ := s.event.Read()
-			s.root.Event(e.(*Event))
+			// TODO fix
+			//e, _ := s.event.Read()
+			//s.root.Event(e.(*Event))
 		}
 		// zero the audio output buffers
 		for i := 0; i < numAudioOut; i++ {

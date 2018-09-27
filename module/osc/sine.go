@@ -15,11 +15,6 @@ import (
 
 //-----------------------------------------------------------------------------
 
-const (
-	sinePortNull = iota
-	sinePortFrequency
-)
-
 // Info returns the module information.
 func (m *sineModule) Info() *core.ModuleInfo {
 	return &core.ModuleInfo{
@@ -62,20 +57,12 @@ func (m *sineModule) Stop() {
 //-----------------------------------------------------------------------------
 // Events
 
-// Event processes a module event.
-func (m *sineModule) Event(e *core.Event) {
-	fe := e.GetEventFloat()
-	if fe != nil {
-		val := fe.Val
-		switch fe.ID {
-		case sinePortFrequency: // set the oscillator frequency
-			log.Info.Printf("set frequency %f", val)
-			m.freq = val
-			m.xstep = uint32(val * core.FrequencyScale)
-		default:
-			log.Info.Printf("bad port number %d", fe.ID)
-		}
-	}
+func sinePortFrequency(cm core.Module, e *core.Event) {
+	m := cm.(*sineModule)
+	frequency := core.ClampLo(e.GetEventFloat().Val, 0)
+	log.Info.Printf("set frequency %f Hz", frequency)
+	m.freq = frequency
+	m.xstep = uint32(frequency * core.FrequencyScale)
 }
 
 //-----------------------------------------------------------------------------

@@ -102,10 +102,6 @@ func goomPortSlope(cm core.Module, e *core.Event) {
 	m.k1 = 1.0 / (float32(core.FullCycle-1-m.tp) * slope)
 }
 
-// Event processes a module event.
-func (m *goomOsc) Event(e *core.Event) {
-}
-
 //-----------------------------------------------------------------------------
 
 // Process runs the module DSP.

@@ -83,10 +83,6 @@ func notePortMidiIn(cm core.Module, e *core.Event) {
 	}
 }
 
-// Event processes a module event.
-func (m *noteModule) Event(e *core.Event) {
-}
-
 //-----------------------------------------------------------------------------
 
 // Process runs the module DSP.

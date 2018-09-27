@@ -44,7 +44,7 @@ func (e *Event) String() string {
 func SendEvent(m Module, name string, e *Event) {
 	pi := m.Info().GetPortByName(name)
 	if pi != nil {
-		m.Event(e)
+		pi.EventFunc(m, e)
 	}
 }
 
@@ -190,7 +190,7 @@ func (e *Event) GetEventFloat() *EventFloat {
 func SendEventFloatName(m Module, name string, val float32) {
 	pi := m.Info().GetPortByName(name)
 	if pi != nil {
-		m.Event(NewEventFloat(val))
+		pi.EventFunc(m, NewEventFloat(val))
 	}
 }
 
@@ -224,7 +224,7 @@ func (e *Event) GetEventInt() *EventInt {
 func SendEventIntName(m Module, name string, val int) {
 	pi := m.Info().GetPortByName(name)
 	if pi != nil {
-		m.Event(NewEventInt(val))
+		pi.EventFunc(m, NewEventInt(val))
 	}
 }
 

@@ -89,10 +89,6 @@ func panPortPan(cm core.Module, e *core.Event) {
 	m.set()
 }
 
-// Event processes a module event.
-func (m *panModule) Event(e *core.Event) {
-}
-
 //-----------------------------------------------------------------------------
 
 // Process runs the module DSP.

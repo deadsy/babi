@@ -21,13 +21,13 @@ import (
 // Info returns the module information.
 func (m *basicPatch) Info() *core.ModuleInfo {
 	return &core.ModuleInfo{
-		Name: "basic_patch",
+		Name: "basic",
 		In: []core.PortInfo{
-			{"midi_in", "midi input", core.PortTypeMIDI, 0},
+			{"midi_in", "midi input", core.PortTypeMIDI, basicPortMidiIn},
 		},
 		Out: []core.PortInfo{
-			{"out_left", "left channel output", core.PortTypeAudioBuffer, 0},
-			{"out_right", "right channel output", core.PortTypeAudioBuffer, 0},
+			{"out_left", "left channel output", core.PortTypeAudioBuffer, nil},
+			{"out_right", "right channel output", core.PortTypeAudioBuffer, nil},
 		},
 	}
 }
@@ -96,15 +96,15 @@ func (m *basicPatch) Stop() {
 }
 
 //-----------------------------------------------------------------------------
-// Events
+// Port Events
 
-// Event processes a module event.
-func (m *basicPatch) Event(e *core.Event) {
+func basicPortMidiIn(cm core.Module, e *core.Event) {
+	m := cm.(*basicPatch)
 	me := e.GetEventMIDIChannel(m.ch)
 	if me != nil {
-		m.note.Event(e)
-		m.panCtrl.Event(e)
-		m.volCtrl.Event(e)
+		core.SendEvent(m.note, "midi_in", e)
+		core.SendEvent(m.panCtrl, "midi_in", e)
+		core.SendEvent(m.volCtrl, "midi_in", e)
 	}
 }
 

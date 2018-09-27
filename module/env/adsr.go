@@ -98,7 +98,7 @@ func (m *adsrModule) Stop() {
 func adsrPortGate(cm core.Module, e *core.Event) {
 	m := cm.(*adsrModule)
 	gate := e.GetEventFloat().Val
-	log.Info.Printf("set gate %f", gate)
+	log.Info.Printf("gate %f", gate)
 	if gate != 0 {
 		// enter the attack segment
 		m.state = stateAttack
@@ -145,10 +145,6 @@ func adsrPortRelease(cm core.Module, e *core.Event) {
 	release := core.ClampLo(e.GetEventFloat().Val, 0)
 	log.Info.Printf("set release time %f secs", release)
 	m.kr = getK(release, core.AudioSampleFrequency)
-}
-
-// Event processes a module event.
-func (m *adsrModule) Event(e *core.Event) {
 }
 
 //-----------------------------------------------------------------------------

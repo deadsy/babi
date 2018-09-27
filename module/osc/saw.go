@@ -17,11 +17,6 @@ import (
 
 //-----------------------------------------------------------------------------
 
-const (
-	sawPortNull = iota
-	sawPortFrequency
-)
-
 // Info returns the module information.
 func (m *sawModule) Info() *core.ModuleInfo {
 	return &core.ModuleInfo{
@@ -82,22 +77,14 @@ func (m *sawModule) Stop() {
 }
 
 //-----------------------------------------------------------------------------
-// Events
+// Port Events
 
-// Event processes a module event.
-func (m *sawModule) Event(e *core.Event) {
-	fe := e.GetEventFloat()
-	if fe != nil {
-		val := fe.Val
-		switch fe.ID {
-		case sawPortFrequency: // set the oscillator frequency
-			log.Info.Printf("set frequency %f", val)
-			m.freq = val
-			m.xstep = uint32(val * core.FrequencyScale)
-		default:
-			log.Info.Printf("bad port number %d", fe.ID)
-		}
-	}
+func sawPortFrequency(cm core.Module, e *core.Event) {
+	m := cm.(*sawModule)
+	frequency := core.ClampLo(e.GetEventFloat().Val, 0)
+	log.Info.Printf("set frequency %f Hz", frequency)
+	m.freq = frequency
+	m.xstep = uint32(frequency * core.FrequencyScale)
 }
 
 //-----------------------------------------------------------------------------

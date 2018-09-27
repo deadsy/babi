@@ -24,13 +24,6 @@ import (
 
 //-----------------------------------------------------------------------------
 
-const (
-	ksPortNull = iota
-	ksPortGate
-	ksPortAttenuation
-	ksPortFrequency
-)
-
 // Info returns the module information.
 func (m *ksModule) Info() *core.ModuleInfo {
 	return &core.ModuleInfo{
@@ -85,47 +78,47 @@ func (m *ksModule) Stop() {
 }
 
 //-----------------------------------------------------------------------------
-// Events
+// Port Events
 
-// Event processes a module event.
-func (m *ksModule) Event(e *core.Event) {
-	fe := e.GetEventFloat()
-	if fe != nil {
-		val := fe.Val
-		switch fe.ID {
-		case ksPortGate: // attack(>0) or mute(=0)
-			log.Info.Printf("gate %f", val)
-			if val > 0 {
-				// Initialise the delay buffer with random samples between -1 and 1.
-				// The values should sum to zero so that multiple rounds of filtering
-				// will make all values fall to zero.
-				var sum float32
-				for i := 0; i < ksDelaySize-1; i++ {
-					val := m.rand.Float32()
-					x := sum + val
-					if x > 1 || x < -1 {
-						val = -val
-					}
-					sum += val
-					m.delay[i] = val
-				}
-				m.delay[ksDelaySize-1] = -sum
-			} else {
-				for i := 0; i < ksDelaySize; i++ {
-					m.delay[i] = 0
-				}
+func ksPortGate(cm core.Module, e *core.Event) {
+	m := cm.(*ksModule)
+	gate := e.GetEventFloat().Val
+	log.Info.Printf("gate %f", gate)
+	if gate > 0 {
+		// Initialise the delay buffer with random samples between -1 and 1.
+		// The values should sum to zero so that multiple rounds of filtering
+		// will make all values fall to zero.
+		var sum float32
+		for i := 0; i < ksDelaySize-1; i++ {
+			val := m.rand.Float32()
+			x := sum + val
+			if x > 1 || x < -1 {
+				val = -val
 			}
-		case ksPortAttenuation: // set the attenuation
-			log.Info.Printf("set attenuation %f", val)
-			m.k = 0.5 * core.Clamp(val, 0, 1)
-		case ksPortFrequency: // set the oscillator frequency
-			log.Info.Printf("set frequency %f", val)
-			m.freq = val
-			m.xstep = uint32(val * core.FrequencyScale)
-		default:
-			log.Info.Printf("bad port number %d", fe.ID)
+			sum += val
+			m.delay[i] = val
+		}
+		m.delay[ksDelaySize-1] = -sum
+	} else {
+		for i := 0; i < ksDelaySize; i++ {
+			m.delay[i] = 0
 		}
 	}
+}
+
+func ksPortAttenuation(cm core.Module, e *core.Event) {
+	m := cm.(*ksModule)
+	attenuation := core.Clamp(e.GetEventFloat().Val, 0, 1)
+	log.Info.Printf("set attenuation %f", attenuation)
+	m.k = 0.5 * attenuation
+}
+
+func ksPortFrequency(cm core.Module, e *core.Event) {
+	m := cm.(*ksModule)
+	frequency := core.ClampLo(e.GetEventFloat().Val, 0)
+	log.Info.Printf("set frequency %f Hz", frequency)
+	m.freq = frequency
+	m.xstep = uint32(frequency * core.FrequencyScale)
 }
 
 //-----------------------------------------------------------------------------

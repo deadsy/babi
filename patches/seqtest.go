@@ -17,22 +17,22 @@ import (
 //-----------------------------------------------------------------------------
 
 // Info returns the module information.
-func (m *seqTestModule) Info() *core.ModuleInfo {
+func (m *seqtestModule) Info() *core.ModuleInfo {
 	return &core.ModuleInfo{
-		Name: "seqtest_patch",
+		Name: "seqtest",
 		In: []core.PortInfo{
-			{"midi_in", "midi input", core.PortTypeMIDI, 0},
+			{"midi_in", "midi input", core.PortTypeMIDI, seqtestPortMidiIn},
 		},
 		Out: []core.PortInfo{
-			{"out_left", "left channel output", core.PortTypeAudioBuffer, 0},
-			{"out_right", "right channel output", core.PortTypeAudioBuffer, 0},
+			{"out_left", "left channel output", core.PortTypeAudioBuffer, nil},
+			{"out_right", "right channel output", core.PortTypeAudioBuffer, nil},
 		},
 	}
 }
 
 //-----------------------------------------------------------------------------
 
-type seqTestModule struct {
+type seqtestModule struct {
 	synth *core.Synth // top-level synth
 	seq   core.Module // sequencer
 }
@@ -47,37 +47,37 @@ func NewSequencerTest(s *core.Synth, prog []seq.Op) core.Module {
 	core.SendEventFloatName(sx, "bpm", 120.0)
 	core.SendEventIntName(sx, "ctrl", seq.CtrlStart)
 
-	return &seqTestModule{
+	return &seqtestModule{
 		synth: s,
 		seq:   sx,
 	}
 }
 
 // Child returns the child modules of this module.
-func (m *seqTestModule) Child() []core.Module {
+func (m *seqtestModule) Child() []core.Module {
 	return []core.Module{m.seq}
 }
 
 // Stop performs any cleanup of a module.
-func (m *seqTestModule) Stop() {
+func (m *seqtestModule) Stop() {
 }
 
 //-----------------------------------------------------------------------------
-// Events
+// Port Events
 
-// Event processes a module event.
-func (m *seqTestModule) Event(e *core.Event) {
+func seqtestPortMidiIn(cm core.Module, e *core.Event) {
+	// nothing...
 }
 
 //-----------------------------------------------------------------------------
 
 // Process runs the module DSP.
-func (m *seqTestModule) Process(buf ...*core.Buf) {
+func (m *seqtestModule) Process(buf ...*core.Buf) {
 	m.seq.Process(nil)
 }
 
 // Active returns true if the module has non-zero output.
-func (m *seqTestModule) Active() bool {
+func (m *seqtestModule) Active() bool {
 	return true
 }
 

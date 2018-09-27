@@ -107,7 +107,6 @@ func (mi *ModuleInfo) CheckIO(midiIn, audioIn, audioOut int) error {
 // Module is the interface for an audio/event processing module.
 type Module interface {
 	Process(buf ...*Buf) // run the module dsp
-	Event(e *Event)      // process an event
 	Active() bool        // return true if the module has non-zero output
 	Stop()               // stop the module
 	Info() *ModuleInfo   // return the module information

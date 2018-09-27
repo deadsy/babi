@@ -100,12 +100,7 @@ func (m *noiseModule) Stop() {
 }
 
 //-----------------------------------------------------------------------------
-// Events
-
-// Event processes a module event.
-func (m *noiseModule) Event(e *core.Event) {
-	// do nothing
-}
+// Port Events
 
 //-----------------------------------------------------------------------------
 

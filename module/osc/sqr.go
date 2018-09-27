@@ -17,12 +17,6 @@ import (
 
 //-----------------------------------------------------------------------------
 
-const (
-	sqrPortNull = iota
-	sqrPortFrequency
-	sqrPortDuty
-)
-
 // Info returns the module information.
 func (m *sqrModule) Info() *core.ModuleInfo {
 	return &core.ModuleInfo{
@@ -85,26 +79,21 @@ func (m *sqrModule) Stop() {
 }
 
 //-----------------------------------------------------------------------------
-// Events
+// Port Events
 
-// Event processes a module event.
-func (m *sqrModule) Event(e *core.Event) {
-	fe := e.GetEventFloat()
-	if fe != nil {
-		val := fe.Val
-		switch fe.ID {
-		case sqrPortDuty: // set the duty cycle
-			log.Info.Printf("set duty cycle %f", val)
-			duty := core.Clamp(val, 0, 1)
-			m.tp = uint32(float32(core.FullCycle) * core.Map(duty, 0.05, 0.5))
-		case sqrPortFrequency: // set the oscillator frequency
-			log.Info.Printf("set frequency %f", val)
-			m.freq = val
-			m.xstep = uint32(val * core.FrequencyScale)
-		default:
-			log.Info.Printf("bad port number %d", fe.ID)
-		}
-	}
+func sqrPortFrequency(cm core.Module, e *core.Event) {
+	m := cm.(*sqrModule)
+	frequency := core.ClampLo(e.GetEventFloat().Val, 0)
+	log.Info.Printf("set frequency %f Hz", frequency)
+	m.freq = frequency
+	m.xstep = uint32(frequency * core.FrequencyScale)
+}
+
+func sqrPortDuty(cm core.Module, e *core.Event) {
+	m := cm.(*sqrModule)
+	duty := core.Clamp(e.GetEventFloat().Val, 0, 1)
+	log.Info.Printf("set duty cycle %f", duty)
+	m.tp = uint32(float32(core.FullCycle) * core.Map(duty, 0.05, 0.5))
 }
 
 //-----------------------------------------------------------------------------

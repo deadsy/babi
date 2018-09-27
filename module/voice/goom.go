@@ -32,30 +32,30 @@ func (m *goomVoice) Info() *core.ModuleInfo {
 			{"fmode", "frequency mode (0,1,2)", core.PortTypeInt, goomPortFrequencyMode},
 			// amplitude envelope
 			{"amp_attack", "amplitude attack time (secs)", core.PortTypeFloat, goomPortAmplitudeAttack},
-			{"amp_decay", "amplitude decay time (secs)", core.PortTypeFloat, goomPort},
-			{"amp_sustain", "amplitude sustain level 0..1", core.PortTypeFloat, goomPort},
-			{"amp_release", "amplitude release time (secs)", core.PortTypeFloat, goomPort0},
+			{"amp_decay", "amplitude decay time (secs)", core.PortTypeFloat, goomPortAmplitudeDecay},
+			{"amp_sustain", "amplitude sustain level 0..1", core.PortTypeFloat, goomPortAmplitudeSustain},
+			{"amp_release", "amplitude release time (secs)", core.PortTypeFloat, goomPortAmplitudeRelease},
 			// wave oscillator
-			{"wav_duty", "wave duty cycle (0..1)", core.PortTypeFloat, goomPort0},
-			{"wav_slope", "wave slope (0..1)", core.PortTypeFloat, goomPort0},
+			{"wav_duty", "wave duty cycle (0..1)", core.PortTypeFloat, goomPortWaveDuty},
+			{"wav_slope", "wave slope (0..1)", core.PortTypeFloat, goomPortWaveSlope},
 			// modulation envelope
-			{"mod_attack", "modulation attack time (secs)", core.PortTypeFloat, goomPort0},
-			{"mod_decay", "modulation decay time (secs)", core.PortTypeFloat, goomPort0},
+			{"mod_attack", "modulation attack time (secs)", core.PortTypeFloat, goomPortModulationAttack},
+			{"mod_decay", "modulation decay time (secs)", core.PortTypeFloat, goomPortModulationDecay},
 			// modulation oscillator
-			{"mod_duty", "modulation duty cycle (0..1)", core.PortTypeFloat, goomPort0},
-			{"mod_slope", "modulation slope (0..1)", core.PortTypeFloat, goomPort0},
+			{"mod_duty", "modulation duty cycle (0..1)", core.PortTypeFloat, goomPortModulationDuty},
+			{"mod_slope", "modulation slope (0..1)", core.PortTypeFloat, goomPortModulationSlope},
 			// modulation control
-			{"mod_tuning", "modulation tuning (0..1)", core.PortTypeFloat, goomPort0},
-			{"mod_level", "modulation level (0..1)", core.PortTypeFloat, goomPort0},
+			{"mod_tuning", "modulation tuning (0..1)", core.PortTypeFloat, goomPortModulationTuning},
+			{"mod_level", "modulation level (0..1)", core.PortTypeFloat, goomPortModulationLevel},
 			// filter envelope
-			{"flt_attack", "filter attack time (secs)", core.PortTypeFloat, goomPort0},
-			{"flt_decay", "filter decay time (secs)", core.PortTypeFloat, goomPort0},
-			{"flt_sustain", "filter sustain level 0..1", core.PortTypeFloat, goomPort0},
-			{"flt_release", "filter release time (secs)", core.PortTypeFloat, goomPort0},
+			{"flt_attack", "filter attack time (secs)", core.PortTypeFloat, goomPortFilterAttack},
+			{"flt_decay", "filter decay time (secs)", core.PortTypeFloat, goomPortFilterDecay},
+			{"flt_sustain", "filter sustain level 0..1", core.PortTypeFloat, goomPortFilterSustain},
+			{"flt_release", "filter release time (secs)", core.PortTypeFloat, goomPortFilterRelease},
 			// filter control
-			{"flt_sensitivity", "low pass filter sensitivity", core.PortTypeFloat, goomPort0},
-			{"flt_cutoff", "low pass filter cutoff frequency (Hz)", core.PortTypeFloat, goomPort0},
-			{"flt_resonance", "low pass filter resonance (0..1)", core.PortTypeFloat, goomPort0},
+			{"flt_sensitivity", "low pass filter sensitivity", core.PortTypeFloat, goomPortFilterSensitivity},
+			{"flt_cutoff", "low pass filter cutoff frequency (Hz)", core.PortTypeFloat, goomPortFilterCutoff},
+			{"flt_resonance", "low pass filter resonance (0..1)", core.PortTypeFloat, goomPortFilterResonance},
 		},
 		Out: []core.PortInfo{
 			{"out", "output", core.PortTypeAudioBuffer, nil},
@@ -129,9 +129,10 @@ func (m *goomVoice) Stop() {
 }
 
 //-----------------------------------------------------------------------------
-// Events
+// Port Events
 
-func goomPortOscillatorMode(m *goomVoice, e *core.Event) {
+func goomPortOscillatorMode(cm core.Module, e *core.Event) {
+	m := cm.(*goomVoice)
 	val := e.GetEventInt().Val
 	if !core.InEnum(val, int(oModeMax)) {
 		log.Info.Printf("bad value for oscillator mode %d", val)
@@ -141,7 +142,8 @@ func goomPortOscillatorMode(m *goomVoice, e *core.Event) {
 	m.oMode = oModeType(val)
 }
 
-func goomPortFrequencyrMode(m *goomVoice, e *core.Event) {
+func goomPortFrequencyMode(cm core.Module, e *core.Event) {
+	m := cm.(*goomVoice)
 	val := e.GetEventInt().Val
 	if !core.InEnum(val, int(fModeMax)) {
 		log.Info.Printf("bad value for frequency mode %d", val)
@@ -151,94 +153,107 @@ func goomPortFrequencyrMode(m *goomVoice, e *core.Event) {
 	m.fMode = fModeType(val)
 }
 
-func goomPortNote(m *goomVoice, e *core.Event) {
+func goomPortNote(cm core.Module, e *core.Event) {
 	// TODO
 }
 
-func goomPortGate(m *goomVoice, e *core.Event) {
+func goomPortGate(cm core.Module, e *core.Event) {
 	// TODO
 }
 
-func goomPortAmplitudeAttack(m *goomVoice, e *core.Event) {
+func goomPortAmplitudeAttack(cm core.Module, e *core.Event) {
+	m := cm.(*goomVoice)
 	core.SendEvent(m.ampEnv, "attack", e)
 }
 
-func goomPortAmplitudeDecay(m *goomVoice, e *core.Event) {
+func goomPortAmplitudeDecay(cm core.Module, e *core.Event) {
+	m := cm.(*goomVoice)
 	core.SendEvent(m.ampEnv, "decay", e)
 }
 
-func goomPortAmplitudeSustain(m *goomVoice, e *core.Event) {
+func goomPortAmplitudeSustain(cm core.Module, e *core.Event) {
+	m := cm.(*goomVoice)
 	core.SendEvent(m.ampEnv, "sustain", e)
 }
 
-func goomPortAmplitudeRelease(m *goomVoice, e *core.Event) {
+func goomPortAmplitudeRelease(cm core.Module, e *core.Event) {
+	m := cm.(*goomVoice)
 	core.SendEvent(m.ampEnv, "release", e)
 }
 
-func goomPortWaveDuty(m *goomVoice, e *core.Event) {
+func goomPortWaveDuty(cm core.Module, e *core.Event) {
+	m := cm.(*goomVoice)
 	core.SendEvent(m.wavOsc, "duty", e)
 }
 
-func goomPortWaveSlope(m *goomVoice, e *core.Event) {
+func goomPortWaveSlope(cm core.Module, e *core.Event) {
+	m := cm.(*goomVoice)
 	core.SendEvent(m.wavOsc, "slope", e)
 }
 
-func goomPortModulationAttack(m *goomVoice, e *core.Event) {
+func goomPortModulationAttack(cm core.Module, e *core.Event) {
+	m := cm.(*goomVoice)
 	core.SendEvent(m.modEnv, "attack", e)
 }
 
-func goomPortModulationDecay(m *goomVoice, e *core.Event) {
+func goomPortModulationDecay(cm core.Module, e *core.Event) {
+	m := cm.(*goomVoice)
 	core.SendEvent(m.modEnv, "decay", e)
 }
 
-func goomPortModulationDuty(m *goomVoice, e *core.Event) {
+func goomPortModulationDuty(cm core.Module, e *core.Event) {
+	m := cm.(*goomVoice)
 	core.SendEvent(m.modOsc, "duty", e)
 }
 
-func goomPortModulationSlope(m *goomVoice, e *core.Event) {
+func goomPortModulationSlope(cm core.Module, e *core.Event) {
+	m := cm.(*goomVoice)
 	core.SendEvent(m.modOsc, "slope", e)
 }
 
-func goomPortModulationTuning(m *goomVoice, e *core.Event) {
+func goomPortModulationTuning(cm core.Module, e *core.Event) {
+	m := cm.(*goomVoice)
 	m.modTuning = core.Clamp(e.GetEventFloat().Val, 0, 1)
 	log.Info.Printf("set modulation tuning %f", m.modTuning)
 }
 
-func goomPortModulationLevel(m *goomVoice, e *core.Event) {
+func goomPortModulationLevel(cm core.Module, e *core.Event) {
+	m := cm.(*goomVoice)
 	m.modLevel = core.Clamp(e.GetEventFloat().Val, 0, 1)
 	log.Info.Printf("set modulation level %f", m.modLevel)
 }
 
-func goomPortFilterAttack(m *goomVoice, e *core.Event) {
+func goomPortFilterAttack(cm core.Module, e *core.Event) {
+	m := cm.(*goomVoice)
 	core.SendEvent(m.fltEnv, "attack", e)
 }
 
-func goomPortFilterDecay(m *goomVoice, e *core.Event) {
+func goomPortFilterDecay(cm core.Module, e *core.Event) {
+	m := cm.(*goomVoice)
 	core.SendEvent(m.fltEnv, "decay", e)
 }
 
-func goomPortFilterSustain(m *goomVoice, e *core.Event) {
+func goomPortFilterSustain(cm core.Module, e *core.Event) {
+	m := cm.(*goomVoice)
 	core.SendEvent(m.fltEnv, "sustain", e)
 }
 
-func goomPortFilterRelease(m *goomVoice, e *core.Event) {
+func goomPortFilterRelease(cm core.Module, e *core.Event) {
+	m := cm.(*goomVoice)
 	core.SendEvent(m.fltEnv, "release", e)
 }
 
-func goomPortFilterSensitivity(m *goomVoice, e *core.Event) {
+func goomPortFilterSensitivity(cm core.Module, e *core.Event) {
 	// TODO
 }
 
-func goomPortFilterCutoff(m *goomVoice, e *core.Event) {
+func goomPortFilterCutoff(cm core.Module, e *core.Event) {
 	// TODO
 }
 
-func goomPortFilterResonance(m *goomVoice, e *core.Event) {
+func goomPortFilterResonance(cm core.Module, e *core.Event) {
+	m := cm.(*goomVoice)
 	core.SendEvent(m.lpf, "resonance", e)
-}
-
-// Event processes a module event.
-func (m *goomVoice) Event(e *core.Event) {
 }
 
 //-----------------------------------------------------------------------------
