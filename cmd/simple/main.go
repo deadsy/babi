@@ -8,7 +8,6 @@ import (
 	"fmt"
 
 	"github.com/deadsy/babi/core"
-	"github.com/deadsy/babi/module/osc"
 	"github.com/deadsy/babi/module/seq"
 	"github.com/deadsy/babi/patches"
 )
@@ -45,8 +44,8 @@ func main() {
 	//s.SetPatch(patches.NewBasicPatch(s, osc.NewSquareBasic(s)))
 	//s.SetPatch(patches.NewBasicPatch(s, osc.NewNoisePink2(s)))
 	//s.SetPatch(patches.NewBasicPatch(s, osc.NewSawtoothBasic(s)))
-	s.SetPatch(patches.NewBasicPatch(s, osc.NewGoomOsc(s)))
-	//s.SetPatch(patches.NewKarplusStrongPatch(s))
+	//s.SetPatch(patches.NewBasicPatch(s, osc.NewGoomOsc(s)))
+	s.SetPatch(patches.NewKarplusStrongPatch(s))
 	//s.SetPatch(patches.NewSequencerTest(s, metronome))
 
 	s.Run()

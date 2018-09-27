@@ -72,7 +72,7 @@ func ctrlPortMidiIn(cm core.Module, e *core.Event) {
 			// convert to a float event and send
 			val := core.MIDIMap(me.GetCtrlVal(), 0, 1)
 			log.Info.Printf("send float event to %s.%s val %f", m.dst, m.name, val)
-			core.SendEventFloatName(m.dst, m.name, val)
+			core.SendEventFloat(m.dst, m.name, val)
 		}
 	}
 }

@@ -18,7 +18,25 @@ import (
 const numMIDIIn = 1
 const numAudioIn = 0
 const numAudioOut = 2
+
+//-----------------------------------------------------------------------------
+
 const numEvents = 32
+
+// QueueEvent contains an event for future processing.
+type QueueEvent struct {
+	dst   Module // destination module
+	port  string // port name
+	event *Event // event
+}
+
+// PushEvent pushes an event onto the synth event queue.
+func (s *Synth) PushEvent(m Module, name string, e *Event) {
+	err := s.event.Write(&QueueEvent{m, name, e})
+	if err != nil {
+		log.Info.Printf("%s", err)
+	}
+}
 
 //-----------------------------------------------------------------------------
 
@@ -50,25 +68,18 @@ func (s *Synth) SetPatch(m Module) error {
 	return nil
 }
 
-// PushEvent pushes an event onto the synth event queue for future processing.
-func (s *Synth) PushEvent(e *Event) {
-	err := s.event.Write(e)
-	if err != nil {
-		log.Info.Printf("%s", err)
-	}
-}
-
 // Run runs the main loop for the synthesizer.
 func (s *Synth) Run() {
-
-	s.PushEvent(NewEventMIDI(EventMIDINoteOn, 0, 69, 127))
-
+	s.PushEvent(nil, "midi_in", NewEventMIDI(EventMIDINoteOn, 0, 69, 127))
 	for {
 		// process all queued events
 		for !s.event.Empty() {
-			// TODO fix
-			//e, _ := s.event.Read()
-			//s.root.Event(e.(*Event))
+			x, _ := s.event.Read()
+			e := x.(*QueueEvent)
+			if e.dst == nil {
+				e.dst = s.root
+			}
+			SendEvent(e.dst, e.port, e.event)
 		}
 		// zero the audio output buffers
 		for i := 0; i < numAudioOut; i++ {

@@ -60,18 +60,18 @@ func NewBasicPatch(s *core.Synth, osc core.Module) core.Module {
 	volCtrl := midi.NewCtrl(s, midiCh, midiCtrl+1, pan, "volume")
 
 	// oscillator defaults
-	core.SendEventFloatName(osc, "frequency", 440.0)
-	core.SendEventFloatName(osc, "duty", 0.1)
-	core.SendEventFloatName(osc, "attenuation", 1.0)
-	core.SendEventFloatName(osc, "slope", 0.5)
+	core.SendEventFloat(osc, "frequency", 440.0)
+	core.SendEventFloat(osc, "duty", 0.1)
+	core.SendEventFloat(osc, "attenuation", 1.0)
+	core.SendEventFloat(osc, "slope", 0.5)
 	// adsr defaults
-	core.SendEventFloatName(adsr, "attack", 0.1)
-	core.SendEventFloatName(adsr, "decay", 0.5)
-	core.SendEventFloatName(adsr, "sustain", 0.05)
-	core.SendEventFloatName(adsr, "release", 1)
+	core.SendEventFloat(adsr, "attack", 0.1)
+	core.SendEventFloat(adsr, "decay", 0.5)
+	core.SendEventFloat(adsr, "sustain", 0.05)
+	core.SendEventFloat(adsr, "release", 1)
 	// pan defaults
-	core.SendEventFloatName(pan, "pan", 0.5)
-	core.SendEventFloatName(pan, "volume", 1)
+	core.SendEventFloat(pan, "pan", 0.5)
+	core.SendEventFloat(pan, "volume", 1)
 
 	return &basicPatch{
 		synth:   s,

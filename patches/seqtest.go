@@ -44,8 +44,8 @@ func NewSequencerTest(s *core.Synth, prog []seq.Op) core.Module {
 	sx := seq.NewSequencer(s, prog)
 
 	// defaults
-	core.SendEventFloatName(sx, "bpm", 120.0)
-	core.SendEventIntName(sx, "ctrl", seq.CtrlStart)
+	core.SendEventFloat(sx, "bpm", 120.0)
+	core.SendEventInt(sx, "ctrl", seq.CtrlStart)
 
 	return &seqtestModule{
 		synth: s,

@@ -72,11 +72,11 @@ func notePortMidiIn(cm core.Module, e *core.Event) {
 		case core.EventMIDINoteOn:
 			if me.GetNote() == m.note {
 				vel := core.MIDIMap(me.GetVelocity(), 0, 1)
-				core.SendEventFloatName(m.dst, m.name, vel)
+				core.SendEventFloat(m.dst, m.name, vel)
 			}
 		case core.EventMIDINoteOff:
 			if me.GetNote() == m.note {
-				core.SendEventFloatName(m.dst, m.name, 0)
+				core.SendEventFloat(m.dst, m.name, 0)
 			}
 		default:
 		}

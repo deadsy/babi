@@ -186,8 +186,8 @@ func (e *Event) GetEventFloat() *EventFloat {
 	return nil
 }
 
-// SendEventFloatName sends a float event to a named port on a module.
-func SendEventFloatName(m Module, name string, val float32) {
+// SendEventFloat sends a float event to a named port on a module.
+func SendEventFloat(m Module, name string, val float32) {
 	pi := m.Info().GetPortByName(name)
 	if pi != nil {
 		pi.EventFunc(m, NewEventFloat(val))
@@ -220,8 +220,8 @@ func (e *Event) GetEventInt() *EventInt {
 	return nil
 }
 
-// SendEventIntName sends a integer event to a named port on a module.
-func SendEventIntName(m Module, name string, val int) {
+// SendEventInt sends a integer event to a named port on a module.
+func SendEventInt(m Module, name string, val int) {
 	pi := m.Info().GetPortByName(name)
 	if pi != nil {
 		pi.EventFunc(m, NewEventInt(val))

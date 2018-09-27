@@ -59,11 +59,11 @@ func NewKarplusStrongPatch(s *core.Synth) core.Module {
 	volCtrl := midi.NewCtrl(s, midiCh, midiCtrl+1, pan, "volume")
 
 	// ks default
-	core.SendEventFloatName(ks, "attenuation", 1.0)
-	core.SendEventFloatName(ks, "frequency", 440.0)
+	core.SendEventFloat(ks, "attenuation", 1.0)
+	core.SendEventFloat(ks, "frequency", 440.0)
 	// pan defaults
-	core.SendEventFloatName(pan, "pan", 0.5)
-	core.SendEventFloatName(pan, "volume", 1)
+	core.SendEventFloat(pan, "pan", 0.5)
+	core.SendEventFloat(pan, "volume", 1)
 
 	return &ksPatch{
 		synth:   s,
