@@ -77,24 +77,27 @@ const (
 type fModeType uint
 
 const (
-	fModeLow fModeType = iota
+	fModeNote fModeType = iota
 	fModeHigh
-	fModeNote
+	fModeLow
 	fModeMax // must be last
 )
 
 type goomVoice struct {
-	synth     *core.Synth // top-level synth
-	ampEnv    core.Module // amplitude envelope generator
-	wavOsc    core.Module // wave oscillator
-	modEnv    core.Module // modulation envelope generator
-	modOsc    core.Module // modulation oscillator
-	fltEnv    core.Module // filter envelope generator
-	lpf       core.Module // low pass filter
-	oMode     oModeType   // oscillator mode
-	fMode     fModeType   // frequency mode
-	modTuning float32     // modulation tuning
-	modLevel  float32     // modulation level
+	synth          *core.Synth // top-level synth
+	ampEnv         core.Module // amplitude envelope generator
+	wavOsc         core.Module // wave oscillator
+	modEnv         core.Module // modulation envelope generator
+	modOsc         core.Module // modulation oscillator
+	fltEnv         core.Module // filter envelope generator
+	lpf            core.Module // low pass filter
+	oMode          oModeType   // oscillator mode
+	fMode          fModeType   // frequency mode
+	modTuning      float32     // modulation tuning
+	modLevel       float32     // modulation level
+	fltSensitivity float32     // filter sensitivity
+	fltCutoff      float32     // filter cutoff
+	velocity       float32     // note velocity
 }
 
 // NewGoomVoice returns a Goom voice.
@@ -154,11 +157,38 @@ func goomPortFrequencyMode(cm core.Module, e *core.Event) {
 }
 
 func goomPortNote(cm core.Module, e *core.Event) {
-	// TODO
+	m := cm.(*goomVoice)
+	note := e.GetEventFloat().Val
+	// set the wave oscillator frequency
+	core.SendEventFloat(m.wavOsc, "frequency", core.MIDIToFrequency(note))
+	// set the modulation oscillator frequency
+	switch m.fMode {
+	case fModeLow:
+		note = 10
+	case fModeHigh:
+		note = 100
+	}
+	note += m.modTuning * 2 // +/- 2 semitones
+	core.SendEventFloat(m.modOsc, "frequency", core.MIDIToFrequency(note))
 }
 
 func goomPortGate(cm core.Module, e *core.Event) {
-	// TODO
+	m := cm.(*goomVoice)
+	gate := e.GetEventFloat().Val
+	log.Info.Printf("gate %f", gate)
+	if gate > 0 {
+		// gate all of the envelopes
+		core.SendEventFloat(m.ampEnv, "gate", gate)
+		core.SendEventFloat(m.modEnv, "gate", gate)
+		core.SendEventFloat(m.fltEnv, "gate", gate)
+		// record the note velocity
+		m.velocity = gate
+	} else {
+		// release all of the envelopes
+		core.SendEventFloat(m.ampEnv, "gate", 0)
+		core.SendEventFloat(m.modEnv, "gate", 0)
+		core.SendEventFloat(m.fltEnv, "gate", 0)
+	}
 }
 
 func goomPortAmplitudeAttack(cm core.Module, e *core.Event) {
@@ -213,8 +243,10 @@ func goomPortModulationSlope(cm core.Module, e *core.Event) {
 
 func goomPortModulationTuning(cm core.Module, e *core.Event) {
 	m := cm.(*goomVoice)
-	m.modTuning = core.Clamp(e.GetEventFloat().Val, 0, 1)
-	log.Info.Printf("set modulation tuning %f", m.modTuning)
+	tune := core.Clamp(e.GetEventFloat().Val, 0, 1)
+	tune = core.Map(tune, -1, 1)
+	log.Info.Printf("set modulation tuning %f", tune)
+	m.modTuning = tune
 }
 
 func goomPortModulationLevel(cm core.Module, e *core.Event) {
@@ -244,11 +276,17 @@ func goomPortFilterRelease(cm core.Module, e *core.Event) {
 }
 
 func goomPortFilterSensitivity(cm core.Module, e *core.Event) {
-	// TODO
+	m := cm.(*goomVoice)
+	sensitivity := core.Clamp(e.GetEventFloat().Val, 0, 1)
+	log.Info.Printf("set filter sensitivity %f", sensitivity)
+	m.fltSensitivity = sensitivity
 }
 
 func goomPortFilterCutoff(cm core.Module, e *core.Event) {
-	// TODO
+	m := cm.(*goomVoice)
+	cutoff := core.Clamp(e.GetEventFloat().Val, 0, 1)
+	log.Info.Printf("set filter cutoff %f", cutoff)
+	m.fltCutoff = cutoff
 }
 
 func goomPortFilterResonance(cm core.Module, e *core.Event) {
@@ -264,7 +302,7 @@ func (m *goomVoice) Process(buf ...*core.Buf) {
 
 // Active returns true if the module has non-zero output.
 func (m *goomVoice) Active() bool {
-	return true
+	return m.ampEnv.Active()
 }
 
 //-----------------------------------------------------------------------------
