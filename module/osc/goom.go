@@ -104,26 +104,31 @@ func goomPortSlope(cm core.Module, e *core.Event) {
 
 //-----------------------------------------------------------------------------
 
+// sample returns a single sample for the current phase value.
+func (m *goomOsc) sample() float32 {
+	var ofs uint32
+	var x float32
+	// what portion of the goom wave are we in?
+	if m.x < m.tp {
+		// we are in the s0/f0 portion
+		x = float32(m.x) * m.k0
+	} else {
+		// we are in the s1/f1 portion
+		x = float32(m.x-m.tp) * m.k1
+		ofs = core.HalfCycle
+	}
+	// clamp x to 1
+	if x > 1 {
+		x = 1
+	}
+	return core.CosLookup(uint32(x*float32(core.HalfCycle)) + ofs)
+}
+
 // Process runs the module DSP.
 func (m *goomOsc) Process(buf ...*core.Buf) {
 	out := buf[0]
 	for i := 0; i < len(out); i++ {
-		var ofs uint32
-		var x float32
-		// what portion of the goom wave are we in?
-		if m.x < m.tp {
-			// we are in the s0/f0 portion
-			x = float32(m.x) * m.k0
-		} else {
-			// we are in the s1/f1 portion
-			x = float32(m.x-m.tp) * m.k1
-			ofs = core.HalfCycle
-		}
-		// clamp x to 1
-		if x > 1 {
-			x = 1
-		}
-		out[i] = core.CosLookup(uint32(x*float32(core.HalfCycle)) + ofs)
+		out[i] = m.sample()
 		// step the phase
 		m.x += m.xstep
 	}
