@@ -41,44 +41,6 @@ func BlackmanWindow(n int) []float64 {
 	return w
 }
 
-// DFT returns the discrete fourier transform of the complex input.
-func DFT(realTime, imagTime []float64) (realFreq, imagFreq []float64) {
-	n := len(realTime)
-	nInv := 1.0 / float64(n)
-	realFreq = make([]float64, n)
-	imagFreq = make([]float64, n)
-	for k := 0; k < n; k++ {
-		for i := 0; i < n; i++ {
-			p := 2 * Pi * float64(k*i) * nInv
-			sr := math.Cos(p)
-			si := -math.Sin(p)
-			realFreq[k] += (realTime[i] * sr) - (imagTime[i] * si)
-			imagFreq[k] += (realTime[i] * si) + (imagTime[i] * sr)
-		}
-	}
-	return
-}
-
-// InverseDFT returns the inverse discrete fourier transform of the complex input.
-func InverseDFT(realFreq, imagFreq []float64) (realTime, imagTime []float64) {
-	n := len(realFreq)
-	nInv := 1.0 / float64(n)
-	realTime = make([]float64, n)
-	imagTime = make([]float64, n)
-	for k := 0; k < n; k++ {
-		for i := 0; i < n; i++ {
-			p := 2 * Pi * float64(k*i) * nInv
-			sr := math.Cos(p)
-			si := -math.Sin(p)
-			realTime[k] += (realFreq[i] * sr) + (imagFreq[i] * si)
-			imagTime[k] += (realFreq[i] * si) - (imagFreq[i] * sr)
-		}
-		realTime[k] *= nInv
-		imagTime[k] *= nInv
-	}
-	return
-}
-
 // Cabs returns absolute value (magnitude) of a complex number.
 func Cabs(r, i float64) float64 {
 	return math.Sqrt((r * r) + (i * i))
