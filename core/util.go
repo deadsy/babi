@@ -21,6 +21,8 @@ func Abs(x float32) float32 {
 	return x
 }
 
+//-----------------------------------------------------------------------------
+
 // Clamp clamps x between a and b.
 func Clamp(x, a, b float32) float32 {
 	if x < a {
@@ -48,10 +50,14 @@ func ClampHi(x, a float32) float32 {
 	return x
 }
 
+//-----------------------------------------------------------------------------
+
 // Map returns a linear mapping from x = 0..1 to y = a..b.
 func Map(x, a, b float32) float32 {
 	return ((b - a) * x) + a
 }
+
+//-----------------------------------------------------------------------------
 
 // InRange returns true if a <= x <= b.
 func InRange(x, a, b float32) bool {
@@ -61,6 +67,17 @@ func InRange(x, a, b float32) bool {
 // InEnum returns true if x is in [0:max)
 func InEnum(x, max int) bool {
 	return x >= 0 && x < max
+}
+
+//-----------------------------------------------------------------------------
+
+// toComplex128 converts a buffer of real values to complex values.
+func toComplex128(in []float64) []complex128 {
+	out := make([]complex128, len(in))
+	for i := range out {
+		out[i] = complex(in[i], 0)
+	}
+	return out
 }
 
 //-----------------------------------------------------------------------------
