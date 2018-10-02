@@ -40,6 +40,11 @@ func (r *Rand32) Float32() float32 {
 	return math.Float32frombits(i) - 3           // -1..1
 }
 
+// Complex64 returns a complex64 from -1..1 (real and imaginary).
+func (r *Rand32) Complex64() complex64 {
+	return complex(r.Float32(), r.Float32())
+}
+
 //-----------------------------------------------------------------------------
 
 // Rand64 is a simple LCG PRNG.
@@ -65,6 +70,11 @@ func (r *Rand64) Uint64() uint64 {
 func (r *Rand64) Float64() float64 {
 	i := (r.Uint64() & 0x000fffffffffffff) | (1024 << 52) // 2..4
 	return math.Float64frombits(i) - 3                    // -1..1
+}
+
+// Complex128 returns a complex128 from -1..1 (real and imaginary).
+func (r *Rand64) Complex128() complex128 {
+	return complex(r.Float64(), r.Float64())
 }
 
 //-----------------------------------------------------------------------------

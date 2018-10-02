@@ -123,15 +123,23 @@ func TestDFT(t *testing.T) {
 	realFreq := convertToFloat64(realFreqi)
 	imagFreq := convertToFloat64(imagFreqi)
 
-	x, y := DFT(realTime, imagTime)
-	n := len(realTime)
+	n := len(realTimei)
+	time := make([]complex128, n)
+	freq := make([]complex128, n)
 	for i := 0; i < n; i++ {
-		if !equal(x[i], realFreq[i], 1e-11) {
-			t.Logf("for i %d expected %.20f, actual %.20f\n", i, realFreq[i], x[i])
+		time[i] = complex(realTime[i], imagTime[i])
+		freq[i] = complex(realFreq[i], imagFreq[i])
+	}
+
+	x := DFT(time)
+
+	for i := 0; i < n; i++ {
+		if !equal(real(x[i]), real(freq[i]), 1e-11) {
+			t.Logf("for i %d expected %.20f, actual %.20f\n", i, real(freq[i]), real(x[i]))
 			t.Error("FAIL")
 		}
-		if !equal(y[i], imagFreq[i], 1e-10) {
-			t.Logf("for i %d expected %.20f, actual %.20f\n", i, imagFreq[i], y[i])
+		if !equal(imag(x[i]), imag(freq[i]), 1e-11) {
+			t.Logf("for i %d expected %.20f, actual %.20f\n", i, imag(freq[i]), imag(x[i]))
 			t.Error("FAIL")
 		}
 	}
@@ -140,46 +148,23 @@ func TestDFT(t *testing.T) {
 //-----------------------------------------------------------------------------
 
 func TestInverseDFT(t *testing.T) {
-
-	realFreqi := []uint64{
-		0xc0004008c0000000, 0x40192e6d00000000, 0x400d799740000000, 0x4020705a98000000, 0xbfd6697600000000, 0xc016bbe7a0000000, 0x4022029588000000, 0x4020ce1cf0000000,
-		0xc01c2fec40000000, 0x401e7c2720000000, 0x400692a980000000, 0xbff5c66000000000, 0x400322ac00000000, 0xc01183e738000000, 0x4016e152b0000000, 0xc00ece86a0000000,
-		0xbff0f30240000000, 0xc015e95614000000, 0xc018ff5268000000, 0xc011e6b6b0000000, 0x3ff20fdf40000000, 0xbffab83700000000, 0xc01a6e7264000000, 0x402045ac08000000,
-		0xc01fbf0ddc000000, 0xc01de9fa1c000000, 0xbfb7539000000000, 0x4014d68850000000, 0x402363db58000000, 0x40216670e0000000, 0x400d82de40000000, 0xc002b09b10000000,
-	}
-	imagFreqi := []uint64{
-		0x4013fb4ec0000000, 0xc005038a80000000, 0xc010779880000000, 0xc0156b48a0000000, 0x3ffb094c80000000, 0xc014726d5c000000, 0xc01bcf0e98000000, 0x40129266e0000000,
-		0xc01df64628000000, 0x40177a4600000000, 0xc01adf3148000000, 0x40139b1000000000, 0xc02104d09c000000, 0x40220110c8000000, 0xc021e619b2000000, 0x3fdb99e100000000,
-		0xc019e734ac000000, 0xc014cb85cc000000, 0x4017d2e760000000, 0x40129cc310000000, 0x40090cd8c0000000, 0x4022b23a88000000, 0x40065036e0000000, 0x4014c75ec0000000,
-		0xc02042c28b000000, 0xc01d3532d0000000, 0x3fd9de7100000000, 0xc020dee724000000, 0xc021342892000000, 0xc017a0a9f8000000, 0xbfe8b0de80000000, 0x401992fdb0000000,
-	}
-	realTimei := []uint64{
-		0x3fe6a2b852000000, 0x3ffcd5be951f392f, 0xbff26bece78ab738, 0x3fe1be846c5647e7, 0xbfd2228450761506, 0xbfe78c19ebff215f, 0x3fd0dd02d7d5c6a8, 0x3fecab3655b2327f,
-		0xbfb69cec10000b1c, 0xbfe9b9ec07842c44, 0x3fe636a15182c49a, 0x3fe2492828a767c9, 0x3f7a13ad8e865f00, 0xbfedc417f96f43ec, 0x3ffd26877cb806a6, 0xbffb0848da29d7e4,
-		0xbfd237c85c0005ee, 0x3fe2b381a5684e1e, 0xbf7973940847cb50, 0xbfe556ec3e48e72c, 0xc001e85ddbf13d95, 0x3ff834f541788bef, 0x3ff2b35a756924e2, 0xbfb1967bb14c4514,
-		0xbfef88888e00018d, 0xbff266dc73a28e60, 0xbfe9545d0a5cc856, 0xbfecad057ac8bd9b, 0xbff5a1ccf78e8528, 0xbfe5d617fa601e77, 0x3fef2aa1b7d2ccb0, 0x3ff376331a6f7a43,
-	}
-	imagTimei := []uint64{
-		0x3ff29ff798400000, 0xbfa9945d755917cc, 0x3fdc02df5dfaf857, 0xbff8385fe50f9adb, 0x3fd910c8c72da744, 0xbffed2756091bb48, 0xbff1f030003bb24f, 0xbff7c18fcafe33ec,
-		0x3fef0c93488000bc, 0x3fe23a2bbc59de55, 0xbff47e87ed8479b3, 0xbfdda55c550b7516, 0xbfc29efab8ceb4ed, 0x3ff37d092e3b7cf5, 0xbff50cf7e5792b76, 0xbfedc91da7409a18,
-		0x3ffd2010d63fffee, 0xbff7354cccd2505c, 0xbfc7bd57e304cf70, 0x3fea359f7d642790, 0x3fe45ed82569272e, 0x3fe1cb0a2efa594c, 0x3fc83704063142c3, 0xbff065d5e2f67d36,
-		0xbfd1f7803f000389, 0x3fd30b798953d8e0, 0x3fe596bd12ccaa84, 0x3fde755b10827ffa, 0xbfd201ff1998b237, 0xc0026fe13a95de51, 0xbfeddf02c8228925, 0x3ff7a2232914c425,
-	}
-
-	realTime := convertToFloat64(realTimei)
-	imagTime := convertToFloat64(imagTimei)
-	realFreq := convertToFloat64(realFreqi)
-	imagFreq := convertToFloat64(imagFreqi)
-	x, y := InverseDFT(realFreq, imagFreq)
-	n := len(realFreq)
-	for i := 0; i < n; i++ {
-		if !equal(x[i], realTime[i], 1e-11) {
-			t.Logf("for i %d expected %.20f, actual %.20f\n", i, realTime[i], x[i])
-			t.Error("FAIL")
+	r := NewRand64(1023)
+	time := make([]complex128, 1024)
+	for k := 0; k < 10; k++ {
+		for i := range time {
+			time[i] = r.Complex128()
 		}
-		if !equal(y[i], imagTime[i], 1e-4) {
-			t.Logf("for i %d expected %.20f, actual %.20f\n", i, imagTime[i], y[i])
-			t.Error("FAIL")
+		freq := DFT(time)
+		x := InverseDFT(freq)
+		for i := range time {
+			if !equal(real(x[i]), real(time[i]), 1e-9) {
+				t.Logf("for i %d expected %.20f, actual %.20f\n", i, real(time[i]), real(x[i]))
+				t.Error("FAIL")
+			}
+			if !equal(imag(x[i]), imag(time[i]), 1e-9) {
+				t.Logf("for i %d expected %.20f, actual %.20f\n", i, imag(time[i]), imag(x[i]))
+				t.Error("FAIL")
+			}
 		}
 	}
 }

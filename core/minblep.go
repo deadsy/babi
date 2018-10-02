@@ -12,7 +12,10 @@ https://www.cs.cmu.edu/~eli/papers/icmc01-hardsync.pdf
 
 package core
 
-import "math"
+import (
+	"math"
+	"math/cmplx"
+)
 
 //-----------------------------------------------------------------------------
 
@@ -33,7 +36,7 @@ func BlackmanWindow(n int) []float64 {
 		w[0] = 1
 	} else {
 		for i := 0; i < n; i++ {
-			f1 := 2 * Pi * float64(i) / m
+			f1 := Tau * float64(i) / m
 			f2 := 2 * f1
 			w[i] = 0.42 - (0.5 * math.Cos(f1)) + (0.08 * math.Cos(f2))
 		}
@@ -41,34 +44,17 @@ func BlackmanWindow(n int) []float64 {
 	return w
 }
 
-// Cabs returns absolute value (magnitude) of a complex number.
-func Cabs(r, i float64) float64 {
-	return math.Sqrt((r * r) + (i * i))
-}
-
-// Cexp returns e raised to a complex number.
-func Cexp(r, i float64) (zr, zi float64) {
-	er := math.Exp(r)
-	zr = er * math.Cos(i)
-	zi = er * math.Sin(i)
-	return
-}
-
 // RealCepstrum returns the real cepstrum of a real signal.
 func RealCepstrum(signal []float64) []float64 {
-	n := len(signal)
-	// convert to frequency domain
-	imagTime := make([]float64, n)
-	realFreq, imagFreq := DFT(signal, imagTime)
+	freq := DFT(toComplex128(signal))
 	// calculate the log of the absolute value
-	for i := 0; i < n; i++ {
-		realFreq[i] = math.Log(Cabs(realFreq[i], imagFreq[i]))
-		imagFreq[i] = 0
+	for i := range freq {
+		freq[i] = complex(math.Log(cmplx.Abs(freq[i])), 0)
 	}
 	// back to time domain
-	realTime, _ := InverseDFT(realFreq, imagFreq)
+	time := InverseDFT(freq)
 	// output the real part
-	return realTime
+	return toFloat64(time)
 }
 
 // MinimumPhase returns the minimum phase reconstruction of a signal.
@@ -94,13 +80,12 @@ func MinimumPhase(realCepstrum []float64) []float64 {
 			realTime[i] = 0
 		}
 	}
-	imagTime := make([]float64, n)
-	realFreq, imagFreq := DFT(realTime, imagTime)
-	for i := 0; i < n; i++ {
-		realFreq[i], imagFreq[i] = Cexp(realFreq[i], imagFreq[i])
+	freq := DFT(toComplex128(realTime))
+	for i := range freq {
+		freq[i] = cmplx.Exp(freq[i])
 	}
-	realTime, _ = InverseDFT(realFreq, imagFreq)
-	return realTime
+	time := InverseDFT(freq)
+	return toFloat64(time)
 }
 
 // GenerateMinBLEP returns a minimum phase bandwidth limited step.

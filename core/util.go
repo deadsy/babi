@@ -70,14 +70,3 @@ func InEnum(x, max int) bool {
 }
 
 //-----------------------------------------------------------------------------
-
-// toComplex128 converts a buffer of real values to complex values.
-func toComplex128(in []float64) []complex128 {
-	out := make([]complex128, len(in))
-	for i := range out {
-		out[i] = complex(in[i], 0)
-	}
-	return out
-}
-
-//-----------------------------------------------------------------------------
