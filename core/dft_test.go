@@ -68,6 +68,30 @@ func TestDFT(t *testing.T) {
 
 //-----------------------------------------------------------------------------
 
+func TestFFT(t *testing.T) {
+	r := NewRand64(1023)
+	time := make([]complex128, 1024)
+	for k := 0; k < 10; k++ {
+		for i := range time {
+			time[i] = r.Complex128()
+		}
+		freq0 := DFT(time)
+		freq1 := FFT(time)
+		for i := range time {
+			if !equal(real(freq0[i]), real(freq1[i]), 1e-9) {
+				t.Logf("for i %d expected %.20f, actual %.20f\n", i, real(freq0[i]), real(freq1[i]))
+				t.Error("FAIL")
+			}
+			if !equal(imag(freq0[i]), imag(freq1[i]), 1e-9) {
+				t.Logf("for i %d expected %.20f, actual %.20f\n", i, imag(freq0[i]), imag(freq1[i]))
+				t.Error("FAIL")
+			}
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+
 func TestInverseDFT(t *testing.T) {
 	r := NewRand64(1023)
 	time := make([]complex128, 1024)
@@ -91,7 +115,7 @@ func TestInverseDFT(t *testing.T) {
 }
 
 //-----------------------------------------------------------------------------
-// benchmarking
+// DFT benchmarking
 
 func benchmarkDFT(n int, b *testing.B) {
 	r := NewRand64(17)
@@ -99,7 +123,6 @@ func benchmarkDFT(n int, b *testing.B) {
 	for i := range in {
 		in[i] = r.Complex128()
 	}
-
 	for n := 0; n < b.N; n++ {
 		DFT(in)
 	}
@@ -109,5 +132,24 @@ func BenchmarkDFT32(b *testing.B)   { benchmarkDFT(32, b) }
 func BenchmarkDFT64(b *testing.B)   { benchmarkDFT(64, b) }
 func BenchmarkDFT256(b *testing.B)  { benchmarkDFT(256, b) }
 func BenchmarkDFT1024(b *testing.B) { benchmarkDFT(1024, b) }
+
+//-----------------------------------------------------------------------------
+// FFT benchmarking
+
+func benchmarkFFT(n int, b *testing.B) {
+	r := NewRand64(17)
+	in := make([]complex128, n)
+	for i := range in {
+		in[i] = r.Complex128()
+	}
+	for n := 0; n < b.N; n++ {
+		FFT(in)
+	}
+}
+
+func BenchmarkFFT32(b *testing.B)   { benchmarkFFT(32, b) }
+func BenchmarkFFT64(b *testing.B)   { benchmarkFFT(64, b) }
+func BenchmarkFFT256(b *testing.B)  { benchmarkFFT(256, b) }
+func BenchmarkFFT1024(b *testing.B) { benchmarkFFT(1024, b) }
 
 //-----------------------------------------------------------------------------

@@ -5,13 +5,17 @@ Discrete Fourier Transform
 
 See:
 https://en.wikipedia.org/wiki/Discrete_Fourier_transform
+https://github.com/takatoh/fft
 
 */
 //-----------------------------------------------------------------------------
 
 package core
 
-import "math"
+import (
+	"math"
+	"math/cmplx"
+)
 
 //-----------------------------------------------------------------------------
 
@@ -63,6 +67,63 @@ func InverseDFT(in []complex128) []complex128 {
 			out[k] += in[i] * complex(c, s)
 		}
 		out[k] *= complex(nInv, 0)
+	}
+	return out
+}
+
+//-----------------------------------------------------------------------------
+
+// FFT returns the (fast) discrete fourier transform of the complex input.
+func FFT(in []complex128) []complex128 {
+	n := len(in)
+	out := make([]complex128, n)
+	copy(out, in)
+	j := 0
+	for i := 0; i < n; i++ {
+		if i < j {
+			out[i], out[j] = out[j], out[i]
+		}
+		m := n / 2
+		for {
+			if j < m {
+				break
+			}
+			j = j - m
+			m = m / 2
+			if m < 2 {
+				break
+			}
+		}
+		j = j + m
+	}
+	kmax := 1
+	for {
+		if kmax >= n {
+			return out
+		}
+		istep := kmax * 2
+		for k := 0; k < kmax; k++ {
+			theta := complex(0, -Pi*float64(k)/float64(kmax))
+			for i := k; i < n; i += istep {
+				j := i + kmax
+				temp := out[j] * cmplx.Exp(theta)
+				out[j] = out[i] - temp
+				out[i] = out[i] + temp
+			}
+		}
+		kmax = istep
+	}
+}
+
+// InverseFFT returns the (fast) inverse discrete fourier transform of the complex input.
+func InverseFFT(in []complex128) []complex128 {
+	out := make([]complex128, len(in))
+	for i := range out {
+		out[i] = complex(real(in[i]), -imag(in[i]))
+	}
+	out = FFT(out)
+	for i := range out {
+		out[i] = complex(real(out[i]), -imag(out[i]))
 	}
 	return out
 }
