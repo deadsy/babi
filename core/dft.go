@@ -103,10 +103,11 @@ func FFT(in []complex128) []complex128 {
 		}
 		istep := kmax * 2
 		for k := 0; k < kmax; k++ {
-			theta := complex(0, -Pi*float64(k)/float64(kmax))
+			theta := -Pi * float64(k) / float64(kmax)
+			cs := cmplx.Exp(complex(0, theta))
 			for i := k; i < n; i += istep {
 				j := i + kmax
-				temp := out[j] * cmplx.Exp(theta)
+				temp := out[j] * cs
 				out[j] = out[i] - temp
 				out[i] = out[i] + temp
 			}
@@ -117,13 +118,16 @@ func FFT(in []complex128) []complex128 {
 
 // InverseFFT returns the (fast) inverse discrete fourier transform of the complex input.
 func InverseFFT(in []complex128) []complex128 {
-	out := make([]complex128, len(in))
+	n := len(in)
+	nInv := complex(1.0/float64(n), 0)
+	out := make([]complex128, n)
 	for i := range out {
-		out[i] = complex(real(in[i]), -imag(in[i]))
+		out[i] = cmplx.Conj(in[i])
 	}
 	out = FFT(out)
 	for i := range out {
-		out[i] = complex(real(out[i]), -imag(out[i]))
+		out[i] = cmplx.Conj(out[i])
+		out[i] *= nInv
 	}
 	return out
 }

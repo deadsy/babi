@@ -66,32 +66,6 @@ func TestDFT(t *testing.T) {
 	}
 }
 
-//-----------------------------------------------------------------------------
-
-func TestFFT(t *testing.T) {
-	r := NewRand64(1023)
-	time := make([]complex128, 1024)
-	for k := 0; k < 10; k++ {
-		for i := range time {
-			time[i] = r.Complex128()
-		}
-		freq0 := DFT(time)
-		freq1 := FFT(time)
-		for i := range time {
-			if !equal(real(freq0[i]), real(freq1[i]), 1e-9) {
-				t.Logf("for i %d expected %.20f, actual %.20f\n", i, real(freq0[i]), real(freq1[i]))
-				t.Error("FAIL")
-			}
-			if !equal(imag(freq0[i]), imag(freq1[i]), 1e-9) {
-				t.Logf("for i %d expected %.20f, actual %.20f\n", i, imag(freq0[i]), imag(freq1[i]))
-				t.Error("FAIL")
-			}
-		}
-	}
-}
-
-//-----------------------------------------------------------------------------
-
 func TestInverseDFT(t *testing.T) {
 	r := NewRand64(1023)
 	time := make([]complex128, 1024)
@@ -108,6 +82,52 @@ func TestInverseDFT(t *testing.T) {
 			}
 			if !equal(imag(x[i]), imag(time[i]), 1e-9) {
 				t.Logf("for i %d expected %.20f, actual %.20f\n", i, imag(time[i]), imag(x[i]))
+				t.Error("FAIL")
+			}
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+
+func TestFFT(t *testing.T) {
+	r := NewRand64(1023)
+	in := make([]complex128, 1024)
+	for k := 0; k < 10; k++ {
+		for i := range in {
+			in[i] = r.Complex128()
+		}
+		out0 := DFT(in)
+		out1 := FFT(in)
+		for i := range in {
+			if !equal(real(out0[i]), real(out1[i]), 1e-9) {
+				t.Logf("for i %d expected %.20f, actual %.20f\n", i, real(out0[i]), real(out1[i]))
+				t.Error("FAIL")
+			}
+			if !equal(imag(out0[i]), imag(out1[i]), 1e-9) {
+				t.Logf("for i %d expected %.20f, actual %.20f\n", i, imag(out0[i]), imag(out1[i]))
+				t.Error("FAIL")
+			}
+		}
+	}
+}
+
+func TestInverseFFT(t *testing.T) {
+	r := NewRand64(1023)
+	in := make([]complex128, 1024)
+	for k := 0; k < 10; k++ {
+		for i := range in {
+			in[i] = r.Complex128()
+		}
+		out0 := InverseDFT(in)
+		out1 := InverseFFT(in)
+		for i := range in {
+			if !equal(real(out0[i]), real(out1[i]), 1e-9) {
+				t.Logf("for i %d expected %.20f, actual %.20f\n", i, real(out0[i]), real(out1[i]))
+				t.Error("FAIL")
+			}
+			if !equal(imag(out0[i]), imag(out1[i]), 1e-9) {
+				t.Logf("for i %d expected %.20f, actual %.20f\n", i, imag(out0[i]), imag(out1[i]))
 				t.Error("FAIL")
 			}
 		}
