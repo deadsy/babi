@@ -3,12 +3,12 @@
 
 Time Base
 
-Return an output buffer with the time of each sample.
+Return an output buffer whose values are the sample times.
 
 */
 //-----------------------------------------------------------------------------
 
-package plot
+package view
 
 import (
 	"github.com/deadsy/babi/core"

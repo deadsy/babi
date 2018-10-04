@@ -15,7 +15,7 @@ import (
 
 	"github.com/deadsy/babi/core"
 	"github.com/deadsy/babi/module/osc"
-	"github.com/deadsy/babi/module/plot"
+	"github.com/deadsy/babi/module/view"
 )
 
 //-----------------------------------------------------------------------------
@@ -72,7 +72,7 @@ func main() {
 	f.newVariable("time")
 	f.newVariable("amplitude")
 
-	t := plot.NewTime(nil)
+	t := view.NewTime(nil)
 	s := osc.NewSine(nil)
 	core.SendEventFloat(s, "frequency", 220.0)
 
