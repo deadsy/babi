@@ -14,7 +14,7 @@ import "testing"
 
 func TestPowerOf2(t *testing.T) {
 	test := []struct {
-		x      uint
+		x      int
 		result bool
 	}{
 		{0, false},
@@ -42,7 +42,7 @@ func TestPowerOf2(t *testing.T) {
 
 func TestReverse(t *testing.T) {
 	test := []struct {
-		x, n, y uint
+		x, n, y int
 	}{
 		{0, 3, 0},
 		{1, 3, 4},
@@ -67,7 +67,7 @@ func TestReverse(t *testing.T) {
 
 func TestLog2(t *testing.T) {
 	test := []struct {
-		x, y uint
+		x, y int
 	}{
 		{1, 0},
 		{2, 1},

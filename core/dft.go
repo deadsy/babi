@@ -42,18 +42,18 @@ func toFloat64(in []complex128) []float64 {
 //-----------------------------------------------------------------------------
 
 // isPowerOf2 return true if n is a power of 2.
-func isPowerOf2(x uint) bool {
+func isPowerOf2(x int) bool {
 	return x != 0 && (x&-x) == x
 }
 
 // bitReverse reverses the first n bits of x.
-func bitReverse(x, n uint) uint {
-	return bits.Reverse(x) >> (bits.UintSize - n)
+func bitReverse(x, n int) int {
+	return int(bits.Reverse(uint(x)) >> (bits.UintSize - uint(n)))
 }
 
 // log2 returns log base 2 of x (assumes x is a power of 2).
-func log2(x uint) uint {
-	return uint(bits.TrailingZeros(x))
+func log2(x int) int {
+	return bits.TrailingZeros(uint(x))
 }
 
 //-----------------------------------------------------------------------------
@@ -93,27 +93,18 @@ func InverseDFT(in []complex128) []complex128 {
 
 // FFT returns the (fast) discrete fourier transform of the complex input.
 func FFT(in []complex128) []complex128 {
+	// check input length
 	n := len(in)
-	out := make([]complex128, n)
-	copy(out, in)
-	j := 0
-	for i := 0; i < n; i++ {
-		if i < j {
-			out[i], out[j] = out[j], out[i]
-		}
-		m := n / 2
-		for {
-			if j < m {
-				break
-			}
-			j = j - m
-			m = m / 2
-			if m < 2 {
-				break
-			}
-		}
-		j = j + m
+	if !isPowerOf2(n) {
+		panic("input length is not a power of 2")
 	}
+	// reverse the input order
+	out := make([]complex128, n)
+	nbits := log2(n)
+	for i := range out {
+		out[i] = in[bitReverse(i, nbits)]
+	}
+	// run the butterflies
 	kmax := 1
 	for {
 		if kmax >= n {
@@ -122,7 +113,8 @@ func FFT(in []complex128) []complex128 {
 		istep := kmax * 2
 		for k := 0; k < kmax; k++ {
 			theta := -Pi * float64(k) / float64(kmax)
-			cs := cmplx.Exp(complex(0, theta))
+			s, c := math.Sincos(theta)
+			cs := complex(c, s)
 			for i := k; i < n; i += istep {
 				j := i + kmax
 				temp := out[j] * cs
