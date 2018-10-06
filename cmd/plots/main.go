@@ -3,6 +3,8 @@
 
 Graphical Plots of Waveforms
 
+Produces python code viewable using the plot.ly library.
+
 */
 //-----------------------------------------------------------------------------
 
@@ -12,6 +14,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/deadsy/babi/core"
 	"github.com/deadsy/babi/module/osc"
@@ -20,61 +23,119 @@ import (
 
 //-----------------------------------------------------------------------------
 
-type trace struct {
-	file *os.File
-	buf  *bufio.Writer
+type plot struct {
+	name  string        // name of output file py/html
+	title string        // title of plot
+	file  *os.File      // output file
+	buf   *bufio.Writer // buffered io to output file
 }
 
-func openTrace(name string) (*trace, error) {
-	file, err := os.Create(name)
+// openPlot creates and opens a plot file.
+func openPlot(name string) (*plot, error) {
+	file, err := os.Create(name + ".py")
 	if err != nil {
 		return nil, err
 	}
-	return &trace{
+
+	p := &plot{
+		name: name,
 		file: file,
 		buf:  bufio.NewWriter(file),
-	}, nil
-}
-
-func (t *trace) setTitle(title string) {
-	t.buf.WriteString(fmt.Sprintf("title = \"%s\"\n", title))
-}
-
-func (t *trace) newVariable(name string) {
-	t.buf.WriteString(fmt.Sprintf("%s = []\n", name))
-}
-
-func (t *trace) appendData(name string, buf *core.Buf) {
-	t.buf.WriteString(fmt.Sprintf("%s.extend([\n", name))
-	for i := range buf {
-		t.buf.WriteString(fmt.Sprintf("%f,\n", buf[i]))
 	}
-	t.buf.WriteString(fmt.Sprintf("])\n"))
+
+	// add header
+	p.buf.WriteString(p.header() + "\n")
+	return p, nil
 }
 
-func (t *trace) closeTrace() {
-	t.buf.Flush()
-	t.file.Close()
+// header returns the python plot file header.
+func (p *plot) header() string {
+	var s []string
+	s = append(s, "#!/usr/bin/env python3")
+	s = append(s, "import plotly")
+	return strings.Join(s, "\n")
+}
+
+// footer returns the python plot file footer.
+func (p *plot) footer() string {
+	var s []string
+
+	s = append(s, "data = [")
+	s = append(s, "\tplotly.graph_objs.Scatter(")
+	s = append(s, "\t\tx=time,")
+	s = append(s, "\t\ty=amplitude,")
+	s = append(s, "\t\tmode = 'lines',")
+	s = append(s, "\t),")
+	s = append(s, "]")
+
+	s = append(s, "layout = plotly.graph_objs.Layout(")
+	s = append(s, fmt.Sprintf("\ttitle='%s',", p.title))
+	s = append(s, "\txaxis=dict(")
+	s = append(s, "\t\ttitle='time',")
+	s = append(s, "\t),")
+	s = append(s, "\tyaxis=dict(")
+	s = append(s, "\t\ttitle='amplitude',")
+	s = append(s, "\t\trangemode='tozero',")
+	s = append(s, "\t),")
+	s = append(s, ")")
+
+	s = append(s, "figure = plotly.graph_objs.Figure(data=data, layout=layout)")
+	s = append(s, fmt.Sprintf("plotly.offline.plot(figure, filename='%s.html')", p.name))
+
+	return strings.Join(s, "\n")
+}
+
+// setTitle sets the title of the plot file.
+func (p *plot) setTitle(title string) {
+	p.title = title
+}
+
+// newVariable adds a new variable to the plot file.
+func (p *plot) newVariable(name string) {
+	p.buf.WriteString(name + " = []\n")
+}
+
+// appendData appends named data to the plot file.
+func (p *plot) appendData(name string, buf *core.Buf) {
+	p.buf.WriteString(name + ".extend([\n")
+	for i := range buf {
+		p.buf.WriteString(fmt.Sprintf("%f,", buf[i]))
+		if i&15 == 15 {
+			p.buf.WriteString("\n")
+		}
+	}
+	p.buf.WriteString("])\n")
+}
+
+// close the plot file.
+func (p *plot) close() {
+	// add footer
+	p.buf.WriteString(p.footer() + "\n")
+	p.buf.Flush()
+	p.file.Close()
 }
 
 //-----------------------------------------------------------------------------
 
 func main() {
 
-	name := "babi.py"
-	f, err := openTrace(name)
+	name := "babi"
+	p, err := openPlot(name)
 	if err != nil {
 		fmt.Printf("unable to create %s\n", name)
 		os.Exit(1)
 	}
 
-	f.setTitle("220 Hz Sine Wave")
-	f.newVariable("time")
-	f.newVariable("amplitude")
+	freq := float32(110.0)
+	p.setTitle(fmt.Sprintf("%.1f Hz Goom Wave", freq))
+	p.newVariable("time")
+	p.newVariable("amplitude")
 
 	t := view.NewTime(nil)
-	s := osc.NewSine(nil)
-	core.SendEventFloat(s, "frequency", 220.0)
+	s := osc.NewGoom(nil)
+	core.SendEventFloat(s, "frequency", freq)
+	core.SendEventFloat(s, "duty", 0.3)
+	core.SendEventFloat(s, "slope", 1.0)
 
 	var x core.Buf
 	var y core.Buf
@@ -82,11 +143,11 @@ func main() {
 	for i := 0; i < 10; i++ {
 		t.Process(&x)
 		s.Process(&y)
-		f.appendData("time", &x)
-		f.appendData("amplitude", &y)
+		p.appendData("time", &x)
+		p.appendData("amplitude", &y)
 	}
 
-	f.closeTrace()
+	p.close()
 	os.Exit(0)
 }
 

@@ -55,8 +55,8 @@ type goomOsc struct {
 	xstep uint32      // phase step per sample
 }
 
-// NewGoomOsc returns a goom oscillator module.
-func NewGoomOsc(s *core.Synth) core.Module {
+// NewGoom returns a goom oscillator module.
+func NewGoom(s *core.Synth) core.Module {
 	log.Info.Printf("")
 	return &goomOsc{
 		synth: s,

@@ -1,6 +1,7 @@
 
 DIRS = simple \
        jack_test \
+       plots \
 
 all:
 	for dir in $(DIRS); do \
