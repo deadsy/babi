@@ -14,6 +14,7 @@ package core
 
 import (
 	"math"
+	"math/bits"
 	"math/cmplx"
 )
 
@@ -36,6 +37,23 @@ func toFloat64(in []complex128) []float64 {
 		out[i] = real(in[i])
 	}
 	return out
+}
+
+//-----------------------------------------------------------------------------
+
+// isPowerOf2 return true if n is a power of 2.
+func isPowerOf2(x uint) bool {
+	return x != 0 && (x&-x) == x
+}
+
+// bitReverse reverses the first n bits of x.
+func bitReverse(x, n uint) uint {
+	return bits.Reverse(x) >> (bits.UintSize - n)
+}
+
+// log2 returns log base 2 of x (assumes x is a power of 2).
+func log2(x uint) uint {
+	return uint(bits.TrailingZeros(x))
 }
 
 //-----------------------------------------------------------------------------

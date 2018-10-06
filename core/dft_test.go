@@ -12,6 +12,83 @@ import "testing"
 
 //-----------------------------------------------------------------------------
 
+func TestPowerOf2(t *testing.T) {
+	test := []struct {
+		x      uint
+		result bool
+	}{
+		{0, false},
+		{1, true},
+		{2, true},
+		{4, true},
+		{8, true},
+		{16, true},
+		{128, true},
+		{129, false},
+		{127, false},
+		{256, true},
+		{1 << 30, true},
+		{1<<30 + 3, false},
+	}
+	for _, v := range test {
+		if isPowerOf2(v.x) != v.result {
+			t.Logf("for %d expected %v, actual %v\n", v.x, v.result, !v.result)
+			t.Error("FAIL")
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+
+func TestReverse(t *testing.T) {
+	test := []struct {
+		x, n, y uint
+	}{
+		{0, 3, 0},
+		{1, 3, 4},
+		{2, 3, 2},
+		{3, 3, 6},
+		{4, 3, 1},
+		{5, 3, 5},
+		{6, 3, 3},
+		{7, 3, 7},
+		{1, 32, 1 << 31},
+		{5, 32, (1 << 31) | (1 << 29)},
+	}
+	for _, v := range test {
+		if bitReverse(v.x, v.n) != v.y {
+			t.Logf("for bitReverse(%d, %d) expected %d, actual %d\n", v.x, v.n, v.y, bitReverse(v.x, v.n))
+			t.Error("FAIL")
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+
+func TestLog2(t *testing.T) {
+	test := []struct {
+		x, y uint
+	}{
+		{1, 0},
+		{2, 1},
+		{4, 2},
+		{8, 3},
+		{16, 4},
+		{32, 5},
+		{64, 6},
+		{1024, 10},
+		{1 << 31, 31},
+	}
+	for _, v := range test {
+		if log2(v.x) != v.y {
+			t.Logf("for log2(%d) expected %d, actual %d\n", v.x, v.y, log2(v.x))
+			t.Error("FAIL")
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+
 func TestDFT(t *testing.T) {
 
 	realTimei := []uint64{
