@@ -91,6 +91,8 @@ func InverseDFT(in []complex128) []complex128 {
 
 //-----------------------------------------------------------------------------
 
+/*
+
 // FFT returns the (fast) discrete fourier transform of the complex input.
 func FFT(in []complex128) []complex128 {
 	// check input length
@@ -126,6 +128,8 @@ func FFT(in []complex128) []complex128 {
 	}
 }
 
+*/
+
 // InverseFFT returns the (fast) inverse discrete fourier transform of the complex input.
 func InverseFFT(in []complex128) []complex128 {
 	n := len(in)
@@ -140,6 +144,101 @@ func InverseFFT(in []complex128) []complex128 {
 		out[i] *= nInv
 	}
 	return out
+}
+
+//-----------------------------------------------------------------------------
+
+// fftConst contains pre-calculated fft constants.
+type fftConst struct {
+	n       int          // length of fft input
+	reverse []int        // input reversing indices
+	twiddle []complex128 // twiddle factors
+}
+
+// fftCache is a cache of pre-calculated fft constants.
+var fftCache map[int]*fftConst
+
+// fftLookup returns the fft constants for a given input length.
+func fftLookup(n int) *fftConst {
+
+	// has the cache been created?
+	if fftCache == nil {
+		fftCache = make(map[int]*fftConst)
+	}
+
+	// do we have the entry in the cache?
+	if k, ok := fftCache[n]; ok {
+		return k
+	}
+
+	// check length
+	if !isPowerOf2(n) {
+		panic("input length is not a power of 2")
+	}
+	if n < 4 {
+		panic("input length has to be >= 4")
+	}
+
+	// create the entry
+	k := &fftConst{}
+	k.n = n
+
+	// create the reverse indices
+	k.reverse = make([]int, n)
+	nbits := log2(n)
+	for i := range k.reverse {
+		k.reverse[i] = bitReverse(i, nbits)
+	}
+
+	// create the twiddle factors (use quadrant symmetry)
+	k.twiddle = make([]complex128, n)
+	nInv := 1.0 / float64(n)
+	for i := 0; i < n>>2; i++ {
+		theta := -Tau * float64(i) * nInv
+		s, c := math.Sincos(theta)
+		k.twiddle[i] = complex(c, s)
+		k.twiddle[i+(n>>2)] = complex(-s, c)
+		k.twiddle[i+(n>>1)] = complex(-c, -s)
+		k.twiddle[i+(n>>2)+(n>>1)] = complex(s, -c)
+	}
+
+	// add it to the cache and return
+	fftCache[n] = k
+	return k
+}
+
+// FFTx returns the (fast) discrete fourier transform of the complex input.
+func FFT(in []complex128) []complex128 {
+
+	n := len(in)
+
+	fk := fftLookup(n)
+	// reverse the input order
+	out := make([]complex128, n)
+	for i := range out {
+		out[i] = in[fk.reverse[i]]
+	}
+
+	// run the butterflies
+	kmax := 1
+	for {
+		if kmax >= n {
+			return out
+		}
+		istep := kmax * 2
+		for k := 0; k < kmax; k++ {
+			theta := -Pi * float64(k) / float64(kmax)
+			s, c := math.Sincos(theta)
+			cs := complex(c, s)
+			for i := k; i < n; i += istep {
+				j := i + kmax
+				temp := out[j] * cs
+				out[j] = out[i] - temp
+				out[i] = out[i] + temp
+			}
+		}
+		kmax = istep
+	}
 }
 
 //-----------------------------------------------------------------------------
