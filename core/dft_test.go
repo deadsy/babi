@@ -189,6 +189,28 @@ func TestFFT(t *testing.T) {
 	}
 }
 
+func TestFFTx(t *testing.T) {
+	r := NewRand64(1023)
+	in := make([]complex128, 8)
+	for k := 0; k < 10; k++ {
+		for i := range in {
+			in[i] = r.Complex128()
+		}
+		out0 := DFT(in)
+		out1 := FFTx(in)
+		for i := range in {
+			if !equal(real(out0[i]), real(out1[i]), 1e-9) {
+				t.Logf("for i %d expected %.20f, actual %.20f\n", i, real(out0[i]), real(out1[i]))
+				t.Error("FAIL")
+			}
+			if !equal(imag(out0[i]), imag(out1[i]), 1e-9) {
+				t.Logf("for i %d expected %.20f, actual %.20f\n", i, imag(out0[i]), imag(out1[i]))
+				t.Error("FAIL")
+			}
+		}
+	}
+}
+
 func TestInverseFFT(t *testing.T) {
 	r := NewRand64(1023)
 	in := make([]complex128, 1024)
