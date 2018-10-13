@@ -211,65 +211,61 @@ func FFTx(in []complex128) []complex128 {
 	}
 
 	// run the butterflies
-	y := make([]complex128, n)
-	tmp := make([]complex128, n>>1)
+	var tmp complex128
 
 	// step 1
 
-	tmp[0] = x[1] * k.w[0]
-	tmp[1] = x[3] * k.w[0]
-	tmp[2] = x[5] * k.w[0]
-	tmp[3] = x[7] * k.w[0]
+	tmp = x[1] * k.w[0]
+	x[1] = x[0] - tmp
+	x[0] += tmp
 
-	y[0] = x[0] + tmp[0]
-	y[2] = x[2] + tmp[1]
-	y[4] = x[4] + tmp[2]
-	y[6] = x[6] + tmp[3]
+	tmp = x[3] * k.w[0]
+	x[3] = x[2] - tmp
+	x[2] += tmp
 
-	y[1] = x[0] - tmp[0]
-	y[3] = x[2] - tmp[1]
-	y[5] = x[4] - tmp[2]
-	y[7] = x[6] - tmp[3]
+	tmp = x[5] * k.w[0]
+	x[5] = x[4] - tmp
+	x[4] += tmp
 
-	x, y = y, x
+	tmp = x[7] * k.w[0]
+	x[7] = x[6] - tmp
+	x[6] += tmp
 
 	// step 2
 
-	tmp[0] = x[2] * k.w[0]
-	tmp[1] = x[3] * k.w[2]
-	tmp[2] = x[6] * k.w[0]
-	tmp[3] = x[7] * k.w[2]
+	tmp = x[2] * k.w[0]
+	x[2] = x[0] - tmp
+	x[0] += tmp
 
-	y[0] = x[0] + tmp[0]
-	y[1] = x[1] + tmp[1]
-	y[4] = x[4] + tmp[2]
-	y[5] = x[5] + tmp[3]
+	tmp = x[3] * k.w[2]
+	x[3] = x[1] - tmp
+	x[1] += tmp
 
-	y[2] = x[0] - tmp[0]
-	y[3] = x[1] - tmp[1]
-	y[6] = x[4] - tmp[2]
-	y[7] = x[5] - tmp[3]
+	tmp = x[6] * k.w[0]
+	x[6] = x[4] - tmp
+	x[4] += tmp
 
-	x, y = y, x
+	tmp = x[7] * k.w[2]
+	x[7] = x[5] - tmp
+	x[5] += tmp
 
 	// step 3
 
-	tmp[0] = x[4] * k.w[0]
-	tmp[1] = x[5] * k.w[1]
-	tmp[2] = x[6] * k.w[2]
-	tmp[3] = x[7] * k.w[3]
+	tmp = x[4] * k.w[0]
+	x[4] = x[0] - tmp
+	x[0] += tmp
 
-	y[0] = x[0] + tmp[0]
-	y[1] = x[1] + tmp[1]
-	y[2] = x[2] + tmp[2]
-	y[3] = x[3] + tmp[3]
+	tmp = x[5] * k.w[1]
+	x[5] = x[1] - tmp
+	x[1] += tmp
 
-	y[4] = x[0] - tmp[0]
-	y[5] = x[1] - tmp[1]
-	y[6] = x[2] - tmp[2]
-	y[7] = x[3] - tmp[3]
+	tmp = x[6] * k.w[2]
+	x[6] = x[2] - tmp
+	x[2] += tmp
 
-	x, y = y, x
+	tmp = x[7] * k.w[3]
+	x[7] = x[3] - tmp
+	x[3] += tmp
 
 	return x
 }
