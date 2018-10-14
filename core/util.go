@@ -70,3 +70,15 @@ func InEnum(x, max int) bool {
 }
 
 //-----------------------------------------------------------------------------
+
+// DtoR converts degrees to radians.
+func DtoR(degrees float64) float64 {
+	return (Pi / 180.0) * degrees
+}
+
+// RtoD converts radians to degrees.
+func RtoD(radians float64) float64 {
+	return (180.0 / Pi) * radians
+}
+
+//-----------------------------------------------------------------------------

@@ -91,59 +91,6 @@ func InverseDFT(in []complex128) []complex128 {
 
 //-----------------------------------------------------------------------------
 
-// FFT returns the (fast) discrete fourier transform of the complex input.
-func FFT(in []complex128) []complex128 {
-	// check input length
-	n := len(in)
-	if !isPowerOf2(n) {
-		panic("input length is not a power of 2")
-	}
-	// reverse the input order
-	out := make([]complex128, n)
-	nbits := log2(n)
-	for i := range out {
-		out[i] = in[bitReverse(i, nbits)]
-	}
-	// run the butterflies
-	kmax := 1
-	for {
-		if kmax >= n {
-			return out
-		}
-		istep := kmax * 2
-		for k := 0; k < kmax; k++ {
-			theta := -Pi * float64(k) / float64(kmax)
-			s, c := math.Sincos(theta)
-			cs := complex(c, s)
-			for i := k; i < n; i += istep {
-				j := i + kmax
-				temp := out[j] * cs
-				out[j] = out[i] - temp
-				out[i] = out[i] + temp
-			}
-		}
-		kmax = istep
-	}
-}
-
-// InverseFFT returns the (fast) inverse discrete fourier transform of the complex input.
-func InverseFFT(in []complex128) []complex128 {
-	n := len(in)
-	nInv := complex(1.0/float64(n), 0)
-	out := make([]complex128, n)
-	for i := range out {
-		out[i] = cmplx.Conj(in[i])
-	}
-	out = FFT(out)
-	for i := range out {
-		out[i] = cmplx.Conj(out[i])
-		out[i] *= nInv
-	}
-	return out
-}
-
-//-----------------------------------------------------------------------------
-
 // fftConst contains pre-calculated fft constants.
 type fftConst struct {
 	hn     int          // half length
@@ -208,6 +155,61 @@ func fftLookup(n int) *fftConst {
 	return k
 }
 
+// InverseFFT returns the (fast) inverse discrete fourier transform of the complex input.
+func InverseFFT(in []complex128) []complex128 {
+	n := len(in)
+	nInv := complex(1.0/float64(n), 0)
+	out := make([]complex128, n)
+	for i := range out {
+		out[i] = cmplx.Conj(in[i])
+	}
+	out = FFT(out)
+	for i := range out {
+		out[i] = cmplx.Conj(out[i])
+		out[i] *= nInv
+	}
+	return out
+}
+
+// FFT returns the (fast) discrete fourier transform of the complex input.
+func FFT(in []complex128) []complex128 {
+
+	n := len(in)
+	fk := fftLookup(n)
+
+	// reverse the input order
+	out := make([]complex128, n)
+	for i := range out {
+		out[i] = in[fk.rev[i]]
+	}
+
+	// run the butterflies
+	kmax := 1
+	mul := fk.hn
+	for {
+		if kmax >= n {
+			break
+		}
+		istep := kmax * 2
+		for k := 0; k < kmax; k++ {
+			w := fk.w[k*mul]
+			for i := k; i < n; i += istep {
+				j := i + kmax
+				tmp := out[j] * w
+				out[j] = out[i] - tmp
+				out[i] += tmp
+			}
+		}
+		mul >>= 1
+		kmax = istep
+	}
+
+	return out
+}
+
+//-----------------------------------------------------------------------------
+// test code
+
 // FFTx returns the (fast) discrete fourier transform of the complex input.
 func FFTx(in []complex128) []complex128 {
 
@@ -234,7 +236,7 @@ func FFTx(in []complex128) []complex128 {
 			out[k] = out[j] - tmp
 			out[j] += tmp
 		}
-		shift -= 1
+		shift--
 		oneMask <<= 1
 		hiMask <<= 1
 		loMask = (loMask << 1) | 1
