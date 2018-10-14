@@ -191,7 +191,7 @@ func TestFFT(t *testing.T) {
 
 func TestFFTx(t *testing.T) {
 	r := NewRand64(1023)
-	in := make([]complex128, 8)
+	in := make([]complex128, 1024)
 	for k := 0; k < 10; k++ {
 		for i := range in {
 			in[i] = r.Complex128()
@@ -270,5 +270,23 @@ func BenchmarkFFT32(b *testing.B)   { benchmarkFFT(32, b) }
 func BenchmarkFFT64(b *testing.B)   { benchmarkFFT(64, b) }
 func BenchmarkFFT256(b *testing.B)  { benchmarkFFT(256, b) }
 func BenchmarkFFT1024(b *testing.B) { benchmarkFFT(1024, b) }
+
+//-----------------------------------------------------------------------------
+
+func benchmarkFFTx(n int, b *testing.B) {
+	r := NewRand64(17)
+	in := make([]complex128, n)
+	for i := range in {
+		in[i] = r.Complex128()
+	}
+	for n := 0; n < b.N; n++ {
+		FFTx(in)
+	}
+}
+
+func BenchmarkFFTx32(b *testing.B)   { benchmarkFFTx(32, b) }
+func BenchmarkFFTx64(b *testing.B)   { benchmarkFFTx(64, b) }
+func BenchmarkFFTx256(b *testing.B)  { benchmarkFFTx(256, b) }
+func BenchmarkFFTx1024(b *testing.B) { benchmarkFFTx(1024, b) }
 
 //-----------------------------------------------------------------------------

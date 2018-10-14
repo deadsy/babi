@@ -146,8 +146,11 @@ func InverseFFT(in []complex128) []complex128 {
 
 // fftConst contains pre-calculated fft constants.
 type fftConst struct {
-	rev []int        // input reversing indices
-	w   []complex128 // twiddle factors
+	hn     int          // half length
+	hmask  int          // half mask for mod n/2
+	stages int          // number of butterfly stages
+	rev    []int        // input reversing indices
+	w      []complex128 // twiddle factors
 }
 
 // fftCache is a cache of pre-calculated fft constants.
@@ -184,8 +187,15 @@ func fftLookup(n int) *fftConst {
 		k.rev[i] = bitReverse(i, nbits)
 	}
 
+	// create the half variables
+	k.hn = n >> 1
+	k.hmask = k.hn - 1
+
+	// number of butterfly stages
+	k.stages = nbits
+
 	// create the twiddle factors
-	k.w = make([]complex128, n>>1)
+	k.w = make([]complex128, k.hn)
 	nInv := 1.0 / float64(n)
 	for i := range k.w {
 		theta := -Tau * float64(i) * nInv
@@ -202,72 +212,35 @@ func fftLookup(n int) *fftConst {
 func FFTx(in []complex128) []complex128 {
 
 	n := len(in)
+	fk := fftLookup(n)
 
-	k := fftLookup(n)
 	// reverse the input order
-	x := make([]complex128, n)
-	for i := range x {
-		x[i] = in[k.rev[i]]
+	out := make([]complex128, n)
+	for i := range out {
+		out[i] = in[fk.rev[i]]
 	}
 
 	// run the butterflies
-	var tmp complex128
+	oneMask := 1
+	hiMask := -1
+	loMask := 0
+	shift := uint(fk.stages - 1)
 
-	// step 1
+	for s := 0; s < fk.stages; s++ {
+		for i := 0; i < fk.hn; i++ {
+			j := (i&hiMask)<<1 | (i & loMask)
+			k := j | oneMask
+			tmp := out[k] * fk.w[(i<<shift)&fk.hmask]
+			out[k] = out[j] - tmp
+			out[j] += tmp
+		}
+		shift -= 1
+		oneMask <<= 1
+		hiMask <<= 1
+		loMask = (loMask << 1) | 1
+	}
 
-	tmp = x[1] * k.w[0]
-	x[1] = x[0] - tmp
-	x[0] += tmp
-
-	tmp = x[3] * k.w[0]
-	x[3] = x[2] - tmp
-	x[2] += tmp
-
-	tmp = x[5] * k.w[0]
-	x[5] = x[4] - tmp
-	x[4] += tmp
-
-	tmp = x[7] * k.w[0]
-	x[7] = x[6] - tmp
-	x[6] += tmp
-
-	// step 2
-
-	tmp = x[2] * k.w[0]
-	x[2] = x[0] - tmp
-	x[0] += tmp
-
-	tmp = x[3] * k.w[2]
-	x[3] = x[1] - tmp
-	x[1] += tmp
-
-	tmp = x[6] * k.w[0]
-	x[6] = x[4] - tmp
-	x[4] += tmp
-
-	tmp = x[7] * k.w[2]
-	x[7] = x[5] - tmp
-	x[5] += tmp
-
-	// step 3
-
-	tmp = x[4] * k.w[0]
-	x[4] = x[0] - tmp
-	x[0] += tmp
-
-	tmp = x[5] * k.w[1]
-	x[5] = x[1] - tmp
-	x[1] += tmp
-
-	tmp = x[6] * k.w[2]
-	x[6] = x[2] - tmp
-	x[2] += tmp
-
-	tmp = x[7] * k.w[3]
-	x[7] = x[3] - tmp
-	x[3] += tmp
-
-	return x
+	return out
 }
 
 //-----------------------------------------------------------------------------
