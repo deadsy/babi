@@ -59,6 +59,8 @@ func log2(x int) int {
 //-----------------------------------------------------------------------------
 
 // DFT returns the discrete fourier transform of the complex input.
+// This is the definition based, n*n (slow) algorithm.
+// It's mainly used for generating test vectors for FFT validation.
 func DFT(in []complex128) []complex128 {
 	n := len(in)
 	nInv := 1.0 / float64(n)
@@ -74,6 +76,8 @@ func DFT(in []complex128) []complex128 {
 }
 
 // InverseDFT returns the inverse discrete fourier transform of the complex input.
+// This is the definition based, n*n (slow) algorithm.
+// It's mainly used for generating test vectors for FFT validation.
 func InverseDFT(in []complex128) []complex128 {
 	n := len(in)
 	nInv := 1.0 / float64(n)
