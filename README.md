@@ -4,5 +4,4 @@
 
 core [![GoDoc](https://godoc.org/github.com/deadsy/babi/core?status.svg)](https://godoc.org/github.com/deadsy/babi/core)
 
-
 It's Babi Guling time Dave.
