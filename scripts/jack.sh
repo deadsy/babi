@@ -17,9 +17,11 @@ case $PLATFORM in
 	;;
 esac
 
+ALSA_OPTS="-d $DEV -S -r48000 -p256 -n2 -Xraw"
+
 case "$1" in
   start)
-    $JACK -r -d alsa -d $DEV -S -r 48000 -P &
+    $JACK -P 70 -t 2000 -d alsa $ALSA_OPTS &
   ;;
   stop)
     killall -s SIGHUP jackd
