@@ -43,13 +43,13 @@ func (s *Synth) PushEvent(m Module, name string, e *Event) {
 // Synth is the top-level synthesizer object.
 type Synth struct {
 	root  Module               // root module
-	audio Audio                // audio output device
+	audio *Audio               // audio output device
 	out   [numAudioOut]Buf     // audio output buffers
 	event *cbuf.CircularBuffer // event buffer
 }
 
 // NewSynth creates a synthesizer object.
-func NewSynth(audio Audio) *Synth {
+func NewSynth(audio *Audio) *Synth {
 	log.Info.Printf("")
 	return &Synth{
 		audio: audio,

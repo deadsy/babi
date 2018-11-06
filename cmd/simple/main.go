@@ -32,7 +32,7 @@ var metronome = []seq.Op{
 func main() {
 
 	// setup audio output
-	audio, err := core.NewPulse()
+	audio, err := core.NewAudio()
 	if err != nil {
 		fmt.Printf("%s\n", err)
 		return
