@@ -183,7 +183,7 @@ func (status Status) String() string {
 	}
 	// any leftover bits
 	if status != 0 {
-		s = append(s, fmt.Sprintf("Unknown(%x)", status))
+		s = append(s, fmt.Sprintf("Unknown(%x)", uint(status)))
 	}
 	return strings.Join(s, ",")
 }

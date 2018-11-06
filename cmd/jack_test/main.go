@@ -8,6 +8,7 @@ import (
 	"fmt"
 
 	"github.com/deadsy/babi/jack"
+	"github.com/deadsy/babi/utils/log"
 )
 
 //-----------------------------------------------------------------------------
@@ -186,17 +187,17 @@ func main() {
 
 //-----------------------------------------------------------------------------
 
-func process_cb(nframes uint32) int {
-	fmt.Printf("process_cb\n")
+func processCallback(nframes uint32) int {
+	log.Info.Printf("")
 	return 0
 }
 
-func shutdown_cb() {
-	fmt.Printf("shutdown_cb\n")
+func shutdown() {
+	log.Info.Printf("")
 }
 
-func info_shutdown_cb() {
-	fmt.Printf("info_shutdown_cb\n")
+func infoShutdown() {
+	log.Info.Printf("")
 }
 
 //-----------------------------------------------------------------------------
@@ -212,17 +213,17 @@ func main() {
 	}
 	defer client.Close()
 
-	rc := client.SetProcessCallback(process_cb)
+	rc := client.SetProcessCallback(processCallback)
 	if rc != 0 {
-		fmt.Print("SetProcessCallback() error %d\n", rc)
+		fmt.Printf("SetProcessCallback() error %d\n", rc)
 		return
 	}
 
 	fmt.Printf("sample_rate %d\n", client.GetSampleRate())
 	fmt.Printf("buffer_size %d\n", client.GetBufferSize())
 
-	client.OnShutdown(shutdown_cb)
-	client.OnInfoShutdown(info_shutdown_cb)
+	client.OnShutdown(shutdown)
+	client.OnInfoShutdown(infoShutdown)
 
 	for true {
 	}

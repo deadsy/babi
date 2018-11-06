@@ -23,7 +23,7 @@ func Test0(t *testing.T) {
 		t.Error("FAIL")
 	}
 	// read should fail
-	out, err := c.Read()
+	_, err := c.Read()
 	if err == nil {
 		t.Error("FAIL")
 	}
@@ -36,7 +36,7 @@ func Test0(t *testing.T) {
 		t.Error("FAIL")
 	}
 	// read
-	out, err = c.Read()
+	out, err := c.Read()
 	if err != nil {
 		t.Error("FAIL")
 	}
