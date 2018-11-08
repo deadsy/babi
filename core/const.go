@@ -19,7 +19,7 @@ const AudioSampleFrequency = 48000
 const AudioSamplePeriod = 1.0 / float32(AudioSampleFrequency)
 
 // AudioBufferSize is the number of float32 samples per audio buffer.
-const AudioBufferSize = 64
+const AudioBufferSize = 128
 
 // SecsPerAudioBuffer is the audio duration for a single audio buffer.
 const SecsPerAudioBuffer = float32(AudioBufferSize) / float32(AudioSampleFrequency)

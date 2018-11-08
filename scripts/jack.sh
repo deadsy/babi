@@ -17,7 +17,7 @@ case $PLATFORM in
 	;;
 esac
 
-ALSA_OPTS="-d $DEV -S -r48000 -p256 -n2 -Xraw"
+ALSA_OPTS="-d $DEV -S -r48000 -p128 -n2 -Xraw"
 
 case "$1" in
   start)
