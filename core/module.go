@@ -96,24 +96,6 @@ func (ps PortSet) numPorts(ptype PortType) int {
 	return count
 }
 
-// CheckIO checks a module for the required type/number of IO ports.
-func (mi *ModuleInfo) CheckIO(midiIn, audioIn, audioOut int) error {
-	var n int
-	n = mi.In.numPorts(PortTypeMIDI)
-	if n != midiIn {
-		return fmt.Errorf("%s needs %d MIDI inputs (has %d)", mi.Name, midiIn, n)
-	}
-	n = mi.In.numPorts(PortTypeAudioBuffer)
-	if n != audioIn {
-		return fmt.Errorf("%s needs %d audio inputs (has %d)", mi.Name, audioIn, n)
-	}
-	n = mi.Out.numPorts(PortTypeAudioBuffer)
-	if n != audioOut {
-		return fmt.Errorf("%s needs %d audio outputs (has %d)", mi.Name, audioOut, n)
-	}
-	return nil
-}
-
 //-----------------------------------------------------------------------------
 // Modules
 

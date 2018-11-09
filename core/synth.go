@@ -9,15 +9,11 @@ Synth
 package core
 
 import (
+	"errors"
+
 	"github.com/deadsy/babi/utils/cbuf"
 	"github.com/deadsy/babi/utils/log"
 )
-
-//-----------------------------------------------------------------------------
-
-const numMIDIIn = 1
-const numAudioIn = 0
-const numAudioOut = 2
 
 //-----------------------------------------------------------------------------
 
@@ -43,28 +39,54 @@ func (s *Synth) PushEvent(m Module, name string, e *Event) {
 // Synth is the top-level synthesizer object.
 type Synth struct {
 	root  Module               // root module
-	audio *Audio               // audio output device
-	out   [numAudioOut]Buf     // audio output buffers
+	jack  *Jack                // jack client object
+	out   []Buf                // audio output buffers
+	in    []Buf                // audio input buffers
 	event *cbuf.CircularBuffer // event buffer
 }
 
 // NewSynth creates a synthesizer object.
-func NewSynth(audio *Audio) *Synth {
+func NewSynth() *Synth {
 	log.Info.Printf("")
 	return &Synth{
-		audio: audio,
 		event: cbuf.NewCircularBuffer(numEvents),
 	}
 }
 
 // SetPatch sets the root module of the synthesizer.
-func (s *Synth) SetPatch(m Module) error {
-	err := m.Info().CheckIO(numMIDIIn, numAudioIn, numAudioOut)
+func (s *Synth) SetPatch(m Module) {
+	log.Info.Printf(ModuleString(m))
+	s.root = m
+}
+
+// StartJack starts the jack client.
+func (s *Synth) StartJack() error {
+
+	if s.root == nil {
+		return errors.New("no root module defined")
+	}
+
+	mi := s.root.Info()
+	var n int
+
+	// allocate audio input buffers
+	n = mi.In.numPorts(PortTypeAudioBuffer)
+	if n != 0 {
+		s.in = make([]Buf, n)
+	}
+	// allocate audio output buffers
+	n = mi.Out.numPorts(PortTypeAudioBuffer)
+	if n != 0 {
+		s.out = make([]Buf, n)
+	}
+
+	// create the jack client
+	jack, err := NewJack(s.root)
 	if err != nil {
 		return err
 	}
-	log.Info.Printf(ModuleString(m))
-	s.root = m
+	s.jack = jack
+
 	return nil
 }
 
@@ -82,7 +104,7 @@ func (s *Synth) Run() {
 			SendEvent(e.dst, e.port, e.event)
 		}
 		// zero the audio output buffers
-		for i := 0; i < numAudioOut; i++ {
+		for i := 0; i < len(s.out); i++ {
 			s.out[i].Zero()
 		}
 		// process the root module
@@ -90,7 +112,15 @@ func (s *Synth) Run() {
 			s.root.Process(&s.out[0], &s.out[1])
 		}
 		// write the output to the audio device
-		s.audio.Write(&s.out[0], &s.out[1])
+		s.jack.WriteAudio(s.out)
+	}
+}
+
+// Close handles synth cleanup.
+func (s *Synth) Close() {
+	log.Info.Printf("")
+	if s.jack != nil {
+		s.jack.Close()
 	}
 }
 
