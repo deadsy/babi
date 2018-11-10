@@ -112,7 +112,7 @@ func NewJack(name string, m Module) (*Jack, error) {
 	rc := client.SetProcessCallback(processCallback)
 	if rc != 0 {
 		j.Close()
-		return nil, fmt.Errorf("SetProcessCallback() error %d\n", rc)
+		return nil, fmt.Errorf("SetProcessCallback() error %d", rc)
 	}
 
 	client.OnShutdown(shutdown)
@@ -158,7 +158,7 @@ func (j *Jack) registerPorts(n int, prefix, portType string, flags uint64) ([]*j
 		if p == nil {
 			return nil, fmt.Errorf("can't register port %s:%s", j.name, pname)
 		}
-		log.Info.Printf("registered port %s:%s", j.name, pname)
+		log.Info.Printf("registered \"%s\"", p.Name())
 		ports[i] = p
 	}
 	return ports, nil
@@ -169,8 +169,9 @@ func (j *Jack) unregisterPorts(ports []*jack.Port) {
 	if j.client == nil || ports == nil {
 		return
 	}
-	for i := range ports {
-		j.client.PortUnregister(ports[i])
+	for i, p := range ports {
+		log.Info.Printf("unregistered \"%s\"", p.Name())
+		j.client.PortUnregister(p)
 		ports[i] = nil
 	}
 }

@@ -226,6 +226,16 @@ type Port struct {
 	ptr *C.struct__jack_port
 }
 
+// Name returns the full name of the jack port (including the "client_name:" prefix).
+func (p *Port) Name() string {
+	return C.GoString(C.jack_port_name(p.ptr))
+}
+
+// ShortName returns the short name of the jack port (not including the "client_name:" prefix).
+func (p *Port) ShortName() string {
+	return C.GoString(C.jack_port_short_name(p.ptr))
+}
+
 //-----------------------------------------------------------------------------
 
 // Client is the Go type for the JACK client structure.
@@ -432,12 +442,9 @@ func (c *Client) PortUnregister(port *Port) int {
 // void jack_cycle_signal (jack_client_t* client, int status) JACK_OPTIONAL_WEAK_EXPORT;
 // int jack_set_process_thread(jack_client_t* client, JackThreadCallback thread_callback, void *arg) JACK_OPTIONAL_WEAK_EXPORT;
 // int jack_set_thread_init_callback (jack_client_t *client,
-
 // float jack_cpu_load (jack_client_t *client) JACK_OPTIONAL_WEAK_EXPORT;
 // void * jack_port_get_buffer (jack_port_t *port, jack_nframes_t) JACK_OPTIONAL_WEAK_EXPORT;
 // jack_uuid_t jack_port_uuid (const jack_port_t *port) JACK_OPTIONAL_WEAK_EXPORT;
-// const char * jack_port_name (const jack_port_t *port) JACK_OPTIONAL_WEAK_EXPORT;
-// const char * jack_port_short_name (const jack_port_t *port) JACK_OPTIONAL_WEAK_EXPORT;
 // int jack_port_flags (const jack_port_t *port) JACK_OPTIONAL_WEAK_EXPORT;
 // const char * jack_port_type (const jack_port_t *port) JACK_OPTIONAL_WEAK_EXPORT;
 // jack_port_type_id_t jack_port_type_id (const jack_port_t *port) JACK_OPTIONAL_WEAK_EXPORT;

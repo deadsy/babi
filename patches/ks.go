@@ -83,7 +83,6 @@ func (m *ksPatch) Child() []core.Module {
 
 // Stop and performs any cleanup of a module.
 func (m *ksPatch) Stop() {
-	log.Info.Printf("")
 }
 
 //-----------------------------------------------------------------------------

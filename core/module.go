@@ -108,7 +108,7 @@ type Module interface {
 	Child() []Module     // return the child modules
 }
 
-// ModuleString returns the string for the module tree of this module.
+// ModuleString returns a string for a tree of modules.
 func ModuleString(m Module) string {
 	mi := m.Info()
 	children := m.Child()
@@ -120,6 +120,17 @@ func ModuleString(m Module) string {
 		return fmt.Sprintf("%s (%s)", mi.Name, strings.Join(s, " "))
 	}
 	return fmt.Sprintf("%s", mi.Name)
+}
+
+// ModuleStop calls Stop() for each module in a tree of modules.
+func ModuleStop(m Module) {
+	if m == nil {
+		return
+	}
+	for _, c := range m.Child() {
+		ModuleStop(c)
+	}
+	m.Stop()
 }
 
 //-----------------------------------------------------------------------------

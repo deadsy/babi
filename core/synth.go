@@ -10,6 +10,7 @@ package core
 
 import (
 	"errors"
+	"os"
 
 	"github.com/deadsy/babi/utils/cbuf"
 	"github.com/deadsy/babi/utils/log"
@@ -90,29 +91,39 @@ func (s *Synth) StartJack(name string) error {
 	return nil
 }
 
-// Run runs the main loop for the synthesizer.
-func (s *Synth) Run() {
-	s.PushEvent(nil, "midi_in", NewEventMIDI(EventMIDINoteOn, 0, 69, 127))
+// Loop runs a single iteration of the synthesizer.
+func (s *Synth) Loop() {
+	// process all queued events
+	for !s.event.Empty() {
+		x, _ := s.event.Read()
+		e := x.(*QueueEvent)
+		if e.dst == nil {
+			e.dst = s.root
+		}
+		SendEvent(e.dst, e.port, e.event)
+	}
+	// zero the audio output buffers
+	for i := 0; i < len(s.out); i++ {
+		s.out[i].Zero()
+	}
+	// process the root module
+	if s.root != nil && s.root.Active() {
+		s.root.Process(&s.out[0], &s.out[1])
+	}
+	// write the output to the audio device
+	s.jack.WriteAudio(s.out)
+}
+
+// Run runs the synthesizer loop and handles signals.
+func (s *Synth) Run(signals chan os.Signal, done chan bool) {
 	for {
-		// process all queued events
-		for !s.event.Empty() {
-			x, _ := s.event.Read()
-			e := x.(*QueueEvent)
-			if e.dst == nil {
-				e.dst = s.root
-			}
-			SendEvent(e.dst, e.port, e.event)
+		select {
+		case <-signals:
+			done <- true
+			return
+		default:
+			s.Loop()
 		}
-		// zero the audio output buffers
-		for i := 0; i < len(s.out); i++ {
-			s.out[i].Zero()
-		}
-		// process the root module
-		if s.root != nil && s.root.Active() {
-			s.root.Process(&s.out[0], &s.out[1])
-		}
-		// write the output to the audio device
-		s.jack.WriteAudio(s.out)
 	}
 }
 
@@ -122,6 +133,7 @@ func (s *Synth) Close() {
 	if s.jack != nil {
 		s.jack.Close()
 	}
+	ModuleStop(s.root)
 }
 
 //-----------------------------------------------------------------------------

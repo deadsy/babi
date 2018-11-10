@@ -6,6 +6,7 @@ package main
 
 import (
 	"os"
+	"os/signal"
 
 	"github.com/deadsy/babi/core"
 	"github.com/deadsy/babi/module/osc"
@@ -31,7 +32,6 @@ var metronome = []seq.Op{
 //-----------------------------------------------------------------------------
 
 func main() {
-	rc := 0
 
 	s := core.NewSynth()
 
@@ -50,16 +50,20 @@ func main() {
 	err := s.StartJack("simple")
 	if err != nil {
 		log.Error.Printf("%s", err)
-		rc = 1
-		goto Exit
+		s.Close()
+		os.Exit(1)
 	}
 
-	// run the synth
-	s.Run()
+	// setup signal handling
+	done := make(chan bool)
+	signals := make(chan os.Signal, 1)
+	signal.Notify(signals, os.Interrupt)
 
-Exit:
+	go s.Run(signals, done)
+	<-done
+
 	s.Close()
-	os.Exit(rc)
+	os.Exit(0)
 }
 
 //-----------------------------------------------------------------------------
