@@ -1,6 +1,5 @@
 
 DIRS = simple \
-       jack_test \
        plots \
 
 all:

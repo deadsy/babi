@@ -221,6 +221,11 @@ func GetClientPID(name string) int {
 // PortID is the Go type for the JACK port identifier.
 type PortID uint32
 
+// Port is the Go type for the JACK port structure.
+type Port struct {
+	ptr *C.struct__jack_port
+}
+
 //-----------------------------------------------------------------------------
 
 // Client is the Go type for the JACK client structure.
@@ -311,16 +316,6 @@ func (c *Client) Deactivate() int {
 	return int(C.jack_deactivate(c.ptr))
 }
 
-//-----------------------------------------------------------------------------
-
-// jack_native_thread_t jack_client_thread_id (jack_client_t *client) JACK_OPTIONAL_WEAK_EXPORT;
-// int jack_is_realtime (jack_client_t *client) JACK_OPTIONAL_WEAK_EXPORT;
-// jack_nframes_t jack_thread_wait (jack_client_t *client, int status) JACK_OPTIONAL_WEAK_EXPORT;
-// jack_nframes_t jack_cycle_wait (jack_client_t* client) JACK_OPTIONAL_WEAK_EXPORT;
-// void jack_cycle_signal (jack_client_t* client, int status) JACK_OPTIONAL_WEAK_EXPORT;
-// int jack_set_process_thread(jack_client_t* client, JackThreadCallback thread_callback, void *arg) JACK_OPTIONAL_WEAK_EXPORT;
-// int jack_set_thread_init_callback (jack_client_t *client,
-
 // OnShutdown registers a function to be called if the JACK server shuts down the client thread.
 func (c *Client) OnShutdown(cb funcShutdownCallback) {
 	c.shutdownCallback = cb
@@ -332,8 +327,6 @@ func (c *Client) OnInfoShutdown(cb funcInfoShutdownCallback) {
 	c.infoShutdownCallback = cb
 	C.jack_on_info_shutdown_go(c.ptr)
 }
-
-//-----------------------------------------------------------------------------
 
 // SetProcessCallback tells JACK to call the process callback whenever there is work be done.
 func (c *Client) SetProcessCallback(cb funcProcessCallback) int {
@@ -395,11 +388,6 @@ func (c *Client) SetXrunCallback(cb funcXrunCallback) int {
 	return int(C.jack_set_xrun_callback_go(c.ptr))
 }
 
-//-----------------------------------------------------------------------------
-
-// int jack_set_latency_callback (jack_client_t *client,
-// int jack_set_freewheel(jack_client_t* client, int onoff) JACK_OPTIONAL_WEAK_EXPORT;
-
 // SetBufferSize changes the buffer size passed to the process callback.
 func (c *Client) SetBufferSize(nframes uint32) int {
 	return int(C.jack_set_buffer_size(c.ptr, C.jack_nframes_t(nframes)))
@@ -415,11 +403,37 @@ func (c *Client) GetBufferSize() uint32 {
 	return uint32(C.jack_get_buffer_size(c.ptr))
 }
 
+// PortRegister creates a new port for the client.
+func (c *Client) PortRegister(portName, portType string, flags, bufferSize uint64) *Port {
+	cportName := C.CString(portName)
+	defer C.free(unsafe.Pointer(cportName))
+	cportType := C.CString(portType)
+	defer C.free(unsafe.Pointer(cportType))
+	cport := C.jack_port_register(c.ptr, cportName, cportType, C.ulong(flags), C.ulong(bufferSize))
+	if cport != nil {
+		return &Port{cport}
+	}
+	return nil
+}
+
+// PortUnregister removes the port from the client, disconnecting any existing connections.
+func (c *Client) PortUnregister(port *Port) int {
+	return int(C.jack_port_unregister(c.ptr, port.ptr))
+}
+
 //-----------------------------------------------------------------------------
 
+// int jack_set_latency_callback (jack_client_t *client,
+// int jack_set_freewheel(jack_client_t* client, int onoff) JACK_OPTIONAL_WEAK_EXPORT;
+// jack_native_thread_t jack_client_thread_id (jack_client_t *client) JACK_OPTIONAL_WEAK_EXPORT;
+// int jack_is_realtime (jack_client_t *client) JACK_OPTIONAL_WEAK_EXPORT;
+// jack_nframes_t jack_thread_wait (jack_client_t *client, int status) JACK_OPTIONAL_WEAK_EXPORT;
+// jack_nframes_t jack_cycle_wait (jack_client_t* client) JACK_OPTIONAL_WEAK_EXPORT;
+// void jack_cycle_signal (jack_client_t* client, int status) JACK_OPTIONAL_WEAK_EXPORT;
+// int jack_set_process_thread(jack_client_t* client, JackThreadCallback thread_callback, void *arg) JACK_OPTIONAL_WEAK_EXPORT;
+// int jack_set_thread_init_callback (jack_client_t *client,
+
 // float jack_cpu_load (jack_client_t *client) JACK_OPTIONAL_WEAK_EXPORT;
-// jack_port_t * jack_port_register (jack_client_t *client,
-// int jack_port_unregister (jack_client_t *client, jack_port_t *port) JACK_OPTIONAL_WEAK_EXPORT;
 // void * jack_port_get_buffer (jack_port_t *port, jack_nframes_t) JACK_OPTIONAL_WEAK_EXPORT;
 // jack_uuid_t jack_port_uuid (const jack_port_t *port) JACK_OPTIONAL_WEAK_EXPORT;
 // const char * jack_port_name (const jack_port_t *port) JACK_OPTIONAL_WEAK_EXPORT;

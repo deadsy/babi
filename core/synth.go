@@ -60,7 +60,7 @@ func (s *Synth) SetPatch(m Module) {
 }
 
 // StartJack starts the jack client.
-func (s *Synth) StartJack() error {
+func (s *Synth) StartJack(name string) error {
 
 	if s.root == nil {
 		return errors.New("no root module defined")
@@ -81,7 +81,7 @@ func (s *Synth) StartJack() error {
 	}
 
 	// create the jack client
-	jack, err := NewJack(s.root)
+	jack, err := NewJack(name, s.root)
 	if err != nil {
 		return err
 	}

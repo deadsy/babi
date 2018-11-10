@@ -47,7 +47,7 @@ func main() {
 	s.SetPatch(p)
 
 	// start the jack client
-	err := s.StartJack()
+	err := s.StartJack("simple")
 	if err != nil {
 		log.Error.Printf("%s", err)
 		rc = 1
