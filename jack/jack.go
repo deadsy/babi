@@ -3,6 +3,8 @@
 
 Golang wrapper for jackd2.
 
+Derived from https://github.com/xthexder/go-jack
+
 */
 //-----------------------------------------------------------------------------
 
@@ -226,15 +228,65 @@ type Port struct {
 	ptr *C.struct__jack_port
 }
 
-// Name returns the full name of the jack port (including the "client_name:" prefix).
+// Name returns the full name of the JACK port (including the "client_name:" prefix).
 func (p *Port) Name() string {
 	return C.GoString(C.jack_port_name(p.ptr))
 }
 
-// ShortName returns the short name of the jack port (not including the "client_name:" prefix).
+// ShortName returns the short name of the JACK port (not including the "client_name:" prefix).
 func (p *Port) ShortName() string {
 	return C.GoString(C.jack_port_short_name(p.ptr))
 }
+
+// AudioSample is the JACK audio sample type.
+type AudioSample float32
+
+// GetBuffer returns a pointer to the memory area associated with the specified port.
+func (p *Port) GetBuffer(nframes uint32) []AudioSample {
+	samples := C.jack_port_get_buffer(p.ptr, C.jack_nframes_t(nframes))
+	return (*[(1 << 29) - 1]AudioSample)(samples)[:nframes:nframes]
+}
+
+// MIDIEvent is a JACK MIDI event.
+type MIDIEvent struct {
+	Time uint32
+	Data []byte
+}
+
+//type MidiBuffer *[]byte
+
+// GetMIDIEvents returns a slice of MIDI events for this port.
+func (p *Port) GetMIDIEvents(nframes uint32) []MIDIEvent {
+	buf := C.jack_port_get_buffer(p.ptr, C.jack_nframes_t(nframes))
+	n := int(C.jack_midi_get_event_count(buf))
+	events := make([]MIDIEvent, n)
+	var event C.jack_midi_event_t
+	for i := range events {
+		C.jack_midi_event_get(&event, buf, C.uint32_t(i))
+		events[i].Time = uint32(event.time)
+		events[i].Data = C.GoBytes(unsafe.Pointer(event.buffer), C.int(event.size))
+	}
+	return events
+}
+
+/*
+
+func (port *Port) MidiClearBuffer(nframes uint32) MidiBuffer {
+	buffer := C.jack_port_get_buffer(port.handler, C.jack_nframes_t(nframes))
+	C.jack_midi_clear_buffer(buffer)
+	return MidiBuffer(buffer)
+}
+
+func (port *Port) MidiEventWrite(event *MidiData, buffer MidiBuffer) int {
+	return int(C.jack_midi_event_write(
+		unsafe.Pointer(buffer),                  // port_buffer
+		C.jack_nframes_t(event.Time),            // time
+		(*C.jack_midi_data_t)(&event.Buffer[0]), // data
+		C.size_t(len(event.Buffer)),             // data_size
+	))
+}
+
+*/
 
 //-----------------------------------------------------------------------------
 
@@ -403,7 +455,7 @@ func (c *Client) SetBufferSize(nframes uint32) int {
 	return int(C.jack_set_buffer_size(c.ptr, C.jack_nframes_t(nframes)))
 }
 
-// GetSampleRate returns the sample rate of the jack system, as set by the user when jackd was started.
+// GetSampleRate returns the sample rate of the JACK system, as set by the user when jackd was started.
 func (c *Client) GetSampleRate() uint32 {
 	return uint32(C.jack_get_sample_rate(c.ptr))
 }
@@ -443,7 +495,6 @@ func (c *Client) PortUnregister(port *Port) int {
 // int jack_set_process_thread(jack_client_t* client, JackThreadCallback thread_callback, void *arg) JACK_OPTIONAL_WEAK_EXPORT;
 // int jack_set_thread_init_callback (jack_client_t *client,
 // float jack_cpu_load (jack_client_t *client) JACK_OPTIONAL_WEAK_EXPORT;
-// void * jack_port_get_buffer (jack_port_t *port, jack_nframes_t) JACK_OPTIONAL_WEAK_EXPORT;
 // jack_uuid_t jack_port_uuid (const jack_port_t *port) JACK_OPTIONAL_WEAK_EXPORT;
 // int jack_port_flags (const jack_port_t *port) JACK_OPTIONAL_WEAK_EXPORT;
 // const char * jack_port_type (const jack_port_t *port) JACK_OPTIONAL_WEAK_EXPORT;

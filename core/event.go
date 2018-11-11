@@ -105,7 +105,7 @@ func (e *EventMIDI) String() string {
 		//case EventMIDIProgramChange:
 		//case EventMIDIChannelAftertouch:
 	}
-	return fmt.Sprintf("%s status %02x arg0 %02x arg1 %02x", midiEventType2String[e.etype], e.status, e.arg0, e.arg1)
+	return fmt.Sprintf("%s status %02x arg0 %02x arg1 %02x", descr, e.status, e.arg0, e.arg1)
 }
 
 // GetEventMIDI returns a MIDI event (or nil).
@@ -158,6 +158,26 @@ func (e *EventMIDI) GetVelocity() uint8 {
 // GetPitchWheel returns the MIDI pitch wheel value.
 func (e *EventMIDI) GetPitchWheel() uint16 {
 	return uint16(e.arg1<<7) | uint16(e.arg0)
+}
+
+// Channel Message Status Bytes
+const midiStatusNoteOff = 8 << 4
+const midiStatusNoteOn = 9 << 4
+const midiStatusPolyphonicAftertouch = 10 << 4
+const midiStatusControlChange = 11 << 4
+const midiStatusProgramChange = 12 << 4
+const midiStatusChannelAftertouch = 13 << 4
+const midiStatusPitchWheel = 14 << 4
+
+// Map a MIDI status byte to a MIDI channel event type.
+var midiStatusToEventType = map[byte]EventTypeMIDI{
+	midiStatusNoteOn:               EventMIDINoteOn,
+	midiStatusNoteOff:              EventMIDINoteOff,
+	midiStatusControlChange:        EventMIDIControlChange,
+	midiStatusPitchWheel:           EventMIDIPitchWheel,
+	midiStatusPolyphonicAftertouch: EventMIDIPolyphonicAftertouch,
+	midiStatusProgramChange:        EventMIDIProgramChange,
+	midiStatusChannelAftertouch:    EventMIDIChannelAftertouch,
 }
 
 //-----------------------------------------------------------------------------

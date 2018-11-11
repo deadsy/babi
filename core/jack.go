@@ -9,6 +9,7 @@ Jack Client Object
 package core
 
 import (
+	"encoding/hex"
 	"errors"
 	"fmt"
 
@@ -17,30 +18,60 @@ import (
 )
 
 //-----------------------------------------------------------------------------
+// jack server callbacks
 
-func processCallback(nframes uint32) int {
-	log.Info.Printf("")
+func (j *Jack) process(nframes uint32) int {
+	//log.Info.Printf("")
+
+	// process MIDI input events
+	for i := range j.midiIn {
+		p := &j.midiIn[i]
+		event := p.port.GetMIDIEvents(nframes)
+		for j := range event {
+			e := &event[j]
+			if len(e.Data) == 3 {
+				eventType := midiStatusToEventType[e.Data[0]&0xf0]
+				midiEvent := NewEventMIDI(eventType, e.Data[0], e.Data[1], e.Data[2])
+				log.Info.Printf("%s", midiEvent.String())
+				//s.PushEvent(nil, "midi_in", NewEventMIDI(eventType, e.Data[0], e.Data[1], e.Data[2]))
+			} else {
+				log.Info.Printf("unprocessed midi %s", hex.EncodeToString(e.Data))
+			}
+		}
+	}
+
+	// get audio output buffers
+	for i := range j.audioOut {
+		j.audioOut[i].audio = j.audioOut[i].port.GetBuffer(nframes)
+	}
+
+	// get audio input buffers
+	for i := range j.audioIn {
+		j.audioIn[i].audio = j.audioIn[i].port.GetBuffer(nframes)
+	}
+
 	return 0
 }
 
-func shutdown() {
-	log.Info.Printf("")
-}
-
-func infoShutdown() {
+func (j *Jack) shutdown() {
 	log.Info.Printf("")
 }
 
 //-----------------------------------------------------------------------------
 
+type jackPort struct {
+	port  *jack.Port         // jack port
+	audio []jack.AudioSample // audio sample buffer
+}
+
 // Jack contains state for the jack client.
 type Jack struct {
-	name         string // client name
-	client       *jack.Client
-	audioPortOut []*jack.Port // audio output ports
-	audioPortIn  []*jack.Port // audio input ports
-	midiPortOut  []*jack.Port // midi output ports
-	midiPortIn   []*jack.Port // midi input ports
+	name     string // client name
+	client   *jack.Client
+	audioOut []jackPort // audio output ports
+	audioIn  []jackPort // audio input ports
+	midiOut  []jackPort // midi output ports
+	midiIn   []jackPort // midi input ports
 }
 
 // NewJack returns a jack client object.
@@ -71,6 +102,17 @@ func NewJack(name string, m Module) (*Jack, error) {
 		return nil, fmt.Errorf("jack buffer size %d != babi buffer size %d", bufsize, AudioBufferSize)
 	}
 
+	// tell the JACK server to call process() whenever there is work to be done.
+	rc := client.SetProcessCallback(func(nframes uint32) int { return j.process(nframes) })
+	if rc != 0 {
+		j.Close()
+		return nil, fmt.Errorf("SetProcessCallback() error %d", rc)
+	}
+
+	// tell the JACK server to call shutdown() if it ever shuts down,
+	// either entirely, or if it just decides to stop calling us.
+	client.OnShutdown(func() { j.shutdown() })
+
 	mi := m.Info()
 
 	// audio output ports
@@ -80,7 +122,7 @@ func NewJack(name string, m Module) (*Jack, error) {
 		j.Close()
 		return nil, err
 	}
-	j.audioPortOut = ports
+	j.audioOut = ports
 
 	// audio input ports
 	n = mi.In.numPorts(PortTypeAudioBuffer)
@@ -89,34 +131,33 @@ func NewJack(name string, m Module) (*Jack, error) {
 		j.Close()
 		return nil, err
 	}
-	j.audioPortIn = ports
+	j.audioIn = ports
 
-	// midi output ports
+	// MIDI output ports
 	n = mi.Out.numPorts(PortTypeMIDI)
 	ports, err = j.registerPorts(n, "midi_out", jack.DefaultMIDI, jack.PortIsOutput)
 	if err != nil {
 		j.Close()
 		return nil, err
 	}
-	j.midiPortOut = ports
+	j.midiOut = ports
 
-	// midi input ports
+	// MIDI input ports
 	n = mi.In.numPorts(PortTypeMIDI)
 	ports, err = j.registerPorts(n, "midi_in", jack.DefaultMIDI, jack.PortIsInput)
 	if err != nil {
 		j.Close()
 		return nil, err
 	}
-	j.midiPortIn = ports
+	j.midiIn = ports
 
-	rc := client.SetProcessCallback(processCallback)
+	// Tell the JACK server that we are ready to roll.
+	// Our process() callback will start running now.
+	rc = client.Activate()
 	if rc != 0 {
 		j.Close()
-		return nil, fmt.Errorf("SetProcessCallback() error %d", rc)
+		return nil, fmt.Errorf("Activate() error %d", rc)
 	}
-
-	client.OnShutdown(shutdown)
-	client.OnInfoShutdown(infoShutdown)
 
 	return j, nil
 }
@@ -124,23 +165,16 @@ func NewJack(name string, m Module) (*Jack, error) {
 // Close closes the jack client.
 func (j *Jack) Close() {
 	log.Info.Printf("")
-
-	j.unregisterPorts(j.audioPortOut)
-	j.audioPortOut = nil
-
-	j.unregisterPorts(j.audioPortIn)
-	j.audioPortIn = nil
-
-	j.unregisterPorts(j.midiPortOut)
-	j.midiPortOut = nil
-
-	j.unregisterPorts(j.midiPortIn)
-	j.midiPortIn = nil
-
-	if j.client != nil {
-		j.client.Close()
-		j.client = nil
+	if j.client == nil {
+		return
 	}
+	j.client.Deactivate()
+	j.unregisterPorts(j.audioOut)
+	j.unregisterPorts(j.audioIn)
+	j.unregisterPorts(j.midiOut)
+	j.unregisterPorts(j.midiIn)
+	j.client.Close()
+	j.client = nil
 }
 
 // WriteAudio writes data to an audio stream.
@@ -150,29 +184,28 @@ func (j *Jack) WriteAudio(audio []Buf) {
 //-----------------------------------------------------------------------------
 
 // registerPorts registers a set of jack client ports.
-func (j *Jack) registerPorts(n int, prefix, portType string, flags uint64) ([]*jack.Port, error) {
-	ports := make([]*jack.Port, n)
+func (j *Jack) registerPorts(n int, prefix, portType string, flags uint64) ([]jackPort, error) {
+	ports := make([]jackPort, n)
 	for i := range ports {
-		pname := fmt.Sprintf("%s_%d", prefix, i+1)
+		pname := fmt.Sprintf("%s_%d", prefix, i)
 		p := j.client.PortRegister(pname, portType, flags, 0)
 		if p == nil {
 			return nil, fmt.Errorf("can't register port %s:%s", j.name, pname)
 		}
 		log.Info.Printf("registered \"%s\"", p.Name())
-		ports[i] = p
+		ports[i].port = p
 	}
 	return ports, nil
 }
 
-// unregisterPorts unregisters a set of jack client ports.
-func (j *Jack) unregisterPorts(ports []*jack.Port) {
+// unregisterPorts unregisters a set of jack clientports.
+func (j *Jack) unregisterPorts(ports []jackPort) {
 	if j.client == nil || ports == nil {
 		return
 	}
-	for i, p := range ports {
-		log.Info.Printf("unregistered \"%s\"", p.Name())
-		j.client.PortUnregister(p)
-		ports[i] = nil
+	for _, p := range ports {
+		log.Info.Printf("unregistered \"%s\"", p.port.Name())
+		j.client.PortUnregister(p.port)
 	}
 }
 
