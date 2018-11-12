@@ -8,7 +8,9 @@ Events
 
 package core
 
-import "fmt"
+import (
+	"fmt"
+)
 
 //-----------------------------------------------------------------------------
 // generic events
@@ -57,14 +59,14 @@ type EventTypeMIDI uint
 
 // EventTypeMIDI enumeration.
 const (
-	EventMIDINull EventTypeMIDI = iota
-	EventMIDINoteOn
-	EventMIDINoteOff
-	EventMIDIControlChange
-	EventMIDIPitchWheel
-	EventMIDIPolyphonicAftertouch
-	EventMIDIProgramChange
-	EventMIDIChannelAftertouch
+	EventMIDINull                 EventTypeMIDI = 0
+	EventMIDINoteOn                             = midiStatusNoteOn
+	EventMIDINoteOff                            = midiStatusNoteOff
+	EventMIDIControlChange                      = midiStatusControlChange
+	EventMIDIPitchWheel                         = midiStatusPitchWheel
+	EventMIDIPolyphonicAftertouch               = midiStatusPolyphonicAftertouch
+	EventMIDIProgramChange                      = midiStatusProgramChange
+	EventMIDIChannelAftertouch                  = midiStatusChannelAftertouch
 )
 
 var midiEventType2String = map[EventTypeMIDI]string{
@@ -157,27 +159,7 @@ func (e *EventMIDI) GetVelocity() uint8 {
 
 // GetPitchWheel returns the MIDI pitch wheel value.
 func (e *EventMIDI) GetPitchWheel() uint16 {
-	return uint16(e.arg1<<7) | uint16(e.arg0)
-}
-
-// Channel Message Status Bytes
-const midiStatusNoteOff = 8 << 4
-const midiStatusNoteOn = 9 << 4
-const midiStatusPolyphonicAftertouch = 10 << 4
-const midiStatusControlChange = 11 << 4
-const midiStatusProgramChange = 12 << 4
-const midiStatusChannelAftertouch = 13 << 4
-const midiStatusPitchWheel = 14 << 4
-
-// Map a MIDI status byte to a MIDI channel event type.
-var midiStatusToEventType = map[byte]EventTypeMIDI{
-	midiStatusNoteOn:               EventMIDINoteOn,
-	midiStatusNoteOff:              EventMIDINoteOff,
-	midiStatusControlChange:        EventMIDIControlChange,
-	midiStatusPitchWheel:           EventMIDIPitchWheel,
-	midiStatusPolyphonicAftertouch: EventMIDIPolyphonicAftertouch,
-	midiStatusProgramChange:        EventMIDIProgramChange,
-	midiStatusChannelAftertouch:    EventMIDIChannelAftertouch,
+	return uint16(e.arg1)<<7 | uint16(e.arg0)
 }
 
 //-----------------------------------------------------------------------------

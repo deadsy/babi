@@ -9,7 +9,6 @@ Jack Client Object
 package core
 
 import (
-	"encoding/hex"
 	"errors"
 	"fmt"
 
@@ -29,13 +28,10 @@ func (j *Jack) process(nframes uint32) int {
 		event := p.port.GetMIDIEvents(nframes)
 		for j := range event {
 			e := &event[j]
-			if len(e.Data) == 3 {
-				eventType := midiStatusToEventType[e.Data[0]&0xf0]
-				midiEvent := NewEventMIDI(eventType, e.Data[0], e.Data[1], e.Data[2])
+			midiEvent := convertToMIDIEvent(e.Data)
+			if midiEvent != nil {
 				log.Info.Printf("%s", midiEvent.String())
-				//s.PushEvent(nil, "midi_in", NewEventMIDI(eventType, e.Data[0], e.Data[1], e.Data[2]))
-			} else {
-				log.Info.Printf("unprocessed midi %s", hex.EncodeToString(e.Data))
+				//s.PushEvent(nil, "midi_in", midiEvent)
 			}
 		}
 	}
