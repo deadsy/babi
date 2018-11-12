@@ -31,6 +31,14 @@ var metronome = []seq.Op{
 
 //-----------------------------------------------------------------------------
 
+// signalHandler waits for ctrl-C.
+func signalHandler(signals chan os.Signal, done chan bool) {
+	<-signals
+	done <- true
+}
+
+//-----------------------------------------------------------------------------
+
 func main() {
 
 	s := core.NewSynth()
@@ -59,7 +67,7 @@ func main() {
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, os.Interrupt)
 
-	go s.Run(signals, done)
+	go signalHandler(signals, done)
 	<-done
 
 	s.Close()

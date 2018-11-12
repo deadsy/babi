@@ -10,7 +10,6 @@ package core
 
 import (
 	"errors"
-	"os"
 
 	"github.com/deadsy/babi/utils/cbuf"
 	"github.com/deadsy/babi/utils/log"
@@ -41,8 +40,9 @@ func (s *Synth) PushEvent(m Module, name string, e *Event) {
 type Synth struct {
 	root  Module               // root module
 	jack  *Jack                // jack client object
-	out   []Buf                // audio output buffers
-	in    []Buf                // audio input buffers
+	audio []*Buf               // audio buffers (in + out)
+	nIn   int                  // number of audio input buffers
+	nOut  int                  // number of audio output buffers
 	event *cbuf.CircularBuffer // event buffer
 }
 
@@ -58,36 +58,30 @@ func NewSynth() *Synth {
 func (s *Synth) SetPatch(m Module) {
 	log.Info.Printf(ModuleString(m))
 	s.root = m
+	// allocate audio buffers
+	mi := m.Info()
+	s.nIn = mi.In.numPorts(PortTypeAudioBuffer)
+	s.nOut = mi.Out.numPorts(PortTypeAudioBuffer)
+	n := s.nIn + s.nOut
+	if n != 0 {
+		s.audio = make([]*Buf, n)
+	}
+	for i := range s.audio {
+		s.audio[i] = &Buf{}
+	}
 }
 
 // StartJack starts the jack client.
 func (s *Synth) StartJack(name string) error {
-
 	if s.root == nil {
 		return errors.New("no root module defined")
 	}
-
-	mi := s.root.Info()
-	var n int
-
-	// allocate audio input buffers
-	n = mi.In.numPorts(PortTypeAudioBuffer)
-	if n != 0 {
-		s.in = make([]Buf, n)
-	}
-	// allocate audio output buffers
-	n = mi.Out.numPorts(PortTypeAudioBuffer)
-	if n != 0 {
-		s.out = make([]Buf, n)
-	}
-
 	// create the jack client
-	jack, err := NewJack(name, s.root)
+	jack, err := NewJack(name, s)
 	if err != nil {
 		return err
 	}
 	s.jack = jack
-
 	return nil
 }
 
@@ -96,6 +90,11 @@ func (s *Synth) Loop() {
 	// process all queued events
 	for !s.event.Empty() {
 		x, _ := s.event.Read()
+
+		if x == nil {
+			panic("here")
+		}
+
 		e := x.(*QueueEvent)
 		if e.dst == nil {
 			e.dst = s.root
@@ -103,27 +102,12 @@ func (s *Synth) Loop() {
 		SendEvent(e.dst, e.port, e.event)
 	}
 	// zero the audio output buffers
-	for i := 0; i < len(s.out); i++ {
-		s.out[i].Zero()
+	for i := s.nIn; i < len(s.audio); i++ {
+		s.audio[i].Zero()
 	}
 	// process the root module
 	if s.root != nil && s.root.Active() {
-		s.root.Process(&s.out[0], &s.out[1])
-	}
-	// write the output to the audio device
-	s.jack.WriteAudio(s.out)
-}
-
-// Run runs the synthesizer loop and handles signals.
-func (s *Synth) Run(signals chan os.Signal, done chan bool) {
-	for {
-		select {
-		case <-signals:
-			done <- true
-			return
-		default:
-			s.Loop()
-		}
+		s.root.Process(s.audio...)
 	}
 }
 

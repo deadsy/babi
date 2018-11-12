@@ -71,7 +71,7 @@ func ctrlPortMidiIn(cm core.Module, e *core.Event) {
 		if me.GetType() == core.EventMIDIControlChange && me.GetCtrlNum() == m.cc {
 			// convert to a float event and send
 			val := core.MIDIMap(me.GetCtrlVal(), 0, 1)
-			log.Info.Printf("send float event to %s.%s val %f", m.dst, m.name, val)
+			log.Info.Printf("send float event to %s.%s val %f", core.ModuleName(m.dst), m.name, val)
 			core.SendEventFloat(m.dst, m.name, val)
 		}
 	}

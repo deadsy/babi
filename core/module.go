@@ -122,6 +122,11 @@ func ModuleString(m Module) string {
 	return fmt.Sprintf("%s", mi.Name)
 }
 
+// ModuleName returns the name of a module
+func ModuleName(m Module) string {
+	return m.Info().Name
+}
+
 // ModuleStop calls Stop() for each module in a tree of modules.
 func ModuleStop(m Module) {
 	if m == nil {

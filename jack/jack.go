@@ -238,13 +238,10 @@ func (p *Port) ShortName() string {
 	return C.GoString(C.jack_port_short_name(p.ptr))
 }
 
-// AudioSample is the JACK audio sample type.
-type AudioSample float32
-
 // GetBuffer returns a pointer to the memory area associated with the specified port.
-func (p *Port) GetBuffer(nframes uint32) []AudioSample {
+func (p *Port) GetBuffer(nframes uint32) []float32 {
 	samples := C.jack_port_get_buffer(p.ptr, C.jack_nframes_t(nframes))
-	return (*[(1 << 29) - 1]AudioSample)(samples)[:nframes:nframes]
+	return (*[(1 << 29) - 1]float32)(samples)[:nframes:nframes]
 }
 
 // MIDIEvent is a JACK MIDI event.
