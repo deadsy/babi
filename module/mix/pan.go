@@ -20,9 +20,9 @@ import (
 //-----------------------------------------------------------------------------
 
 // Info returns the module information.
-func (m *panModule) Info() *core.ModuleInfo {
+func (m *panMix) Info() *core.ModuleInfo {
 	return &core.ModuleInfo{
-		Name: "pan",
+		Name: "panMix",
 		In: []core.PortInfo{
 			{"in", "input", core.PortTypeAudioBuffer, nil},
 			{"volume", "volume (0..1)", core.PortTypeFloat, panPortVolume},
@@ -37,7 +37,7 @@ func (m *panModule) Info() *core.ModuleInfo {
 
 //-----------------------------------------------------------------------------
 
-type panModule struct {
+type panMix struct {
 	synth *core.Synth // top-level synth
 	vol   float32     // overall volume
 	pan   float32     // pan value 0 == left, 1 == right
@@ -48,32 +48,31 @@ type panModule struct {
 // NewPan returns a left/right pan and volume module.
 func NewPan(s *core.Synth) core.Module {
 	log.Info.Printf("")
-	return &panModule{
+	return &panMix{
 		synth: s,
 	}
 }
 
 // Return the child modules.
-func (m *panModule) Child() []core.Module {
+func (m *panMix) Child() []core.Module {
 	return nil
 }
 
 // Stop and performs any cleanup of a module.
-func (m *panModule) Stop() {
-	log.Info.Printf("")
+func (m *panMix) Stop() {
 }
 
 //-----------------------------------------------------------------------------
 // Port Events
 
-func (m *panModule) set() {
+func (m *panMix) set() {
 	// Use sin/cos so that l*l + r*r = K (constant power)
 	m.volL = m.vol * core.Cos(m.pan)
 	m.volR = m.vol * core.Sin(m.pan)
 }
 
 func panPortVolume(cm core.Module, e *core.Event) {
-	m := cm.(*panModule)
+	m := cm.(*panMix)
 	vol := core.Clamp(e.GetEventFloat().Val, 0, 1)
 	log.Info.Printf("set volume %f", vol)
 	// convert to a linear volume
@@ -82,7 +81,7 @@ func panPortVolume(cm core.Module, e *core.Event) {
 }
 
 func panPortPan(cm core.Module, e *core.Event) {
-	m := cm.(*panModule)
+	m := cm.(*panMix)
 	pan := core.Clamp(e.GetEventFloat().Val, 0, 1)
 	log.Info.Printf("set pan %f", pan)
 	m.pan = pan * (core.Pi / 2.0)
@@ -92,7 +91,7 @@ func panPortPan(cm core.Module, e *core.Event) {
 //-----------------------------------------------------------------------------
 
 // Process runs the module DSP.
-func (m *panModule) Process(buf ...*core.Buf) {
+func (m *panMix) Process(buf ...*core.Buf) {
 	in := buf[0]
 	outL := buf[1]
 	outR := buf[2]
@@ -105,7 +104,7 @@ func (m *panModule) Process(buf ...*core.Buf) {
 }
 
 // Active return true if the module has non-zero output.
-func (m *panModule) Active() bool {
+func (m *panMix) Active() bool {
 	return true
 }
 

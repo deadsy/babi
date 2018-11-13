@@ -24,7 +24,7 @@ func (m *polyMidi) Info() *core.ModuleInfo {
 	return &core.ModuleInfo{
 		Name: "polyMidi",
 		In: []core.PortInfo{
-			{"midi_in", "midi input", core.PortTypeMIDI, polyPortMidiIn},
+			{"midi_in", "midi input", core.PortTypeMIDI, polyMidiIn},
 		},
 		Out: []core.PortInfo{
 			{"out", "output", core.PortTypeAudioBuffer, nil},
@@ -109,7 +109,7 @@ func (m *polyMidi) voiceAlloc(note uint8) *voiceInfo {
 	return v
 }
 
-func polyPortMidiIn(cm core.Module, e *core.Event) {
+func polyMidiIn(cm core.Module, e *core.Event) {
 	m := cm.(*polyMidi)
 	me := e.GetEventMIDIChannel(m.ch)
 	if me != nil {

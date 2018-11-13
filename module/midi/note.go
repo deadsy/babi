@@ -18,11 +18,11 @@ import (
 //-----------------------------------------------------------------------------
 
 // Info returns the module information.
-func (m *noteModule) Info() *core.ModuleInfo {
+func (m *noteMidi) Info() *core.ModuleInfo {
 	return &core.ModuleInfo{
-		Name: "midi_note",
+		Name: "noteMidi",
 		In: []core.PortInfo{
-			{"midi_in", "midi input", core.PortTypeMIDI, notePortMidiIn},
+			{"midi_in", "midi input", core.PortTypeMIDI, noteMidiIn},
 		},
 		Out: nil,
 	}
@@ -30,7 +30,7 @@ func (m *noteModule) Info() *core.ModuleInfo {
 
 //-----------------------------------------------------------------------------
 
-type noteModule struct {
+type noteMidi struct {
 	synth *core.Synth // top-level synth
 	ch    uint8       // MIDI channel
 	note  uint8       // MIDI note number
@@ -42,7 +42,7 @@ type noteModule struct {
 func NewNote(s *core.Synth, ch, note uint8, dst core.Module, name string) core.Module {
 	mi := dst.Info()
 	log.Info.Printf("midi ch %d note %d controlling %s.%s port", ch, note, mi.Name, name)
-	return &noteModule{
+	return &noteMidi{
 		synth: s,
 		ch:    ch,
 		note:  note,
@@ -52,20 +52,19 @@ func NewNote(s *core.Synth, ch, note uint8, dst core.Module, name string) core.M
 }
 
 // Return the child modules.
-func (m *noteModule) Child() []core.Module {
+func (m *noteMidi) Child() []core.Module {
 	return nil
 }
 
 // Stop and cleanup the module.
-func (m *noteModule) Stop() {
-	log.Info.Printf("")
+func (m *noteMidi) Stop() {
 }
 
 //-----------------------------------------------------------------------------
 // Port Events
 
-func notePortMidiIn(cm core.Module, e *core.Event) {
-	m := cm.(*noteModule)
+func noteMidiIn(cm core.Module, e *core.Event) {
+	m := cm.(*noteMidi)
 	me := e.GetEventMIDIChannel(m.ch)
 	if me != nil {
 		switch me.GetType() {
@@ -86,12 +85,12 @@ func notePortMidiIn(cm core.Module, e *core.Event) {
 //-----------------------------------------------------------------------------
 
 // Process runs the module DSP.
-func (m *noteModule) Process(buf ...*core.Buf) {
+func (m *noteMidi) Process(buf ...*core.Buf) {
 	// do nothing
 }
 
 // Active return true if the module has non-zero output.
-func (m *noteModule) Active() bool {
+func (m *noteMidi) Active() bool {
 	return false
 }
 

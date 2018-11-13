@@ -18,11 +18,11 @@ import (
 //-----------------------------------------------------------------------------
 
 // Info returns the module information.
-func (m *ctrlModule) Info() *core.ModuleInfo {
+func (m *ctrlMidi) Info() *core.ModuleInfo {
 	return &core.ModuleInfo{
-		Name: "midi_control",
+		Name: "ctrlMidi",
 		In: []core.PortInfo{
-			{"midi_in", "midi input", core.PortTypeMIDI, ctrlPortMidiIn},
+			{"midi_in", "midi input", core.PortTypeMIDI, ctrlMidiIn},
 		},
 		Out: nil,
 	}
@@ -30,7 +30,7 @@ func (m *ctrlModule) Info() *core.ModuleInfo {
 
 //-----------------------------------------------------------------------------
 
-type ctrlModule struct {
+type ctrlMidi struct {
 	synth *core.Synth // top-level synth
 	ch    uint8       // MIDI channel
 	cc    uint8       // MIDI control change number
@@ -42,7 +42,7 @@ type ctrlModule struct {
 func NewCtrl(s *core.Synth, ch, cc uint8, dst core.Module, name string) core.Module {
 	mi := dst.Info()
 	log.Info.Printf("midi ch %d cc %d controlling %s.%s port", ch, cc, mi.Name, name)
-	return &ctrlModule{
+	return &ctrlMidi{
 		synth: s,
 		ch:    ch,
 		cc:    cc,
@@ -52,20 +52,19 @@ func NewCtrl(s *core.Synth, ch, cc uint8, dst core.Module, name string) core.Mod
 }
 
 // Return the child modules.
-func (m *ctrlModule) Child() []core.Module {
+func (m *ctrlMidi) Child() []core.Module {
 	return nil
 }
 
 // Stop and cleanup the module.
-func (m *ctrlModule) Stop() {
-	log.Info.Printf("")
+func (m *ctrlMidi) Stop() {
 }
 
 //-----------------------------------------------------------------------------
 // Port Events
 
-func ctrlPortMidiIn(cm core.Module, e *core.Event) {
-	m := cm.(*ctrlModule)
+func ctrlMidiIn(cm core.Module, e *core.Event) {
+	m := cm.(*ctrlMidi)
 	me := e.GetEventMIDIChannel(m.ch)
 	if me != nil {
 		if me.GetType() == core.EventMIDIControlChange && me.GetCtrlNum() == m.cc {
@@ -80,12 +79,12 @@ func ctrlPortMidiIn(cm core.Module, e *core.Event) {
 //-----------------------------------------------------------------------------
 
 // Process runs the module DSP.
-func (m *ctrlModule) Process(buf ...*core.Buf) {
+func (m *ctrlMidi) Process(buf ...*core.Buf) {
 	// do nothing
 }
 
 // Active return true if the module has non-zero output.
-func (m *ctrlModule) Active() bool {
+func (m *ctrlMidi) Active() bool {
 	return false
 }
 
