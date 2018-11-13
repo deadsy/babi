@@ -25,9 +25,9 @@ import (
 //-----------------------------------------------------------------------------
 
 // Info returns the module information.
-func (m *ksModule) Info() *core.ModuleInfo {
+func (m *ksOsc) Info() *core.ModuleInfo {
 	return &core.ModuleInfo{
-		Name: "ks",
+		Name: "ksOsc",
 		In: []core.PortInfo{
 			{"gate", "oscillator gate, attack(>0) or mute(=0)", core.PortTypeFloat, ksPortGate},
 			{"frequency", "frequency (Hz)", core.PortTypeFloat, ksPortFrequency},
@@ -41,7 +41,7 @@ func (m *ksModule) Info() *core.ModuleInfo {
 
 //-----------------------------------------------------------------------------
 
-const ksDelayBits = 6
+const ksDelayBits = 5
 const ksDelaySize = 1 << ksDelayBits
 
 const ksDelayMask = ksDelaySize - 1
@@ -49,7 +49,7 @@ const ksFracBits = 32 - ksDelayBits
 const ksFracMask = (1 << ksFracBits) - 1
 const ksFracScale = 1 / (1 << ksFracBits)
 
-type ksModule struct {
+type ksOsc struct {
 	synth *core.Synth // top-level synth
 	rand  *core.Rand32
 	delay [ksDelaySize]float32 // delay line
@@ -61,27 +61,27 @@ type ksModule struct {
 
 // NewKarplusStrong returns a Karplus Strong oscillator module.
 func NewKarplusStrong(s *core.Synth) core.Module {
-	log.Info.Printf("")
-	return &ksModule{
+	log.Info.Printf("new osc")
+	return &ksOsc{
 		synth: s,
 		rand:  core.NewRand32(0),
 	}
 }
 
 // Return the child modules.
-func (m *ksModule) Child() []core.Module {
+func (m *ksOsc) Child() []core.Module {
 	return nil
 }
 
 // Stop performs any cleanup of a module.
-func (m *ksModule) Stop() {
+func (m *ksOsc) Stop() {
 }
 
 //-----------------------------------------------------------------------------
 // Port Events
 
 func ksPortGate(cm core.Module, e *core.Event) {
-	m := cm.(*ksModule)
+	m := cm.(*ksOsc)
 	gate := e.GetEventFloat().Val
 	log.Info.Printf("gate %f", gate)
 	if gate > 0 {
@@ -107,14 +107,14 @@ func ksPortGate(cm core.Module, e *core.Event) {
 }
 
 func ksPortAttenuation(cm core.Module, e *core.Event) {
-	m := cm.(*ksModule)
+	m := cm.(*ksOsc)
 	attenuation := core.Clamp(e.GetEventFloat().Val, 0, 1)
 	log.Info.Printf("set attenuation %f", attenuation)
 	m.k = 0.5 * attenuation
 }
 
 func ksPortFrequency(cm core.Module, e *core.Event) {
-	m := cm.(*ksModule)
+	m := cm.(*ksOsc)
 	frequency := core.ClampLo(e.GetEventFloat().Val, 0)
 	log.Info.Printf("set frequency %f Hz", frequency)
 	m.freq = frequency
@@ -124,7 +124,7 @@ func ksPortFrequency(cm core.Module, e *core.Event) {
 //-----------------------------------------------------------------------------
 
 // Process runs the module DSP.
-func (m *ksModule) Process(buf ...*core.Buf) {
+func (m *ksOsc) Process(buf ...*core.Buf) {
 	out := buf[0]
 	for i := 0; i < len(out); i++ {
 		x0 := m.x >> ksFracBits
@@ -144,7 +144,7 @@ func (m *ksModule) Process(buf ...*core.Buf) {
 }
 
 // Active return true if the module has non-zero output.
-func (m *ksModule) Active() bool {
+func (m *ksOsc) Active() bool {
 	return true
 }
 

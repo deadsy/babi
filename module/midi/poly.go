@@ -5,8 +5,7 @@ Polyphonic Module
 
 Manage concurrent instances (voices) of a given sub-module.
 
-TODO currently has a single output and assumes the sub-modules
-have a single output.
+Note: The single channel output is the sum of outputs from each single channel voice.
 
 */
 //-----------------------------------------------------------------------------
@@ -21,9 +20,9 @@ import (
 //-----------------------------------------------------------------------------
 
 // Info returns the module information.
-func (m *polyModule) Info() *core.ModuleInfo {
+func (m *polyMidi) Info() *core.ModuleInfo {
 	return &core.ModuleInfo{
-		Name: "poly",
+		Name: "polyMidi",
 		In: []core.PortInfo{
 			{"midi_in", "midi input", core.PortTypeMIDI, polyPortMidiIn},
 		},
@@ -40,28 +39,28 @@ type voiceInfo struct {
 	module core.Module // voice module
 }
 
-type polyModule struct {
-	synth     *core.Synth        // top-level synth
-	ch        uint8              // MIDI channel
-	submodule func() core.Module // new function for voice sub-module
-	voice     []voiceInfo        // voices
-	idx       int                // round-robin index for voice slice
-	bend      float32            // pitch bending value (for all voices)
+type polyMidi struct {
+	synth *core.Synth                     // top-level synth
+	ch    uint8                           // MIDI channel
+	sm    func(s *core.Synth) core.Module // new function for voice sub-module
+	voice []voiceInfo                     // voices
+	idx   int                             // round-robin index for voice slice
+	bend  float32                         // pitch bending value (for all voices)
 }
 
 // NewPoly returns a MIDI polyphonic voice control module.
-func NewPoly(s *core.Synth, ch uint8, sm func() core.Module, maxvoices uint) core.Module {
+func NewPoly(s *core.Synth, ch uint8, sm func(s *core.Synth) core.Module, maxvoices uint) core.Module {
 	log.Info.Printf("")
-	return &polyModule{
-		synth:     s,
-		ch:        ch,
-		submodule: sm,
-		voice:     make([]voiceInfo, maxvoices),
+	return &polyMidi{
+		synth: s,
+		ch:    ch,
+		sm:    sm,
+		voice: make([]voiceInfo, maxvoices),
 	}
 }
 
 // Return the child modules.
-func (m *polyModule) Child() []core.Module {
+func (m *polyMidi) Child() []core.Module {
 	var children []core.Module
 	for i := range m.voice {
 		if m.voice[i].module != nil {
@@ -72,15 +71,14 @@ func (m *polyModule) Child() []core.Module {
 }
 
 // Stop performs any cleanup of a module.
-func (m *polyModule) Stop() {
-	log.Info.Printf("")
+func (m *polyMidi) Stop() {
 }
 
 //-----------------------------------------------------------------------------
 // Events
 
 // voiceLookup returns the voice for this MIDI note (or nil).
-func (m *polyModule) voiceLookup(note uint8) *voiceInfo {
+func (m *polyMidi) voiceLookup(note uint8) *voiceInfo {
 	for i := range m.voice {
 		if m.voice[i].module != nil && m.voice[i].note == note {
 			return &m.voice[i]
@@ -90,7 +88,7 @@ func (m *polyModule) voiceLookup(note uint8) *voiceInfo {
 }
 
 // voiceAlloc allocates a new subpatch voice for a MIDI note.
-func (m *polyModule) voiceAlloc(note uint8) *voiceInfo {
+func (m *polyMidi) voiceAlloc(note uint8) *voiceInfo {
 	log.Info.Printf("")
 	// Currently doing simple round robin allocation.
 	v := &m.voice[m.idx]
@@ -104,7 +102,7 @@ func (m *polyModule) voiceAlloc(note uint8) *voiceInfo {
 	}
 	// setup the new voice
 	v.note = note
-	v.module = m.submodule()
+	v.module = m.sm(m.synth)
 	// set the voice frequency
 	f := core.MIDIToFrequency(float32(v.note) + m.bend)
 	core.SendEventFloat(v.module, "frequency", f)
@@ -112,7 +110,7 @@ func (m *polyModule) voiceAlloc(note uint8) *voiceInfo {
 }
 
 func polyPortMidiIn(cm core.Module, e *core.Event) {
-	m := cm.(*polyModule)
+	m := cm.(*polyMidi)
 	me := e.GetEventMIDIChannel(m.ch)
 	if me != nil {
 		switch me.GetType() {
@@ -151,7 +149,13 @@ func polyPortMidiIn(cm core.Module, e *core.Event) {
 				}
 			}
 		default:
-			log.Info.Printf("unhandled midi event %s", me)
+			// perhaps the voices can use this MIDI event...
+			for i := range m.voice {
+				v := &m.voice[i]
+				if v.module != nil {
+					core.SendEvent(v.module, "midi_in", e)
+				}
+			}
 		}
 	}
 }
@@ -159,7 +163,7 @@ func polyPortMidiIn(cm core.Module, e *core.Event) {
 //-----------------------------------------------------------------------------
 
 // Process runs the module DSP.
-func (m *polyModule) Process(buf ...*core.Buf) {
+func (m *polyMidi) Process(buf ...*core.Buf) {
 	out := buf[0]
 	var vout core.Buf
 	// run each voice
@@ -175,7 +179,7 @@ func (m *polyModule) Process(buf ...*core.Buf) {
 }
 
 // Active return true if the module has non-zero output.
-func (m *polyModule) Active() bool {
+func (m *polyMidi) Active() bool {
 	return true
 }
 

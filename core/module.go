@@ -11,8 +11,6 @@ package core
 import (
 	"fmt"
 	"strings"
-
-	"github.com/deadsy/babi/utils/log"
 )
 
 //-----------------------------------------------------------------------------
@@ -81,7 +79,7 @@ func (mi *ModuleInfo) GetPortFunc(name string) PortFuncType {
 	if pf, ok := mi.n2p[name]; ok {
 		return pf
 	}
-	log.Info.Printf("no port named \"%s\" in module \"%s\"", name, mi.Name)
+	//log.Info.Printf("no port named \"%s\" in module \"%s\"", name, mi.Name)
 	return nil
 }
 

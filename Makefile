@@ -1,5 +1,6 @@
 
 DIRS = simple \
+       poly \
        plots \
 
 all:

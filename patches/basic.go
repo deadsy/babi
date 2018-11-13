@@ -21,7 +21,7 @@ import (
 // Info returns the module information.
 func (m *basicPatch) Info() *core.ModuleInfo {
 	return &core.ModuleInfo{
-		Name: "basic",
+		Name: "basicPatch",
 		In: []core.PortInfo{
 			{"midi_in", "midi input", core.PortTypeMIDI, basicPortMidiIn},
 		},
@@ -92,7 +92,6 @@ func (m *basicPatch) Child() []core.Module {
 
 // Stop and performs any cleanup of a module.
 func (m *basicPatch) Stop() {
-	log.Info.Printf("")
 }
 
 //-----------------------------------------------------------------------------
@@ -114,7 +113,7 @@ func basicPortMidiIn(cm core.Module, e *core.Event) {
 func (m *basicPatch) Process(buf ...*core.Buf) {
 	outL := buf[0]
 	outR := buf[1]
-	// generate sine
+	// generate wave
 	var out core.Buf
 	m.osc.Process(&out)
 	// generate envelope

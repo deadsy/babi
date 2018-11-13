@@ -8,7 +8,7 @@ https://www.quinapalus.com/goom.html
 */
 //-----------------------------------------------------------------------------
 
-package module
+package voice
 
 import (
 	"github.com/deadsy/babi/core"
@@ -100,14 +100,14 @@ type goomVoice struct {
 	velocity       float32     // note velocity
 }
 
-// NewGoomVoice returns a Goom voice.
-func NewGoomVoice(s *core.Synth) core.Module {
+// NewGoom returns a Goom voice.
+func NewGoom(s *core.Synth) core.Module {
 	log.Info.Printf("")
 
 	ampEnv := env.NewADSREnv(s)
-	wavOsc := osc.NewGoomOsc(s)
+	wavOsc := osc.NewGoom(s)
 	modEnv := env.NewADSREnv(s)
-	modOsc := osc.NewGoomOsc(s)
+	modOsc := osc.NewGoom(s)
 	fltEnv := env.NewADSREnv(s)
 	lpf := filter.NewSVFilterTrapezoidal(s)
 

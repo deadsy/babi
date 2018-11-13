@@ -31,7 +31,7 @@ import (
 // Info returns the module information.
 func (m *goomOsc) Info() *core.ModuleInfo {
 	return &core.ModuleInfo{
-		Name: "goom",
+		Name: "goomOsc",
 		In: []core.PortInfo{
 			{"frequency", "frequency (Hz)", core.PortTypeFloat, goomPortFrequency},
 			{"duty", "duty cycle (0..1)", core.PortTypeFloat, goomPortDuty},
