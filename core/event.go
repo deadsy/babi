@@ -103,9 +103,12 @@ func (e *EventMIDI) String() string {
 		return fmt.Sprintf("%s ch %d ctrl %d val %d", descr, e.GetChannel(), e.GetCtrlNum(), e.GetCtrlVal())
 	case EventMIDIPitchWheel:
 		return fmt.Sprintf("%s ch %d val %d", descr, e.GetChannel(), e.GetPitchWheel())
-		//case EventMIDIPolyphonicAftertouch:
-		//case EventMIDIProgramChange:
-		//case EventMIDIChannelAftertouch:
+	case EventMIDIProgramChange:
+		return fmt.Sprintf("%s ch %d program %d", descr, e.GetChannel(), e.GetProgram())
+	case EventMIDIChannelAftertouch:
+		return fmt.Sprintf("%s ch %d pressure %d", descr, e.GetChannel(), e.GetPressure())
+	case EventMIDIPolyphonicAftertouch:
+		return fmt.Sprintf("%s ch %d note %d pressure %d", descr, e.GetChannel(), e.GetNote(), e.GetVelocity())
 	}
 	return fmt.Sprintf("%s status %02x arg0 %02x arg1 %02x", descr, e.status, e.arg0, e.arg1)
 }
@@ -160,6 +163,16 @@ func (e *EventMIDI) GetVelocity() uint8 {
 // GetPitchWheel returns the MIDI pitch wheel value.
 func (e *EventMIDI) GetPitchWheel() uint16 {
 	return uint16(e.arg1)<<7 | uint16(e.arg0)
+}
+
+// GetProgram returns the MIDI program number.
+func (e *EventMIDI) GetProgram() uint8 {
+	return e.arg0
+}
+
+// GetPressure returns the MIDI pressure value.
+func (e *EventMIDI) GetPressure() uint8 {
+	return e.arg0
 }
 
 //-----------------------------------------------------------------------------
