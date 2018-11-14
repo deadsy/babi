@@ -6,7 +6,7 @@ Karplus Strong Patch
 */
 //-----------------------------------------------------------------------------
 
-package patches
+package patch
 
 import (
 	"github.com/deadsy/babi/core"

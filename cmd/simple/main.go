@@ -10,8 +10,8 @@ import (
 
 	"github.com/deadsy/babi/core"
 	"github.com/deadsy/babi/module/osc"
+	"github.com/deadsy/babi/module/patch"
 	"github.com/deadsy/babi/module/seq"
-	"github.com/deadsy/babi/patches"
 	"github.com/deadsy/babi/utils/log"
 )
 
@@ -35,13 +35,13 @@ func main() {
 
 	s := core.NewSynth()
 
-	//p := patches.NewBasicPatch(s, osc.NewSine(s))
-	//p := patches.NewBasicPatch(s, osc.NewSquareBasic(s))
-	//p := patches.NewBasicPatch(s, osc.NewNoisePink2(s))
-	//p := patches.NewBasicPatch(s, osc.NewSawtoothBasic(s))
-	p := patches.NewBasicPatch(s, osc.NewGoom(s))
-	//p := patches.NewKarplusStrongPatch(s)
-	//p := patches.NewSequencerTest(s, metronome)
+	//p := patch.NewBasicPatch(s, osc.NewSine(s))
+	//p := patch.NewBasicPatch(s, osc.NewSquareBasic(s))
+	//p := patch.NewBasicPatch(s, osc.NewNoisePink2(s))
+	//p := patch.NewBasicPatch(s, osc.NewSawtoothBasic(s))
+	p := patch.NewBasicPatch(s, osc.NewGoom(s))
+	//p := patch.NewKarplusStrongPatch(s)
+	//p := patch.NewSequencerTest(s, metronome)
 
 	// set the root patch
 	s.SetPatch(p)
