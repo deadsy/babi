@@ -16,6 +16,22 @@ import (
 
 //-----------------------------------------------------------------------------
 
+/*
+var metronome = []seq.Op{
+	seq.OpNote(1, 69, 100, 4),
+	seq.OpRest(12),
+	seq.OpNote(1, 60, 100, 4),
+	seq.OpRest(12),
+	seq.OpNote(1, 60, 100, 4),
+	seq.OpRest(12),
+	seq.OpNote(1, 60, 100, 4),
+	seq.OpRest(12),
+	seq.OpLoop(),
+}
+*/
+
+//-----------------------------------------------------------------------------
+
 // Info returns the module information.
 func (m *seqtestModule) Info() *core.ModuleInfo {
 	return &core.ModuleInfo{

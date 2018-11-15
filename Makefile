@@ -1,6 +1,5 @@
 
-DIRS = simple \
-       poly \
+DIRS = poly \
        plots \
 
 all:

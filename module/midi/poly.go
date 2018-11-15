@@ -89,7 +89,7 @@ func (m *polyMidi) voiceLookup(note uint8) *voiceInfo {
 
 // voiceAlloc allocates a new subpatch voice for a MIDI note.
 func (m *polyMidi) voiceAlloc(note uint8) *voiceInfo {
-	log.Info.Printf("")
+	log.Info.Printf("note %d", note)
 	// Currently doing simple round robin allocation.
 	v := &m.voice[m.idx]
 	m.idx++

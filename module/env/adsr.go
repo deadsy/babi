@@ -89,7 +89,6 @@ func (m *adsrModule) Child() []core.Module {
 
 // Stop stops and performs any cleanup of a module.
 func (m *adsrModule) Stop() {
-	log.Info.Printf("")
 }
 
 //-----------------------------------------------------------------------------

@@ -13,6 +13,7 @@ import (
 	"os/signal"
 
 	"github.com/deadsy/babi/core"
+	"github.com/deadsy/babi/module/osc"
 	"github.com/deadsy/babi/module/patch"
 	"github.com/deadsy/babi/module/voice"
 	"github.com/deadsy/babi/utils/log"
@@ -24,18 +25,18 @@ func main() {
 
 	s := core.NewSynth()
 
-	//p := patch.NewBasicPatch(s, osc.NewSine(s))
-	//p := patch.NewBasicPatch(s, osc.NewSquareBasic(s))
-	//p := patch.NewBasicPatch(s, osc.NewNoisePink2(s))
-	//p := patch.NewBasicPatch(s, osc.NewSawtoothBasic(s))
-	//p := patch.NewBasicPatch(s, osc.NewGoom(s))
-	//p := patch.NewKarplusStrongPatch(s)
-	//p := patch.NewSequencerTest(s, metronome)
+	// Pick a voice
+	//v := func(s *core.Synth) core.Module { return voice.NewOsc(s, osc.NewSine(s)) }
+	//v := func(s *core.Synth) core.Module { return voice.NewOsc(s, osc.NewSquareBasic(s)) }
+	//v := func(s *core.Synth) core.Module { return voice.NewOsc(s, osc.NewNoisePink2(s)) }
+	//v := func(s *core.Synth) core.Module { return voice.NewOsc(s, osc.NewSawtoothBasic(s)) }
+	v := func(s *core.Synth) core.Module { return voice.NewOsc(s, osc.NewGoom(s)) }
+	//v := voice.NewKarplusStrong
 
-	v := voice.NewKarplusStrong
+	// create the polyphonic patch
 	p := patch.NewPoly(s, v)
 
-	// set the root patch
+	// set the root patch for the synth
 	s.SetPatch(p)
 
 	// start the jack client
