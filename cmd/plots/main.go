@@ -17,6 +17,7 @@ import (
 	"strings"
 
 	"github.com/deadsy/babi/core"
+	"github.com/deadsy/babi/module/dx"
 	"github.com/deadsy/babi/module/osc"
 	"github.com/deadsy/babi/module/view"
 )
@@ -117,7 +118,7 @@ func (p *plot) close() {
 
 //-----------------------------------------------------------------------------
 
-func main() {
+func envDx() {
 
 	name := "babi"
 	p, err := openPlot(name)
@@ -125,6 +126,50 @@ func main() {
 		fmt.Printf("unable to create %s\n", name)
 		os.Exit(1)
 	}
+	defer p.close()
+
+	p.setTitle(fmt.Sprintf("DX7 Envelope"))
+	p.newVariable("time")
+	p.newVariable("amplitude")
+
+	levels := &[4]int{99, 80, 99, 0}
+	rates := &[4]int{80, 80, 70, 80}
+
+	t := view.NewTime(nil)
+	e := dx.NewEnv(nil, levels, rates)
+	core.SendEventFloat(e, "gate", 1.0)
+
+	var x core.Buf
+	var y core.Buf
+
+	for i := 0; i < 12; i++ {
+		t.Process(&x)
+		e.Process(&y)
+		p.appendData("time", &x)
+		p.appendData("amplitude", &y)
+	}
+	
+	core.SendEventFloat(e, "gate", 0.0)
+	
+	for i := 0; i < 4; i++ {
+		t.Process(&x)
+		e.Process(&y)
+		p.appendData("time", &x)
+		p.appendData("amplitude", &y)
+	}
+}
+
+//-----------------------------------------------------------------------------
+
+func goom() {
+
+	name := "babi"
+	p, err := openPlot(name)
+	if err != nil {
+		fmt.Printf("unable to create %s\n", name)
+		os.Exit(1)
+	}
+	defer p.close()
 
 	freq := float32(110.0)
 	p.setTitle(fmt.Sprintf("%.1f Hz Goom Wave", freq))
@@ -146,8 +191,13 @@ func main() {
 		p.appendData("time", &x)
 		p.appendData("amplitude", &y)
 	}
+}
 
-	p.close()
+//-----------------------------------------------------------------------------
+
+func main() {
+	//goom()
+	envDx()
 	os.Exit(0)
 }
 
