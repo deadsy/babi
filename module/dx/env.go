@@ -11,7 +11,11 @@ http://wiki.music-synthesizer-for-android.googlecode.com/git/img/env.html
 
 package dx
 
-import "math"
+import (
+	"math"
+
+	"github.com/deadsy/babi/core"
+)
 
 //-----------------------------------------------------------------------------
 
@@ -26,22 +30,6 @@ func lutInit() {
 		dB := (float64(i) - 3824.0) * 0.0235
 		outputLUT[i] = float32(math.Pow(20.0, (dB / 20.0)))
 	}
-}
-
-//-----------------------------------------------------------------------------
-
-func min(a, b int) int {
-	if a < b {
-		return a
-	}
-	return b
-}
-
-func max(a, b int) int {
-	if a > b {
-		return a
-	}
-	return b
 }
 
 //-----------------------------------------------------------------------------
@@ -99,10 +87,10 @@ func (e *env) advance(newstate int) {
 	e.state = newstate
 	if e.state < 4 {
 		newlevel := e.levels[e.state]
-		e.targetlevel = float32(max(0, (outputLevel[newlevel]<<5)-224)) // 1 -> -192; 99 -> 127 -> 3840
+		e.targetlevel = float32(core.Max(0, (outputLevel[newlevel]<<5)-224)) // 1 -> -192; 99 -> 127 -> 3840
 		e.rising = (e.targetlevel - e.level) > 0
 		rateScaling := 0
-		qr := min(63, rateScaling+((e.rates[e.state]*41)>>6)) // 5 -> 3; 49 -> 31; 99 -> 63
+		qr := core.Min(63, rateScaling+((e.rates[e.state]*41)>>6)) // 5 -> 3; 49 -> 31; 99 -> 63
 		e.decayIncrement = float32(math.Pow(2.0, float64(qr)*0.25) / 2048.0)
 	}
 }

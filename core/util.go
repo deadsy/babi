@@ -10,6 +10,24 @@ package core
 
 //-----------------------------------------------------------------------------
 
+// Min returns the minimum of two integers.
+func Min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
+
+// Max returns the maximum of two integers.
+func Max(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
+}
+
+//-----------------------------------------------------------------------------
+
 // Abs return the absolute value of x.
 func Abs(x float32) float32 {
 	if x < 0 {
