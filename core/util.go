@@ -100,3 +100,12 @@ func RtoD(radians float64) float64 {
 }
 
 //-----------------------------------------------------------------------------
+
+// SignExtend sign extends an n bit value to a signed integer.
+func SignExtend(x int, n uint) int {
+	y := uint(x) & ((1 << n) - 1)
+	mask := uint(1 << (n - 1))
+	return int((y ^ mask) - mask)
+}
+
+//-----------------------------------------------------------------------------

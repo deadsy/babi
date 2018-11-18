@@ -15,6 +15,8 @@ import (
 	"fmt"
 	"strings"
 	"unsafe"
+
+	"github.com/deadsy/babi/core"
 )
 
 //-----------------------------------------------------------------------------
@@ -34,6 +36,20 @@ const (
 	curvePosLin           = 3
 )
 
+func (t curveType) String() string {
+	switch t {
+	case curveNegLin:
+		return "-lin"
+	case curveNegExp:
+		return "-exp"
+	case curvePosExp:
+		return "+exp"
+	case curvePosLin:
+		return "+lin"
+	}
+	return "?"
+}
+
 type oscModeType int
 
 const (
@@ -41,24 +57,54 @@ const (
 	oscModeFixed             = 1
 )
 
+func (t oscModeType) String() string {
+	if t == oscModeRatio {
+		return "ratio"
+	}
+	return "fixed"
+}
+
 //-----------------------------------------------------------------------------
 
 type opConfig struct {
-	idx        int    // operator index 0..5
-	rate       [4]int // 0..99
-	level      [4]int // 0..99
-	leftCurve  curveType
-	leftDepth  int
-	rightCurve curveType
-	rightDepth int
+	idx                 int // operator index 0..5
+	outputLevel         int
+	velocitySensitivity int
+	lfoSensitivity      int
+	oscMode             oscModeType
+	frequency           float32
+	detune              int
+	rate                [4]int // 0..99
+	level               [4]int // 0..99
+	breakPoint          core.MidiNote
+	keyRateScale        int
+	leftCurve           curveType
+	leftDepth           int
+	rightCurve          curveType
+	rightDepth          int
 }
 
 func (o *opConfig) String() string {
 	var s []string
 	s = append(s, fmt.Sprintf("op%d:", o.idx+1))
+	s = append(s, fmt.Sprintf("oscMode %s", o.oscMode))
+	s = append(s, fmt.Sprintf("frequency %.2f", o.frequency))
+	s = append(s, fmt.Sprintf("detune %d", o.detune))
 	s = append(s, fmt.Sprintf("rate %d %d %d %d", o.rate[0], o.rate[1], o.rate[2], o.rate[3]))
 	s = append(s, fmt.Sprintf("level %d %d %d %d", o.level[0], o.level[1], o.level[2], o.level[3]))
-	s = append(s, fmt.Sprintf("leftDepth %d rightDepth %d", o.leftDepth, o.rightDepth))
+	if o.breakPoint == core.MidiNote(0) {
+		s = append(s, "breakPoint off")
+	} else {
+		s = append(s, fmt.Sprintf("breakPoint %s", o.breakPoint))
+	}
+	s = append(s, fmt.Sprintf("leftCurve %s leftDepth %d", o.leftCurve, o.leftDepth))
+	s = append(s, fmt.Sprintf("rightCurve %s rightDepth %d", o.rightCurve, o.rightDepth))
+	s = append(s, fmt.Sprintf("keyRateScale %d", o.keyRateScale))
+	s = append(s, fmt.Sprintf("outputLevel %d", o.outputLevel))
+	s = append(s, fmt.Sprintf("velocitySensitivity %d", o.velocitySensitivity))
+	// pm sensitivity
+	s = append(s, fmt.Sprintf("lfoSensitivity %d", o.lfoSensitivity))
+
 	return strings.Join(s, " ")
 }
 
@@ -89,10 +135,10 @@ type opData struct {
 	leftDepth   byte    // 9: 0..99
 	rightDepth  byte    // 10: 0..99
 	x0          byte    // 11:     0   0   0 |  RC   |   LC  | SCL LEFT CURVE 0-3   SCL RGHT CURVE 0-3
-	x1          byte    // 12: |      DET      |     RS    | OSC DETUNE     0-14  OSC RATE SCALE 0-7
-	x2          byte    // 13:   0   0 |    KVS    |  AMS  | KEY VEL SENS   0-7   AMP MOD SENS   0-3
+	x1          byte    // 12: 0 dddd sss, detune 0..14, rate scale 0..7
+	x2          byte    // 13: .. kkk aaa, key velocity sensitivity 0-7, lfo sensitivity -3..3
 	outputLevel byte    // 14: 00..99
-	x3          byte    // 15: 0 |         FC        | M | FREQ COARSE    0-31  OSC MODE       0-1
+	x3          byte    // 15: 00 fffff m, frequency coarse 0-31, osc mode 0..1
 	freqFine    byte    // 16: 0..99
 }
 
@@ -100,6 +146,59 @@ func (o *opData) convert(idx int) (*opConfig, error) {
 	cfg := &opConfig{
 		idx: idx,
 	}
+
+	// output level
+	if o.outputLevel > 99 {
+		return nil, fmt.Errorf("output level is out of range: %d > 99", o.outputLevel)
+	}
+	cfg.outputLevel = int(o.outputLevel)
+
+	// velocity sensitivity
+	cfg.velocitySensitivity = int((o.x2 >> 3) & 7)
+
+	// break point
+	if o.breakPoint < 3 {
+		cfg.breakPoint = core.MidiNote(0)
+	} else {
+		cfg.breakPoint = core.MidiNote(o.breakPoint - 3)
+	}
+
+	// lfo sensitivity (bit format?)
+	sign := int((o.x2 >> 2) & 1)
+	val := int(o.x2 & 3)
+	if sign != 0 {
+		val *= -1
+	}
+	cfg.lfoSensitivity = val
+
+	// oscillator mode
+	cfg.oscMode = oscModeType(o.x3 & 1)
+
+	// frequency coarse
+	freqCoarse := int((o.x3 >> 1) & 31)
+	if freqCoarse == 0 {
+		cfg.frequency = 0.5
+	} else {
+		cfg.frequency = float32(freqCoarse)
+	}
+	// frequency fine
+	freqFine := int(o.freqFine)
+	if o.freqFine > 99 {
+		return nil, fmt.Errorf("frequency fine is out of range: %d > 99", o.freqFine)
+	}
+	cfg.frequency += float32(freqFine) * 0.01
+
+	// key rate scale
+	cfg.keyRateScale = int(o.x1 & 7)
+
+	// detune
+	detune := int((o.x1>>3)&15) - 7
+	if detune > 7 {
+		return nil, fmt.Errorf("detune is out of range: %d > 7", detune)
+	}
+	cfg.detune = detune
+
+	// envelope rates and levels
 	for i := 0; i < 4; i++ {
 		if o.rate[i] > 99 {
 			return nil, fmt.Errorf("rate is out of range: %d > 99", o.rate[i])
@@ -111,6 +210,7 @@ func (o *opData) convert(idx int) (*opConfig, error) {
 		cfg.level[i] = int(o.level[i])
 	}
 
+	// left/right depth
 	if o.leftDepth > 99 {
 		return nil, fmt.Errorf("left depth is out of range: %d > 99", o.leftDepth)
 	}

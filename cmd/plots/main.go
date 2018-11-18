@@ -148,9 +148,9 @@ func envDx() {
 		p.appendData("time", &x)
 		p.appendData("amplitude", &y)
 	}
-	
+
 	core.SendEventFloat(e, "gate", 0.0)
-	
+
 	for i := 0; i < 4; i++ {
 		t.Process(&x)
 		e.Process(&y)

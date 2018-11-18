@@ -8,7 +8,11 @@ MIDI Functions
 
 package core
 
-import "github.com/deadsy/babi/utils/log"
+import (
+	"fmt"
+
+	"github.com/deadsy/babi/utils/log"
+)
 
 //-----------------------------------------------------------------------------
 
@@ -97,6 +101,38 @@ func convertToMIDIEvent(data []byte) *Event {
 		}
 	}
 	return nil
+}
+
+//-----------------------------------------------------------------------------
+
+const notesInOctave = 12
+
+var sharpNotes = [notesInOctave]string{
+	"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B",
+}
+
+var flatNotes = [notesInOctave]string{
+	"C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B",
+}
+
+// MidiNote 0..127
+type MidiNote byte
+
+// Octave returns the MIDI octave of the MIDI note.
+func (n MidiNote) Octave() int {
+	return int(n) / notesInOctave
+}
+
+func (n MidiNote) sharpString() string {
+	return sharpNotes[n%notesInOctave]
+}
+
+func (n MidiNote) flatString() string {
+	return flatNotes[n%notesInOctave]
+}
+
+func (n MidiNote) String() string {
+	return n.sharpString() + fmt.Sprintf("%d", n.Octave())
 }
 
 //-----------------------------------------------------------------------------
