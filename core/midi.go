@@ -111,8 +111,16 @@ var sharpNotes = [notesInOctave]string{
 	"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B",
 }
 
+func (n MidiNote) sharpString() string {
+	return sharpNotes[n%notesInOctave]
+}
+
 var flatNotes = [notesInOctave]string{
 	"C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B",
+}
+
+func (n MidiNote) flatString() string {
+	return flatNotes[n%notesInOctave]
 }
 
 // MidiNote 0..127
@@ -123,16 +131,8 @@ func (n MidiNote) Octave() int {
 	return int(n) / notesInOctave
 }
 
-func (n MidiNote) sharpString() string {
-	return sharpNotes[n%notesInOctave]
-}
-
-func (n MidiNote) flatString() string {
-	return flatNotes[n%notesInOctave]
-}
-
 func (n MidiNote) String() string {
-	return n.sharpString() + fmt.Sprintf("%d", n.Octave())
+	return fmt.Sprintf("%s%d", n.sharpString(), n.Octave())
 }
 
 //-----------------------------------------------------------------------------

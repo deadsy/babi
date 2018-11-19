@@ -25,8 +25,8 @@ func (m *panMix) Info() *core.ModuleInfo {
 		Name: "panMix",
 		In: []core.PortInfo{
 			{"in", "input", core.PortTypeAudioBuffer, nil},
-			{"volume", "volume (0..1)", core.PortTypeFloat, panPortVolume},
-			{"pan", "left/right pan (0..1)", core.PortTypeFloat, panPortPan},
+			{"volume", "volume (0..1)", core.PortTypeFloat, panMixVolume},
+			{"pan", "left/right pan (0..1)", core.PortTypeFloat, panMixPan},
 		},
 		Out: []core.PortInfo{
 			{"out_left", "left channel output", core.PortTypeAudioBuffer, nil},
@@ -71,7 +71,7 @@ func (m *panMix) set() {
 	m.volR = m.vol * core.Sin(m.pan)
 }
 
-func panPortVolume(cm core.Module, e *core.Event) {
+func panMixVolume(cm core.Module, e *core.Event) {
 	m := cm.(*panMix)
 	vol := core.Clamp(e.GetEventFloat().Val, 0, 1)
 	log.Info.Printf("set volume %f", vol)
@@ -80,7 +80,7 @@ func panPortVolume(cm core.Module, e *core.Event) {
 	m.set()
 }
 
-func panPortPan(cm core.Module, e *core.Event) {
+func panMixPan(cm core.Module, e *core.Event) {
 	m := cm.(*panMix)
 	pan := core.Clamp(e.GetEventFloat().Val, 0, 1)
 	log.Info.Printf("set pan %f", pan)
