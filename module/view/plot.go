@@ -41,9 +41,10 @@ func (m *plotView) Info() *core.ModuleInfo {
 type plotView struct {
 	synth       *core.Synth   // top-level synth
 	cfg         *PlotConfig   // plot configuration
+	x           uint64        // current x-value
 	samples     int           // number of samples to plot per trigger
 	samplesLeft int           // samples left in this trigger
-	count       int           // how many times have we been triggered?
+	idx         int           // file index number
 	triggered   bool          // are we currently triggered?
 	file        *os.File      // output file
 	buf         *bufio.Writer // buffered io to output file
@@ -66,13 +67,13 @@ func NewPlot(s *core.Synth, cfg *PlotConfig) core.Module {
 		cfg.Name = "plot"
 	}
 	if cfg.Title == "" {
-		cfg.Name = "Plot"
+		cfg.Title = "Plot"
 	}
 	if cfg.X == "" {
-		cfg.Name = "X0"
+		cfg.X = "time"
 	}
 	if cfg.Y0 == "" {
-		cfg.Name = "Y0"
+		cfg.Y0 = "Y0"
 	}
 	// set the sampling duration
 	var samples int
@@ -125,34 +126,47 @@ func plotViewTrigger(cm core.Module, e *core.Event) {
 	m.newVariable(m.cfg.Y0)
 	m.triggered = true
 	m.samplesLeft = m.samples
-	m.count += 1
 }
 
 //-----------------------------------------------------------------------------
 
 // Process runs the module DSP.
 func (m *plotView) Process(buf ...*core.Buf) {
-	if !m.triggered {
-		return
+
+	if m.triggered {
+		x := buf[0]
+		y0 := buf[1]
+		// how many samples should we plot?
+		n := core.Min(m.samplesLeft, core.AudioBufferSize)
+		// plot x
+		if x != nil {
+			m.appendData(m.cfg.X, x[:n])
+		} else {
+			// no x data - use the internal timebase
+			time := make([]float32, n)
+			base := float32(m.x) * core.AudioSamplePeriod
+			for i := range time {
+				time[i] = base
+				base += core.AudioSamplePeriod
+			}
+			m.appendData(m.cfg.X, time)
+		}
+
+		// plot y
+		if y0 != nil {
+			m.appendData(m.cfg.Y0, y0[:n])
+		}
+		m.samplesLeft -= n
+		// are we done?
+		if m.samplesLeft == 0 {
+			m.closePlot()
+			m.triggered = false
+		}
 	}
-	x := buf[0]
-	y0 := buf[1]
-	// how many samples should we plot?
-	n := core.Min(m.samplesLeft, core.AudioBufferSize)
-	// plot x
-	if x != nil {
-		m.appendData(m.cfg.X, x[:n])
-	}
-	// plot y
-	if y0 != nil {
-		m.appendData(m.cfg.Y0, y0[:n])
-	}
-	m.samplesLeft -= n
-	// are we done?
-	if m.samplesLeft == 0 {
-		m.triggered = false
-		m.closePlot()
-	}
+
+	// increment the internal time base
+	m.x += core.AudioBufferSize
+
 }
 
 // Active returns true if the module has non-zero output.
@@ -164,11 +178,12 @@ func (m *plotView) Active() bool {
 
 // plotName returns the name of the current plot file.
 func (m *plotView) plotName() string {
-	return fmt.Sprintf("%s%d", m.cfg.Name, m.count)
+	return fmt.Sprintf("%s%d", m.cfg.Name, m.idx)
 }
 
 // open a plot file.
 func (m *plotView) openPlot() error {
+	log.Info.Printf("open %s.py", m.plotName())
 	file, err := os.Create(m.plotName() + ".py")
 	if err != nil {
 		return err
@@ -182,10 +197,12 @@ func (m *plotView) openPlot() error {
 
 // close the plot file.
 func (m *plotView) closePlot() {
+	log.Info.Printf("close %s.py", m.plotName())
 	// add footer
 	m.buf.WriteString(m.footer() + "\n")
 	m.buf.Flush()
 	m.file.Close()
+	m.idx++
 }
 
 // newVariable adds a new variable to the plot file.
@@ -228,10 +245,10 @@ func (m *plotView) footer() string {
 	s = append(s, "layout = plotly.graph_objs.Layout(")
 	s = append(s, fmt.Sprintf("\ttitle='%s',", m.cfg.Title))
 	s = append(s, "\txaxis=dict(")
-	s = append(s, "\t\ttitle='time',")
+	s = append(s, fmt.Sprintf("\t\ttitle='%s',", m.cfg.X))
 	s = append(s, "\t),")
 	s = append(s, "\tyaxis=dict(")
-	s = append(s, "\t\ttitle='amplitude',")
+	s = append(s, fmt.Sprintf("\t\ttitle='%s',", m.cfg.Y0))
 	s = append(s, "\t\trangemode='tozero',")
 	s = append(s, "\t),")
 	s = append(s, ")")
