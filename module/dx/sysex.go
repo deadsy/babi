@@ -37,17 +37,8 @@ const (
 )
 
 func (t curveType) String() string {
-	switch t {
-	case curveNegLin:
-		return "-lin"
-	case curveNegExp:
-		return "-exp"
-	case curvePosExp:
-		return "+exp"
-	case curvePosLin:
-		return "+lin"
-	}
-	return "?"
+	names := []string{"-lin", "-exp", "+exp", "+lin"}
+	return names[t]
 }
 
 type oscModeType int
@@ -58,10 +49,8 @@ const (
 )
 
 func (t oscModeType) String() string {
-	if t == oscModeRatio {
-		return "ratio"
-	}
-	return "fixed"
+	names := []string{"ratio", "fixed"}
+	return names[t]
 }
 
 //-----------------------------------------------------------------------------
@@ -72,7 +61,8 @@ type opConfig struct {
 	velocitySensitivity int
 	lfoSensitivity      int
 	oscMode             oscModeType
-	frequency           float32
+	freqCoarse          int // 0..31
+	freqFine            int // 0..99
 	detune              int
 	rate                [4]int // 0..99
 	level               [4]int // 0..99
@@ -84,28 +74,32 @@ type opConfig struct {
 	rightDepth          int
 }
 
-func (o *opConfig) String() string {
-	var s []string
-	s = append(s, fmt.Sprintf("op%d:", o.idx+1))
-	s = append(s, fmt.Sprintf("oscMode %s", o.oscMode))
-	s = append(s, fmt.Sprintf("frequency %.2f", o.frequency))
-	s = append(s, fmt.Sprintf("detune %d", o.detune))
-	s = append(s, fmt.Sprintf("rate %d %d %d %d", o.rate[0], o.rate[1], o.rate[2], o.rate[3]))
-	s = append(s, fmt.Sprintf("level %d %d %d %d", o.level[0], o.level[1], o.level[2], o.level[3]))
-	if o.breakPoint == core.MidiNote(0) {
-		s = append(s, "breakPoint off")
-	} else {
-		s = append(s, fmt.Sprintf("breakPoint %s", o.breakPoint))
-	}
-	s = append(s, fmt.Sprintf("leftCurve %s leftDepth %d", o.leftCurve, o.leftDepth))
-	s = append(s, fmt.Sprintf("rightCurve %s rightDepth %d", o.rightCurve, o.rightDepth))
-	s = append(s, fmt.Sprintf("keyRateScale %d", o.keyRateScale))
-	s = append(s, fmt.Sprintf("outputLevel %d", o.outputLevel))
-	s = append(s, fmt.Sprintf("velocitySensitivity %d", o.velocitySensitivity))
-	// pm sensitivity
-	s = append(s, fmt.Sprintf("lfoSensitivity %d", o.lfoSensitivity))
+func (o *opConfig) Row() []string {
 
-	return strings.Join(s, " ")
+	row := make([]string, 0, 16)
+	row = append(row, fmt.Sprintf("op%d", o.idx+1))
+	row = append(row, fmt.Sprintf("%s", o.oscMode))
+	row = append(row, fmt.Sprintf("%d", o.freqCoarse))
+	row = append(row, fmt.Sprintf("%d", o.freqFine))
+	row = append(row, fmt.Sprintf("%d", o.detune))
+	row = append(row, fmt.Sprintf("[%d %d %d %d]", o.rate[0], o.rate[1], o.rate[2], o.rate[3]))
+	row = append(row, fmt.Sprintf("[%d %d %d %d]", o.level[0], o.level[1], o.level[2], o.level[3]))
+	if o.breakPoint == core.MidiNote(0) {
+		row = append(row, "off")
+	} else {
+		row = append(row, fmt.Sprintf("%s", o.breakPoint))
+	}
+	row = append(row, fmt.Sprintf("%s", o.leftCurve))
+	row = append(row, fmt.Sprintf("%d", o.leftDepth))
+	row = append(row, fmt.Sprintf("%s", o.rightCurve))
+	row = append(row, fmt.Sprintf("%d", o.rightDepth))
+	row = append(row, fmt.Sprintf("%d", o.keyRateScale))
+	row = append(row, fmt.Sprintf("%d", o.outputLevel))
+	row = append(row, fmt.Sprintf("%d", o.velocitySensitivity))
+	// pm sensitivity ?
+	row = append(row, fmt.Sprintf("%d", o.lfoSensitivity))
+
+	return row
 }
 
 //-----------------------------------------------------------------------------
@@ -120,9 +114,33 @@ func (v *voiceConfig) String() string {
 	var s []string
 	s = append(s, v.name)
 	s = append(s, fmt.Sprintf("algorithm %d", v.algorithm+1))
-	for i := range v.op {
-		s = append(s, v.op[i].String())
+
+	rows := make([][]string, len(v.op)+1)
+	hdr := []string{
+		"",
+		"oscMode",
+		"fCoarse",
+		"fFine",
+		"detune",
+		"rate",
+		"level",
+		"brkPoint",
+		"lCurve",
+		"lDepth",
+		"rCurve",
+		"rDepth",
+		"keyRate",
+		"outLevel",
+		"velSens",
+		"lfoSens",
 	}
+	rows[0] = hdr
+	for i := range v.op {
+		rows[i+1] = v.op[i].Row()
+	}
+
+	s = append(s, core.TableString(rows, nil, 1))
+
 	return strings.Join(s, "\n")
 }
 
@@ -134,10 +152,10 @@ type opData struct {
 	breakPoint  byte    // 8: C3 = $27
 	leftDepth   byte    // 9: 0..99
 	rightDepth  byte    // 10: 0..99
-	x0          byte    // 11:     0   0   0 |  RC   |   LC  | SCL LEFT CURVE 0-3   SCL RGHT CURVE 0-3
+	x0          byte    // 11: 0000 rr ll, right curve 0..3, left curve 0..3
 	x1          byte    // 12: 0 dddd sss, detune 0..14, rate scale 0..7
 	x2          byte    // 13: .. kkk aaa, key velocity sensitivity 0-7, lfo sensitivity -3..3
-	outputLevel byte    // 14: 00..99
+	outputLevel byte    // 14: 0..99
 	x3          byte    // 15: 00 fffff m, frequency coarse 0-31, osc mode 0..1
 	freqFine    byte    // 16: 0..99
 }
@@ -156,6 +174,9 @@ func (o *opData) convert(idx int) (*opConfig, error) {
 	// velocity sensitivity
 	cfg.velocitySensitivity = int((o.x2 >> 3) & 7)
 
+	// lfo sensitivity (format?)
+	cfg.lfoSensitivity = int(o.x2 & 7)
+
 	// break point
 	if o.breakPoint < 3 {
 		cfg.breakPoint = core.MidiNote(0)
@@ -163,30 +184,17 @@ func (o *opData) convert(idx int) (*opConfig, error) {
 		cfg.breakPoint = core.MidiNote(o.breakPoint - 3)
 	}
 
-	// lfo sensitivity (bit format?)
-	sign := int((o.x2 >> 2) & 1)
-	val := int(o.x2 & 3)
-	if sign != 0 {
-		val *= -1
-	}
-	cfg.lfoSensitivity = val
-
 	// oscillator mode
 	cfg.oscMode = oscModeType(o.x3 & 1)
 
 	// frequency coarse
-	freqCoarse := int((o.x3 >> 1) & 31)
-	if freqCoarse == 0 {
-		cfg.frequency = 0.5
-	} else {
-		cfg.frequency = float32(freqCoarse)
-	}
+	cfg.freqCoarse = int((o.x3 >> 1) & 31)
+
 	// frequency fine
-	freqFine := int(o.freqFine)
 	if o.freqFine > 99 {
 		return nil, fmt.Errorf("frequency fine is out of range: %d > 99", o.freqFine)
 	}
-	cfg.frequency += float32(freqFine) * 0.01
+	cfg.freqFine = int(o.freqFine)
 
 	// key rate scale
 	cfg.keyRateScale = int(o.x1 & 7)
@@ -220,6 +228,10 @@ func (o *opData) convert(idx int) (*opConfig, error) {
 		return nil, fmt.Errorf("right depth is out of range: %d > 99", o.rightDepth)
 	}
 	cfg.rightDepth = int(o.rightDepth)
+
+	// left/right curve
+	cfg.leftCurve = curveType(o.x0 & 3)
+	cfg.rightCurve = curveType((o.x0 >> 2) & 3)
 
 	return cfg, nil
 }

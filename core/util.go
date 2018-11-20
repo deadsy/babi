@@ -8,6 +8,11 @@ Common Utility Functions
 
 package core
 
+import (
+	"fmt"
+	"strings"
+)
+
 //-----------------------------------------------------------------------------
 
 // Min returns the minimum of two integers.
@@ -106,6 +111,65 @@ func SignExtend(x int, n uint) int {
 	y := uint(x) & ((1 << n) - 1)
 	mask := uint(1 << (n - 1))
 	return int((y ^ mask) - mask)
+}
+
+//-----------------------------------------------------------------------------
+
+// Return a string for a table of row by column strings
+// Each column string will be left justified and aligned.
+func TableString(
+	rows [][]string, // table rows [[col0, col1, col2...,colN]...]
+	csize []int, // minimum column widths
+	cmargin int, // column to column margin
+) string {
+	// how many rows?
+	nrows := len(rows)
+	if nrows == 0 {
+		return ""
+	}
+	// how many columns?
+	ncols := len(rows[0])
+	// make sure we have a well formed csize
+	if csize == nil {
+		csize = make([]int, ncols)
+	} else {
+		if len(csize) != ncols {
+			panic("len(csize) != ncols")
+		}
+	}
+	// check that the number of columns for each row is consistent
+	for i := range rows {
+		if len(rows[i]) != ncols {
+			panic(fmt.Sprintf("ncols row%d != ncols row0", i))
+		}
+	}
+	// go through the strings and bump up csize widths if required
+	for i := 0; i < nrows; i++ {
+		for j := 0; j < ncols; j++ {
+			width := len(rows[i][j])
+			if (width + cmargin) >= csize[j] {
+				csize[j] = width + cmargin
+			}
+		}
+	}
+	// build the row format string
+	fmt_col := make([]string, ncols)
+	for i, n := range csize {
+		fmt_col[i] = fmt.Sprintf("%%-%ds", n)
+	}
+	fmt_row := strings.Join(fmt_col, "")
+	// generate the row strings
+	row := make([]string, nrows)
+	for i, l := range rows {
+		// convert []string to []interface{}
+		x := make([]interface{}, len(l))
+		for j, v := range l {
+			x[j] = v
+		}
+		row[i] = fmt.Sprintf(fmt_row, x...)
+	}
+	// return rows and columns
+	return strings.Join(row, "\n")
 }
 
 //-----------------------------------------------------------------------------
