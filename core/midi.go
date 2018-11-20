@@ -145,7 +145,7 @@ func MIDIMap(val uint8, a, b float32) float32 {
 // MIDIPitchBend maps a pitch bend value onto a MIDI note offset.
 func MIDIPitchBend(val uint16) float32 {
 	// 0..8192..16383 maps to -/+ 2 semitones
-	return float32(val-8192) * (2.0 / 8192.0)
+	return (float32(val) - 8192.0) * (2.0 / 8192.0)
 }
 
 // MIDIToFrequency converts a MIDI note to a frequency value (Hz).
