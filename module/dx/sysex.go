@@ -57,30 +57,51 @@ func (t oscModeType) String() string {
 
 type opConfig struct {
 	idx                 int // operator index 0..5
-	outputLevel         int
-	velocitySensitivity int
-	lfoSensitivity      int
+	outputLevel         int // 0..99
+	velocitySensitivity int // 0..7
+	amSensitivity       int // 0..3
 	oscMode             oscModeType
-	freqCoarse          int // 0..31
-	freqFine            int // 0..99
-	detune              int
+	freqCoarse          int    // 0..31
+	freqFine            int    // 0..99
+	detune              int    // -7..7
 	rate                [4]int // 0..99
 	level               [4]int // 0..99
 	breakPoint          core.MidiNote
-	keyRateScale        int
+	keyRateScale        int // 0..7
 	leftCurve           curveType
-	leftDepth           int
+	leftDepth           int // 0..99
 	rightCurve          curveType
-	rightDepth          int
+	rightDepth          int // 0..99
 }
 
-func (o *opConfig) Row() []string {
+// freq returns the fixed/ratio frequency for the operator.
+func (o *opConfig) freq() float32 {
+	var f float32
+	switch o.oscMode {
+	case oscModeRatio:
+		f = float32(o.freqCoarse)
+		if f == 0 {
+			f = 0.5
+		}
+		f *= (1.0 + (float32(o.freqFine) * 0.01))
+	case oscModeFixed:
+		logfreq := (4458616 * ((o.freqCoarse&3)*100 + o.freqFine)) >> 3
+		lf := float32(logfreq) * (1.0 / float32(1<<24))
+		f = core.Pow2(lf)
+	}
+	return f
+}
+
+// row returns a set of row values for this operator.
+// needs to match the column order in (v *voiceConfig) String().
+func (o *opConfig) row() []string {
 
 	row := make([]string, 0, 16)
 	row = append(row, fmt.Sprintf("op%d", o.idx+1))
 	row = append(row, fmt.Sprintf("%s", o.oscMode))
-	row = append(row, fmt.Sprintf("%d", o.freqCoarse))
-	row = append(row, fmt.Sprintf("%d", o.freqFine))
+	row = append(row, fmt.Sprintf("%.3f", o.freq()))
+	//row = append(row, fmt.Sprintf("%d", o.freqCoarse))
+	//row = append(row, fmt.Sprintf("%d", o.freqFine))
 	row = append(row, fmt.Sprintf("%d", o.detune))
 	row = append(row, fmt.Sprintf("[%d %d %d %d]", o.rate[0], o.rate[1], o.rate[2], o.rate[3]))
 	row = append(row, fmt.Sprintf("[%d %d %d %d]", o.level[0], o.level[1], o.level[2], o.level[3]))
@@ -97,7 +118,7 @@ func (o *opConfig) Row() []string {
 	row = append(row, fmt.Sprintf("%d", o.outputLevel))
 	row = append(row, fmt.Sprintf("%d", o.velocitySensitivity))
 	// pm sensitivity ?
-	row = append(row, fmt.Sprintf("%d", o.lfoSensitivity))
+	row = append(row, fmt.Sprintf("%d", o.amSensitivity))
 
 	return row
 }
@@ -119,8 +140,9 @@ func (v *voiceConfig) String() string {
 	hdr := []string{
 		"",
 		"oscMode",
-		"fCoarse",
-		"fFine",
+		"freq",
+		//"fCoarse",
+		//"fFine",
 		"detune",
 		"rate",
 		"level",
@@ -132,11 +154,11 @@ func (v *voiceConfig) String() string {
 		"keyRate",
 		"outLevel",
 		"velSens",
-		"lfoSens",
+		"amSens",
 	}
 	rows[0] = hdr
 	for i := range v.op {
-		rows[i+1] = v.op[i].Row()
+		rows[i+1] = v.op[i].row()
 	}
 
 	s = append(s, core.TableString(rows, nil, 1))
@@ -154,9 +176,9 @@ type opData struct {
 	rightDepth  byte    // 10: 0..99
 	x0          byte    // 11: 0000 rr ll, right curve 0..3, left curve 0..3
 	x1          byte    // 12: 0 dddd sss, detune 0..14, rate scale 0..7
-	x2          byte    // 13: .. kkk aaa, key velocity sensitivity 0-7, lfo sensitivity -3..3
+	x2          byte    // 13: ... kkk aa, key velocity sensitivity 0..7, amp mod sensitivity 0..3
 	outputLevel byte    // 14: 0..99
-	x3          byte    // 15: 00 fffff m, frequency coarse 0-31, osc mode 0..1
+	x3          byte    // 15: 00 fffff m, frequency coarse 0..31, osc mode 0..1
 	freqFine    byte    // 16: 0..99
 }
 
@@ -172,10 +194,10 @@ func (o *opData) convert(idx int) (*opConfig, error) {
 	cfg.outputLevel = int(o.outputLevel)
 
 	// velocity sensitivity
-	cfg.velocitySensitivity = int((o.x2 >> 3) & 7)
+	cfg.velocitySensitivity = int((o.x2 >> 2) & 7)
 
 	// lfo sensitivity (format?)
-	cfg.lfoSensitivity = int(o.x2 & 7)
+	cfg.amSensitivity = int(o.x2 & 3)
 
 	// break point
 	if o.breakPoint < 3 {
