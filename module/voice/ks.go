@@ -27,7 +27,7 @@ func (m *ksVoice) Info() *core.ModuleInfo {
 			{"frequency", "frequency (Hz)", core.PortTypeFloat, ksVoiceFrequency},
 		},
 		Out: []core.PortInfo{
-			{"out", "output", core.PortTypeAudioBuffer, nil},
+			{"out", "output", core.PortTypeAudio, nil},
 		},
 	}
 }

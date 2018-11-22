@@ -24,13 +24,13 @@ func (m *panMix) Info() *core.ModuleInfo {
 	return &core.ModuleInfo{
 		Name: "panMix",
 		In: []core.PortInfo{
-			{"in", "input", core.PortTypeAudioBuffer, nil},
+			{"in", "input", core.PortTypeAudio, nil},
 			{"volume", "volume (0..1)", core.PortTypeFloat, panMixVolume},
 			{"pan", "left/right pan (0..1)", core.PortTypeFloat, panMixPan},
 		},
 		Out: []core.PortInfo{
-			{"out_left", "left channel output", core.PortTypeAudioBuffer, nil},
-			{"out_right", "right channel output", core.PortTypeAudioBuffer, nil},
+			{"out_left", "left channel output", core.PortTypeAudio, nil},
+			{"out_right", "right channel output", core.PortTypeAudio, nil},
 		},
 	}
 }

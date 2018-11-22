@@ -25,8 +25,8 @@ func (m *polyPatch) Info() *core.ModuleInfo {
 			{"midi_in", "midi input", core.PortTypeMIDI, polyPatchMidiIn},
 		},
 		Out: []core.PortInfo{
-			{"out_left", "left channel output", core.PortTypeAudioBuffer, nil},
-			{"out_right", "right channel output", core.PortTypeAudioBuffer, nil},
+			{"out_left", "left channel output", core.PortTypeAudio, nil},
+			{"out_right", "right channel output", core.PortTypeAudio, nil},
 		},
 	}
 }

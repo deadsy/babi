@@ -34,7 +34,7 @@ func (m *ksOsc) Info() *core.ModuleInfo {
 			{"attenuation", "attenuation (0..1)", core.PortTypeFloat, ksPortAttenuation},
 		},
 		Out: []core.PortInfo{
-			{"out", "output", core.PortTypeAudioBuffer, nil},
+			{"out", "output", core.PortTypeAudio, nil},
 		},
 	}
 }

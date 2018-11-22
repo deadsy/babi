@@ -27,7 +27,7 @@ func (m *polyMidi) Info() *core.ModuleInfo {
 			{"midi_in", "midi input", core.PortTypeMIDI, polyMidiIn},
 		},
 		Out: []core.PortInfo{
-			{"out", "output", core.PortTypeAudioBuffer, nil},
+			{"out", "output", core.PortTypeAudio, nil},
 		},
 	}
 }

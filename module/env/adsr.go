@@ -30,7 +30,7 @@ func (m *adsrModule) Info() *core.ModuleInfo {
 			{"release", "release time (secs)", core.PortTypeFloat, adsrPortRelease},
 		},
 		Out: []core.PortInfo{
-			{"out", "output", core.PortTypeAudioBuffer, nil},
+			{"out", "output", core.PortTypeAudio, nil},
 		},
 	}
 }

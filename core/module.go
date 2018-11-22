@@ -24,11 +24,12 @@ type PortType int
 
 // PortType enumeration.
 const (
-	PortTypeNull        PortType = iota
-	PortTypeAudioBuffer          // audio buffers
-	PortTypeFloat                // event with float32 values
-	PortTypeInt                  // event with integer values
-	PortTypeMIDI                 // event with MIDI data
+	PortTypeNull  PortType = iota
+	PortTypeAudio          // audio buffers
+	PortTypeFloat          // event with float32 values
+	PortTypeInt            // event with integer values
+	PortTypeBool           // event with boolean values
+	PortTypeMIDI           // event with MIDI data
 )
 
 // PortInfo contains the information describing a port.

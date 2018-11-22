@@ -58,7 +58,7 @@ func (m *goomVoice) Info() *core.ModuleInfo {
 			{"flt_resonance", "low pass filter resonance (0..1)", core.PortTypeFloat, goomPortFilterResonance},
 		},
 		Out: []core.PortInfo{
-			{"out", "output", core.PortTypeAudioBuffer, nil},
+			{"out", "output", core.PortTypeAudio, nil},
 		},
 	}
 }

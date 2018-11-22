@@ -173,3 +173,14 @@ func TableString(
 }
 
 //-----------------------------------------------------------------------------
+
+// BoolToString returns one of two strings based on the boolean.
+func BoolToString(val bool, str []string) string {
+	var x int
+	if val {
+		x = 1
+	}
+	return str[x]
+}
+
+//-----------------------------------------------------------------------------

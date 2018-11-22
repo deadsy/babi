@@ -39,6 +39,10 @@ func (e *Event) String() string {
 	if ie != nil {
 		return ie.String()
 	}
+	be := e.GetEventBool()
+	if be != nil {
+		return be.String()
+	}
 	return "unknown event"
 }
 
@@ -240,6 +244,40 @@ func SendEventInt(m Module, name string, val int) {
 	portFunc := m.Info().GetPortFunc(name)
 	if portFunc != nil {
 		portFunc(m, NewEventInt(val))
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Boolean Events
+
+// EventBool is an event with a boolean value.
+type EventBool struct {
+	Val bool
+}
+
+// NewEventBool returns a new boolean event.
+func NewEventBool(val bool) *Event {
+	return NewEvent(&EventBool{val})
+}
+
+// String returns a descriptive string for the boolean event.
+func (e *EventBool) String() string {
+	return fmt.Sprintf("val %s", e.Val)
+}
+
+// GetEventBool returns the boolean event.
+func (e *Event) GetEventBool() *EventBool {
+	if be, ok := e.info.(*EventBool); ok {
+		return be
+	}
+	return nil
+}
+
+// SendEventBool sends a boolean event to a named port on a module.
+func SendEventBool(m Module, name string, val bool) {
+	portFunc := m.Info().GetPortFunc(name)
+	if portFunc != nil {
+		portFunc(m, NewEventBool(val))
 	}
 }
 

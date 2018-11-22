@@ -38,7 +38,7 @@ func (m *goomOsc) Info() *core.ModuleInfo {
 			{"slope", "slope (0..1)", core.PortTypeFloat, goomPortSlope},
 		},
 		Out: []core.PortInfo{
-			{"out", "output", core.PortTypeAudioBuffer, nil},
+			{"out", "output", core.PortTypeAudio, nil},
 		},
 	}
 }

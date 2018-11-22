@@ -27,7 +27,7 @@ func (m *oscVoice) Info() *core.ModuleInfo {
 			{"frequency", "frequency (Hz)", core.PortTypeFloat, oscVoiceFrequency},
 		},
 		Out: []core.PortInfo{
-			{"out", "output", core.PortTypeAudioBuffer, nil},
+			{"out", "output", core.PortTypeAudio, nil},
 		},
 	}
 }

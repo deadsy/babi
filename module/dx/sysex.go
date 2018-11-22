@@ -13,7 +13,6 @@ package dx
 import (
 	"errors"
 	"fmt"
-	"strings"
 	"unsafe"
 
 	"github.com/deadsy/babi/core"
@@ -24,147 +23,6 @@ import (
 const midiStatusSysexStart = 0xf0
 const midiStatusSysexEnd = 0xf7
 const midiIDYamaha = 0x43
-
-//-----------------------------------------------------------------------------
-
-type curveType int
-
-const (
-	curveNegLin curveType = 0
-	curveNegExp           = 1
-	curvePosExp           = 2
-	curvePosLin           = 3
-)
-
-func (t curveType) String() string {
-	names := []string{"-lin", "-exp", "+exp", "+lin"}
-	return names[t]
-}
-
-type oscModeType int
-
-const (
-	oscModeRatio oscModeType = 0
-	oscModeFixed             = 1
-)
-
-func (t oscModeType) String() string {
-	names := []string{"ratio", "fixed"}
-	return names[t]
-}
-
-//-----------------------------------------------------------------------------
-
-type opConfig struct {
-	idx                 int // operator index 0..5
-	outputLevel         int // 0..99
-	velocitySensitivity int // 0..7
-	amSensitivity       int // 0..3
-	oscMode             oscModeType
-	freqCoarse          int    // 0..31
-	freqFine            int    // 0..99
-	detune              int    // -7..7
-	rate                [4]int // 0..99
-	level               [4]int // 0..99
-	breakPoint          core.MidiNote
-	keyRateScale        int // 0..7
-	leftCurve           curveType
-	leftDepth           int // 0..99
-	rightCurve          curveType
-	rightDepth          int // 0..99
-}
-
-// freq returns the fixed/ratio frequency for the operator.
-func (o *opConfig) freq() float32 {
-	var f float32
-	switch o.oscMode {
-	case oscModeRatio:
-		f = float32(o.freqCoarse)
-		if f == 0 {
-			f = 0.5
-		}
-		f *= (1.0 + (float32(o.freqFine) * 0.01))
-	case oscModeFixed:
-		logfreq := (4458616 * ((o.freqCoarse&3)*100 + o.freqFine)) >> 3
-		lf := float32(logfreq) * (1.0 / float32(1<<24))
-		f = core.Pow2(lf)
-	}
-	return f
-}
-
-// row returns a set of row values for this operator.
-// needs to match the column order in (v *voiceConfig) String().
-func (o *opConfig) row() []string {
-
-	row := make([]string, 0, 16)
-	row = append(row, fmt.Sprintf("op%d", o.idx+1))
-	row = append(row, fmt.Sprintf("%s", o.oscMode))
-	row = append(row, fmt.Sprintf("%.3f", o.freq()))
-	//row = append(row, fmt.Sprintf("%d", o.freqCoarse))
-	//row = append(row, fmt.Sprintf("%d", o.freqFine))
-	row = append(row, fmt.Sprintf("%d", o.detune))
-	row = append(row, fmt.Sprintf("[%d %d %d %d]", o.rate[0], o.rate[1], o.rate[2], o.rate[3]))
-	row = append(row, fmt.Sprintf("[%d %d %d %d]", o.level[0], o.level[1], o.level[2], o.level[3]))
-	if o.breakPoint == core.MidiNote(0) {
-		row = append(row, "off")
-	} else {
-		row = append(row, fmt.Sprintf("%s", o.breakPoint))
-	}
-	row = append(row, fmt.Sprintf("%s", o.leftCurve))
-	row = append(row, fmt.Sprintf("%d", o.leftDepth))
-	row = append(row, fmt.Sprintf("%s", o.rightCurve))
-	row = append(row, fmt.Sprintf("%d", o.rightDepth))
-	row = append(row, fmt.Sprintf("%d", o.keyRateScale))
-	row = append(row, fmt.Sprintf("%d", o.outputLevel))
-	row = append(row, fmt.Sprintf("%d", o.velocitySensitivity))
-	// pm sensitivity ?
-	row = append(row, fmt.Sprintf("%d", o.amSensitivity))
-
-	return row
-}
-
-//-----------------------------------------------------------------------------
-
-type voiceConfig struct {
-	name      string
-	algorithm int
-	op        [6]*opConfig
-}
-
-func (v *voiceConfig) String() string {
-	var s []string
-	s = append(s, v.name)
-	s = append(s, fmt.Sprintf("algorithm %d", v.algorithm+1))
-
-	rows := make([][]string, len(v.op)+1)
-	hdr := []string{
-		"",
-		"oscMode",
-		"freq",
-		//"fCoarse",
-		//"fFine",
-		"detune",
-		"rate",
-		"level",
-		"brkPoint",
-		"lCurve",
-		"lDepth",
-		"rCurve",
-		"rDepth",
-		"keyRate",
-		"outLevel",
-		"velSens",
-		"amSens",
-	}
-	rows[0] = hdr
-	for i := range v.op {
-		rows[i+1] = v.op[i].row()
-	}
-
-	s = append(s, core.TableString(rows, nil, 1))
-
-	return strings.Join(s, "\n")
-}
 
 //-----------------------------------------------------------------------------
 
@@ -182,122 +40,81 @@ type opData struct {
 	freqFine    byte    // 16: 0..99
 }
 
-func (o *opData) convert(idx int) (*opConfig, error) {
+func (o *opData) convert(idx int) *opConfig {
 	cfg := &opConfig{
 		idx: idx,
 	}
 
-	// output level
-	if o.outputLevel > 99 {
-		return nil, fmt.Errorf("output level is out of range: %d > 99", o.outputLevel)
-	}
-	cfg.outputLevel = int(o.outputLevel)
-
-	// velocity sensitivity
-	cfg.velocitySensitivity = int((o.x2 >> 2) & 7)
-
-	// lfo sensitivity (format?)
-	cfg.amSensitivity = int(o.x2 & 3)
-
-	// break point
 	if o.breakPoint < 3 {
 		cfg.breakPoint = core.MidiNote(0)
 	} else {
 		cfg.breakPoint = core.MidiNote(o.breakPoint - 3)
 	}
 
-	// oscillator mode
-	cfg.oscMode = oscModeType(o.x3 & 1)
-
-	// frequency coarse
-	cfg.freqCoarse = int((o.x3 >> 1) & 31)
-
-	// frequency fine
-	if o.freqFine > 99 {
-		return nil, fmt.Errorf("frequency fine is out of range: %d > 99", o.freqFine)
-	}
-	cfg.freqFine = int(o.freqFine)
-
-	// key rate scale
-	cfg.keyRateScale = int(o.x1 & 7)
-
-	// detune
-	detune := int((o.x1>>3)&15) - 7
-	if detune > 7 {
-		return nil, fmt.Errorf("detune is out of range: %d > 7", detune)
-	}
-	cfg.detune = detune
-
-	// envelope rates and levels
 	for i := 0; i < 4; i++ {
-		if o.rate[i] > 99 {
-			return nil, fmt.Errorf("rate is out of range: %d > 99", o.rate[i])
-		}
-		cfg.rate[i] = int(o.rate[i])
-		if o.level[i] > 99 {
-			return nil, fmt.Errorf("level is out of range: %d > 99", o.rate[i])
-		}
-		cfg.level[i] = int(o.level[i])
+		cfg.env.rate[i] = int(o.rate[i])
+		cfg.env.level[i] = int(o.level[i])
 	}
 
-	// left/right depth
-	if o.leftDepth > 99 {
-		return nil, fmt.Errorf("left depth is out of range: %d > 99", o.leftDepth)
-	}
+	cfg.oscMode = oscModeType(o.x3 & 1)
+	cfg.freqCoarse = int((o.x3 >> 1) & 31)
+	cfg.freqFine = int(o.freqFine)
+	cfg.keyRateScale = int(o.x1 & 7)
+	cfg.detune = int((o.x1>>3)&15) - 7
+	cfg.outputLevel = int(o.outputLevel)
+	cfg.velocitySensitivity = int((o.x2 >> 2) & 7)
+	cfg.amSensitivity = int(o.x2 & 3)
 	cfg.leftDepth = int(o.leftDepth)
-
-	if o.rightDepth > 99 {
-		return nil, fmt.Errorf("right depth is out of range: %d > 99", o.rightDepth)
-	}
 	cfg.rightDepth = int(o.rightDepth)
-
-	// left/right curve
 	cfg.leftCurve = curveType(o.x0 & 3)
 	cfg.rightCurve = curveType((o.x0 >> 2) & 3)
 
-	return cfg, nil
+	return cfg
 }
 
 //-----------------------------------------------------------------------------
 
 type voice128Data struct {
-	op              [6]opData // 0: 6..1
-	pRate           [4]byte   // 102:
-	pLevel          [4]byte   // 106:
-	algorithm       byte      // 110: 0..31
-	keySyncFeedback byte      // 111:
-	lfoSpeed        byte      // 112:
-	lfoDelay        byte      // 113:
-	x0              byte      // 114: LPMD             LF PT MOD DEP 0-99
-	x1              byte      // 115: LAMD             LF AM MOD DEP 0-99
-	x2              byte      // 116: |  LPMS |      LFW      |LKS| LF PT MOD SNS 0-7   WAVE 0-5,  SYNC 0-1
-	transpose       byte      // 117:
-	name            [10]byte  // 118:
+	op               [6]opData // 0: 6..1
+	pRate            [4]byte   // 102:
+	pLevel           [4]byte   // 106:
+	algorithm        byte      // 110: 0..31
+	keySyncFeedback  byte      // 111: 0..7
+	lfoSpeed         byte      // 112:
+	lfoDelay         byte      // 113:
+	lfoPhaseModDepth byte      // 114: 0..99
+	lfoAmpModDepth   byte      // 115: 0..99
+	x2               byte      // 116: 0 ppp www s, pms 0..7, wave 0..7, sync 0..1
+	transpose        byte      // 117:
+	name             [10]byte  // 118:
 }
 
-func (v *voice128Data) convert() (*voiceConfig, error) {
+func (v *voice128Data) convert() *voiceConfig {
 	cfg := &voiceConfig{}
 
-	// name
-	cfg.name = string(v.name[:])
-
-	// algorithm
-	if v.algorithm > 31 {
-		return nil, fmt.Errorf("algorithm is out of range: %d > 31", v.algorithm)
-	}
-	cfg.algorithm = int(v.algorithm)
-
-	// operators
 	for i := range v.op {
 		idx := 5 - i
-		x, err := v.op[i].convert(idx)
-		if err != nil {
-			return nil, err
-		}
-		cfg.op[idx] = x
+		cfg.op[idx] = v.op[i].convert(idx)
 	}
 
-	return cfg, nil
+	for i := 0; i < 4; i++ {
+		cfg.env.rate[i] = int(v.pRate[i])
+		cfg.env.level[i] = int(v.pLevel[i])
+	}
+
+	cfg.algorithm = int(v.algorithm)
+	cfg.feedback = int(v.keySyncFeedback & 7)
+	cfg.lfo.wave = lfoWaveType((v.x2 >> 1) & 7)
+	cfg.lfo.speed = int(v.lfoSpeed)
+	cfg.lfo.delay = int(v.lfoDelay)
+	cfg.lfo.pmDepth = int(v.lfoPhaseModDepth)
+	cfg.lfo.amDepth = int(v.lfoAmpModDepth)
+	cfg.lfo.pms = int((v.x2 >> 4) & 7)
+	cfg.lfo.sync = v.x2&1 != 0
+	cfg.transpose = core.MidiNote(v.transpose + 12)
+	cfg.name = string(v.name[:])
+
+	return cfg
 }
 
 //-----------------------------------------------------------------------------
@@ -341,16 +158,13 @@ func decode32Voice(buf []byte) (int, error) {
 	// checksum
 	csum := checksum(buf[:n-1])
 	if csum != buf[n-1] {
-		return 0, fmt.Errorf("bad checksum: is 0x%02x, ahould be 0x%02x", csum, buf[n-1])
+		return 0, fmt.Errorf("bad checksum: is 0x%02x, should be 0x%02x", csum, buf[n-1])
 	}
 
 	voices := (*voices32)(unsafe.Pointer(&buf[0]))
 
 	for i := range voices {
-		cfg, err := voices[i].convert()
-		if err != nil {
-			return 0, err
-		}
+		cfg := voices[i].convert()
 		fmt.Printf("%s\n", cfg.String())
 	}
 

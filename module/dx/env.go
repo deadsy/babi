@@ -57,7 +57,7 @@ func (m *envDx) Info() *core.ModuleInfo {
 			{"gate", "envelope gate, attack(>0) or release(=0)", core.PortTypeFloat, envDxGate},
 		},
 		Out: []core.PortInfo{
-			{"out", "output", core.PortTypeAudioBuffer, nil},
+			{"out", "output", core.PortTypeAudio, nil},
 		},
 	}
 }
@@ -79,7 +79,7 @@ type envDx struct {
 	decayIncrement float32 // decay increment
 }
 
-// NewEnv returns an DX envelope module.
+// NewEnv returns an DX7 envelope module.
 func NewEnv(s *core.Synth, levels, rates *[4]int) core.Module {
 	log.Info.Printf("")
 	return &envDx{

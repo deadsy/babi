@@ -37,7 +37,7 @@ func envDx() {
 	core.SendEventFloat(s, "gate", 1.0)
 
 	p := view.NewPlot(nil, cfg)
-	core.SendEventInt(p, "trigger", 1)
+	core.SendEventBool(p, "trigger", true)
 
 	for i := 0; i < 12; i++ {
 		var y core.Buf
@@ -74,7 +74,7 @@ func goom() {
 	core.SendEventFloat(s, "slope", 1.0)
 
 	p := view.NewPlot(nil, cfg)
-	core.SendEventInt(p, "trigger", 1)
+	core.SendEventBool(p, "trigger", true)
 
 	for i := 0; i < 10; i++ {
 		var y core.Buf

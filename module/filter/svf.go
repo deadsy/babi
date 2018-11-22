@@ -22,12 +22,12 @@ func (m *svfModule) Info() *core.ModuleInfo {
 	return &core.ModuleInfo{
 		Name: "svf",
 		In: []core.PortInfo{
-			{"in", "input", core.PortTypeAudioBuffer, nil},
+			{"in", "input", core.PortTypeAudio, nil},
 			{"cutoff", "cutoff frequency (Hz)", core.PortTypeFloat, svfPortCutoff},
 			{"resonance", "resonance (0..1)", core.PortTypeFloat, svfPortResonance},
 		},
 		Out: []core.PortInfo{
-			{"out", "output", core.PortTypeAudioBuffer, nil},
+			{"out", "output", core.PortTypeAudio, nil},
 		},
 	}
 }

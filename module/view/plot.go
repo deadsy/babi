@@ -28,9 +28,9 @@ func (m *plotView) Info() *core.ModuleInfo {
 	return &core.ModuleInfo{
 		Name: "plotView",
 		In: []core.PortInfo{
-			{"x", "x-input", core.PortTypeAudioBuffer, nil},
-			{"y0", "y-input 0", core.PortTypeAudioBuffer, nil},
-			{"trigger", "trigger (!= 0)", core.PortTypeInt, plotViewTrigger},
+			{"x", "x-input", core.PortTypeAudio, nil},
+			{"y0", "y-input 0", core.PortTypeAudio, nil},
+			{"trigger", "trigger", core.PortTypeBool, plotViewTrigger},
 		},
 		Out: nil,
 	}
@@ -108,8 +108,8 @@ func (m *plotView) Stop() {
 
 func plotViewTrigger(cm core.Module, e *core.Event) {
 	m := cm.(*plotView)
-	trigger := e.GetEventInt().Val
-	if trigger == 0 {
+	trigger := e.GetEventBool().Val
+	if !trigger {
 		return
 	}
 	if m.triggered {
