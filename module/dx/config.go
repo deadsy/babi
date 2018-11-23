@@ -36,13 +36,14 @@ func (e *envConfig) levelString() string {
 
 type lfoWaveType int
 
+// LFO waveforms.
 const (
-	lfoTriangle      lfoWaveType = 0
-	lfoSawDown                   = 1
-	lfoSawUp                     = 2
-	lfoSquare                    = 3
-	lfoSine                      = 4
-	lfoSampleAndHold             = 5
+	LfoTriangle      lfoWaveType = 0
+	LfoSawDown                   = 1
+	LfoSawUp                     = 2
+	LfoSquare                    = 3
+	LfoSine                      = 4
+	LfoSampleAndHold             = 5
 )
 
 func (t lfoWaveType) String() string {

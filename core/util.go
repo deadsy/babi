@@ -46,7 +46,7 @@ func Abs(x float32) float32 {
 
 //-----------------------------------------------------------------------------
 
-// Clamp clamps x between a and b.
+// Clamp clamps x between a and b (float32).
 func Clamp(x, a, b float32) float32 {
 	if x < a {
 		return a
@@ -57,7 +57,7 @@ func Clamp(x, a, b float32) float32 {
 	return x
 }
 
-// ClampLo clamps x to >= a.
+// ClampLo clamps x to >= a (float32).
 func ClampLo(x, a float32) float32 {
 	if x < a {
 		return a
@@ -65,10 +65,13 @@ func ClampLo(x, a float32) float32 {
 	return x
 }
 
-// ClampHi clamps x to <= a.
-func ClampHi(x, a float32) float32 {
-	if x > a {
+// ClampInt clamps x between a and b (integer).
+func ClampInt(x, a, b int) int {
+	if x < a {
 		return a
+	}
+	if x > b {
+		return b
 	}
 	return x
 }

@@ -87,9 +87,37 @@ func goom() {
 
 //-----------------------------------------------------------------------------
 
+func lfoDx() {
+
+	cfg := &view.PlotConfig{
+		Name:     "lfo",
+		Title:    "DX7 LFO Wave",
+		Y0:       "amplitude",
+		Duration: 2.0,
+	}
+
+	s := dx.NewLFO(nil, nil)
+	core.SendEventInt(s, "rate", 10)
+	core.SendEventInt(s, "wave", int(dx.LfoTriangle))
+
+	p := view.NewPlot(nil, cfg)
+	core.SendEventBool(p, "trigger", true)
+
+	for i := 0; i < 50; i++ {
+		var y core.Buf
+		s.Process(&y)
+		p.Process(nil, &y)
+	}
+
+	p.Stop()
+}
+
+//-----------------------------------------------------------------------------
+
 func main() {
-	goom()
-	envDx()
+	//goom()
+	//envDx()
+	lfoDx()
 	os.Exit(0)
 }
 
