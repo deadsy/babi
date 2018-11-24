@@ -97,7 +97,7 @@ func lfoDx() {
 	}
 
 	s := dx.NewLFO(nil, nil)
-	core.SendEventInt(s, "rate", 10)
+	core.SendEventInt(s, "rate", 70)
 	core.SendEventInt(s, "wave", int(dx.LfoTriangle))
 
 	p := view.NewPlot(nil, cfg)
