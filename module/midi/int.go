@@ -1,9 +1,9 @@
 //-----------------------------------------------------------------------------
 /*
 
-MIDI Note Trigger Module
+MIDI Note Counter Module
 
-Generate a gate event from the MIDI note on/off events of a designated note.
+Increment a modulo counter with every note on event.
 
 */
 //-----------------------------------------------------------------------------
@@ -18,79 +18,79 @@ import (
 //-----------------------------------------------------------------------------
 
 // Info returns the module information.
-func (m *noteMidi) Info() *core.ModuleInfo {
+func (m *intMidi) Info() *core.ModuleInfo {
 	return &core.ModuleInfo{
-		Name: "noteMidi",
+		Name: "intMidi",
 		In: []core.PortInfo{
-			{"midi_in", "midi input", core.PortTypeMIDI, noteMidiIn},
+			{"midi", "midi", core.PortTypeMIDI, intMidiIn},
 		},
-		Out: nil,
+		Out: []core.PortInfo{
+			{"n", "counter", core.PortTypeInt, nil},
+		},
 	}
 }
 
 //-----------------------------------------------------------------------------
 
-type noteMidi struct {
+type intMidi struct {
 	synth *core.Synth // top-level synth
 	ch    uint8       // MIDI channel
 	note  uint8       // MIDI note number
-	dst   core.Module // destination module
-	name  string      // gate port name
+	k     uint        // modulo number
+	count uint        // counter
 }
 
-// NewNote returns a MIDI note on/off gate control module.
-func NewNote(s *core.Synth, ch, note uint8, dst core.Module, name string) core.Module {
-	mi := dst.Info()
-	log.Info.Printf("midi ch %d note %d controlling %s.%s port", ch, note, mi.Name, name)
-	return &noteMidi{
+// NewIntMidi returns a MIDI counter module.
+func NewIntMidi(s *core.Synth, ch, note uint8, k uint) core.Module {
+	log.Info.Printf("")
+	return &intMidi{
 		synth: s,
 		ch:    ch,
 		note:  note,
-		dst:   dst,
-		name:  name,
+		k:     k,
 	}
 }
 
-// Return the child modules.
-func (m *noteMidi) Child() []core.Module {
+// Child returns the child modules of this module.
+func (m *intMidi) Child() []core.Module {
 	return nil
 }
 
-// Stop and cleanup the module.
-func (m *noteMidi) Stop() {
+// Stop performs any cleanup of a module.
+func (m *intMidi) Stop() {
 }
 
 //-----------------------------------------------------------------------------
 // Port Events
 
-func noteMidiIn(cm core.Module, e *core.Event) {
-	m := cm.(*noteMidi)
+func intMidiIn(cm core.Module, e *core.Event) {
+	m := cm.(*intMidi)
+
 	me := e.GetEventMIDIChannel(m.ch)
 	if me != nil {
 		switch me.GetType() {
 		case core.EventMIDINoteOn:
 			if me.GetNote() == m.note {
-				vel := core.MIDIMap(me.GetVelocity(), 0, 1)
-				core.SendEventFloat(m.dst, m.name, vel)
-			}
-		case core.EventMIDINoteOff:
-			if me.GetNote() == m.note {
-				core.SendEventFloat(m.dst, m.name, 0)
+
+				m.count = (m.count + 1) % m.k
+
+				// TODO send ....
+
 			}
 		default:
 		}
 	}
+
 }
 
 //-----------------------------------------------------------------------------
 
 // Process runs the module DSP.
-func (m *noteMidi) Process(buf ...*core.Buf) {
-	// do nothing
+func (m *intMidi) Process(buf ...*core.Buf) {
 }
 
 // Active returns true if the module has non-zero output.
-func (m *noteMidi) Active() bool {
+func (m *intMidi) Active() bool {
 	return false
 }
 

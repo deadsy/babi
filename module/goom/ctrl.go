@@ -1,12 +1,16 @@
 //-----------------------------------------------------------------------------
 /*
 
-Module Name and Description
+Goom Voice Control Module
+
+A goom voice has more controls than I have knobs on my MIDI controller.
+This module alows modal switching between the 8 knobs I do have.
+That is: Hit a drum pad, switch modes to a different control group.
 
 */
 //-----------------------------------------------------------------------------
 
-package module
+package goom
 
 import (
 	"github.com/deadsy/babi/core"
@@ -16,9 +20,9 @@ import (
 //-----------------------------------------------------------------------------
 
 // Info returns the module information.
-func (m *xModule) Info() *core.ModuleInfo {
+func (m *ctrlGoom) Info() *core.ModuleInfo {
 	return &core.ModuleInfo{
-		Name: "xModule",
+		Name: "ctrlGoom",
 		In:   nil,
 		Out:  nil,
 	}
@@ -26,25 +30,25 @@ func (m *xModule) Info() *core.ModuleInfo {
 
 //-----------------------------------------------------------------------------
 
-type xModule struct {
+type ctrlGoom struct {
 	synth *core.Synth // top-level synth
 }
 
 // NewX returns an X module.
 func NewX(s *core.Synth) core.Module {
 	log.Info.Printf("")
-	return &xModule{
+	return &ctrlGoom{
 		synth: s,
 	}
 }
 
 // Child returns the child modules of this module.
-func (m *xModule) Child() []core.Module {
+func (m *ctrlGoom) Child() []core.Module {
 	return nil
 }
 
 // Stop performs any cleanup of a module.
-func (m *xModule) Stop() {
+func (m *ctrlGoom) Stop() {
 }
 
 //-----------------------------------------------------------------------------
@@ -53,11 +57,11 @@ func (m *xModule) Stop() {
 //-----------------------------------------------------------------------------
 
 // Process runs the module DSP.
-func (m *xModule) Process(buf ...*core.Buf) {
+func (m *ctrlGoom) Process(buf ...*core.Buf) {
 }
 
 // Active returns true if the module has non-zero output.
-func (m *xModule) Active() bool {
+func (m *ctrlGoom) Active() bool {
 	return true
 }
 
