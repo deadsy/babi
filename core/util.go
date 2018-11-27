@@ -118,7 +118,7 @@ func SignExtend(x int, n uint) int {
 
 //-----------------------------------------------------------------------------
 
-// Return a string for a table of row by column strings
+// TableString return a string for a table of row by column strings.
 // Each column string will be left justified and aligned.
 func TableString(
 	rows [][]string, // table rows [[col0, col1, col2...,colN]...]
@@ -156,11 +156,11 @@ func TableString(
 		}
 	}
 	// build the row format string
-	fmt_col := make([]string, ncols)
+	fmtCol := make([]string, ncols)
 	for i, n := range csize {
-		fmt_col[i] = fmt.Sprintf("%%-%ds", n)
+		fmtCol[i] = fmt.Sprintf("%%-%ds", n)
 	}
-	fmt_row := strings.Join(fmt_col, "")
+	fmtRow := strings.Join(fmtCol, "")
 	// generate the row strings
 	row := make([]string, nrows)
 	for i, l := range rows {
@@ -169,7 +169,7 @@ func TableString(
 		for j, v := range l {
 			x[j] = v
 		}
-		row[i] = fmt.Sprintf(fmt_row, x...)
+		row[i] = fmt.Sprintf(fmtRow, x...)
 	}
 	// return rows and columns
 	return strings.Join(row, "\n")

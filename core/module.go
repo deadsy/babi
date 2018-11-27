@@ -101,21 +101,55 @@ func (ps PortSet) numPortsByName(name string) int {
 
 //-----------------------------------------------------------------------------
 
+type dstPort struct {
+	module   Module       // destination module
+	portFunc PortFuncType // destination port function
+}
+
+// dstPortMap maps a source port to a destination module/port.
+var dstPortMap = map[string][]dstPort{}
+
+// portKey is a globally unique key for a port on a module.
+func portKey(m Module, name string) string {
+	//return m.Id() + ":" + name
+	return "foo" + ":" + name
+}
+
 // Connect source/destination module event ports.
 func Connect(s Module, sname string, d Module, dname string) {
-
 	// check output on source module
 	n := s.Info().Out.numPortsByName(sname)
 	if n != 1 {
 		panic(fmt.Sprintf("module \"%s\" must have one output port with name \"%s\"", s.Info().Name, sname))
 	}
-
 	// check input on destination module
 	n = d.Info().In.numPortsByName(dname)
 	if n != 1 {
 		panic(fmt.Sprintf("module \"%s\" must have one input port with name \"%s\"", d.Info().Name, dname))
 	}
+	// destination port function
+	portFunc := d.Info().getPortFunc(dname)
+	if portFunc == nil {
+		return
+	}
+	// add it to the destination port functions for this source
+	key := portKey(s, sname)
+	dstPortMap[key] = append(dstPortMap[key], dstPort{d, portFunc})
+}
 
+// Disconnect the output port of a module.
+func Disconnect(m Module, name string) {
+	delete(dstPortMap, portKey(m, name))
+}
+
+// EventOut sends an event from the named port of a module.
+func EventOut(m Module, name string, e *Event) {
+	key := portKey(m, name)
+	if dstPorts, ok := dstPortMap[key]; ok {
+		for i := range dstPorts {
+			dstPorts[i].portFunc(dstPorts[i].module, e)
+		}
+	}
 }
 
 //-----------------------------------------------------------------------------
