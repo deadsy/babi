@@ -16,7 +16,7 @@ import (
 //-----------------------------------------------------------------------------
 // Module Ports
 
-// PortFuncType is a function used to send an event to the port of a module.
+// PortFuncType is a function used to send an event to the input port of a module.
 type PortFuncType func(m Module, e *Event)
 
 // PortType represents the type of data sent or received on a module port.
@@ -54,45 +54,68 @@ type ModuleInfo struct {
 	n2p  map[string]PortFuncType // port name to port function mapping
 }
 
-// GetPortFunc returns the port function associated with the the port name.
-func (mi *ModuleInfo) GetPortFunc(name string) PortFuncType {
-
+// getPortFunc returns the input port function associated with the the port name.
+func (mi *ModuleInfo) getPortFunc(name string) PortFuncType {
 	// build the name to port function map
 	if mi.n2p == nil {
-		// TODO detect duplicate port names
 		mi.n2p = make(map[string]PortFuncType)
 		// input ports
 		for i := range mi.In {
-			pf := mi.In[i].PortFunc
-			if pf != nil {
-				mi.n2p[mi.In[i].Name] = pf
+			if _, ok := mi.n2p[mi.In[i].Name]; ok {
+				panic(fmt.Sprintf("module \"%s\" must have one input port with name \"%s\"", mi.Name, mi.In[i].Name))
 			}
-		}
-		// output ports
-		for i := range mi.Out {
-			pf := mi.Out[i].PortFunc
-			if pf != nil {
-				mi.n2p[mi.Out[i].Name] = pf
-			}
+			mi.n2p[mi.In[i].Name] = mi.In[i].PortFunc
 		}
 	}
 	// lookup the name
 	if pf, ok := mi.n2p[name]; ok {
 		return pf
 	}
-	//log.Info.Printf("no port named \"%s\" in module \"%s\"", name, mi.Name)
+	//log.Info.Printf("module \"%s\" has no port named \"%s\"", mi.Name, name)
 	return nil
 }
 
-// numPorts return the number of ports within a set matching a specific type.
-func (ps PortSet) numPorts(ptype PortType) int {
-	var count int
+//-----------------------------------------------------------------------------
+
+// numPortsByType return the number of ports within a set matching a type.
+func (ps PortSet) numPortsByType(ptype PortType) int {
+	var n int
 	for _, pi := range ps {
 		if pi.Ptype == ptype {
-			count++
+			n++
 		}
 	}
-	return count
+	return n
+}
+
+// numPortsByName returns the number of ports within a set matching a name.
+func (ps PortSet) numPortsByName(name string) int {
+	var n int
+	for _, pi := range ps {
+		if pi.Name == name {
+			n++
+		}
+	}
+	return n
+}
+
+//-----------------------------------------------------------------------------
+
+// Connect source/destination module event ports.
+func Connect(s Module, sname string, d Module, dname string) {
+
+	// check output on source module
+	n := s.Info().Out.numPortsByName(sname)
+	if n != 1 {
+		panic(fmt.Sprintf("module \"%s\" must have one output port with name \"%s\"", s.Info().Name, sname))
+	}
+
+	// check input on destination module
+	n = d.Info().In.numPortsByName(dname)
+	if n != 1 {
+		panic(fmt.Sprintf("module \"%s\" must have one input port with name \"%s\"", d.Info().Name, dname))
+	}
+
 }
 
 //-----------------------------------------------------------------------------

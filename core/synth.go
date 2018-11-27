@@ -60,8 +60,8 @@ func (s *Synth) SetPatch(m Module) {
 	s.root = m
 	// allocate audio buffers
 	mi := m.Info()
-	s.nIn = mi.In.numPorts(PortTypeAudio)
-	s.nOut = mi.Out.numPorts(PortTypeAudio)
+	s.nIn = mi.In.numPortsByType(PortTypeAudio)
+	s.nOut = mi.Out.numPortsByType(PortTypeAudio)
 	n := s.nIn + s.nOut
 	if n != 0 {
 		s.audio = make([]*Buf, n)

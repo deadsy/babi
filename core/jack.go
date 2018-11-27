@@ -118,7 +118,7 @@ func NewJack(name string, synth *Synth) (*Jack, error) {
 	mi := synth.root.Info()
 
 	// audio output ports
-	n := mi.Out.numPorts(PortTypeAudio)
+	n := mi.Out.numPortsByType(PortTypeAudio)
 	ports, err := j.registerPorts(n, "audio_out", jack.DefaultAudio, jack.PortIsOutput)
 	if err != nil {
 		j.Close()
@@ -127,7 +127,7 @@ func NewJack(name string, synth *Synth) (*Jack, error) {
 	j.audioOut = ports
 
 	// audio input ports
-	n = mi.In.numPorts(PortTypeAudio)
+	n = mi.In.numPortsByType(PortTypeAudio)
 	ports, err = j.registerPorts(n, "audio_in", jack.DefaultAudio, jack.PortIsInput)
 	if err != nil {
 		j.Close()
@@ -136,7 +136,7 @@ func NewJack(name string, synth *Synth) (*Jack, error) {
 	j.audioIn = ports
 
 	// MIDI output ports
-	n = mi.Out.numPorts(PortTypeMIDI)
+	n = mi.Out.numPortsByType(PortTypeMIDI)
 	ports, err = j.registerPorts(n, "midi_out", jack.DefaultMIDI, jack.PortIsOutput)
 	if err != nil {
 		j.Close()
@@ -145,7 +145,7 @@ func NewJack(name string, synth *Synth) (*Jack, error) {
 	j.midiOut = ports
 
 	// MIDI input ports
-	n = mi.In.numPorts(PortTypeMIDI)
+	n = mi.In.numPortsByType(PortTypeMIDI)
 	ports, err = j.registerPorts(n, "midi_in", jack.DefaultMIDI, jack.PortIsInput)
 	if err != nil {
 		j.Close()

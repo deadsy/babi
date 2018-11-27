@@ -3,7 +3,7 @@
 
 MIDI Note Counter Module
 
-Increment a modulo counter with every note on event.
+Increment a modulo counter with each note on event.
 
 */
 //-----------------------------------------------------------------------------
@@ -18,21 +18,21 @@ import (
 //-----------------------------------------------------------------------------
 
 // Info returns the module information.
-func (m *intMidi) Info() *core.ModuleInfo {
+func (m *countMidi) Info() *core.ModuleInfo {
 	return &core.ModuleInfo{
-		Name: "intMidi",
+		Name: "countMidi",
 		In: []core.PortInfo{
-			{"midi", "midi", core.PortTypeMIDI, intMidiIn},
+			{"midi", "midi", core.PortTypeMIDI, countMidiIn},
 		},
 		Out: []core.PortInfo{
-			{"n", "counter", core.PortTypeInt, nil},
+			{"count", "counter", core.PortTypeInt, nil},
 		},
 	}
 }
 
 //-----------------------------------------------------------------------------
 
-type intMidi struct {
+type countMidi struct {
 	synth *core.Synth // top-level synth
 	ch    uint8       // MIDI channel
 	note  uint8       // MIDI note number
@@ -40,10 +40,10 @@ type intMidi struct {
 	count uint        // counter
 }
 
-// NewIntMidi returns a MIDI counter module.
-func NewIntMidi(s *core.Synth, ch, note uint8, k uint) core.Module {
+// NewCounter returns a MIDI counter module.
+func NewCounter(s *core.Synth, ch, note uint8, k uint) core.Module {
 	log.Info.Printf("")
-	return &intMidi{
+	return &countMidi{
 		synth: s,
 		ch:    ch,
 		note:  note,
@@ -52,19 +52,19 @@ func NewIntMidi(s *core.Synth, ch, note uint8, k uint) core.Module {
 }
 
 // Child returns the child modules of this module.
-func (m *intMidi) Child() []core.Module {
+func (m *countMidi) Child() []core.Module {
 	return nil
 }
 
 // Stop performs any cleanup of a module.
-func (m *intMidi) Stop() {
+func (m *countMidi) Stop() {
 }
 
 //-----------------------------------------------------------------------------
 // Port Events
 
-func intMidiIn(cm core.Module, e *core.Event) {
-	m := cm.(*intMidi)
+func countMidiIn(cm core.Module, e *core.Event) {
+	m := cm.(*countMidi)
 
 	me := e.GetEventMIDIChannel(m.ch)
 	if me != nil {
@@ -86,11 +86,11 @@ func intMidiIn(cm core.Module, e *core.Event) {
 //-----------------------------------------------------------------------------
 
 // Process runs the module DSP.
-func (m *intMidi) Process(buf ...*core.Buf) {
+func (m *countMidi) Process(buf ...*core.Buf) {
 }
 
 // Active returns true if the module has non-zero output.
-func (m *intMidi) Active() bool {
+func (m *countMidi) Active() bool {
 	return false
 }
 
