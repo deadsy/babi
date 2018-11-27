@@ -256,7 +256,7 @@ func NewEventBool(val bool) *Event {
 
 // String returns a descriptive string for the boolean event.
 func (e *EventBool) String() string {
-	return fmt.Sprintf("val %s", e.Val)
+	return fmt.Sprintf("val %t", e.Val)
 }
 
 // GetEventBool returns the boolean event.
