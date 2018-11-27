@@ -11,6 +11,7 @@ package core
 import (
 	"fmt"
 	"strings"
+	"sync"
 )
 
 //-----------------------------------------------------------------------------
@@ -192,6 +193,27 @@ func ModuleStop(m Module) {
 		ModuleStop(c)
 	}
 	m.Stop()
+}
+
+//-----------------------------------------------------------------------------
+
+var globalID uint
+var globalIDLock sync.Mutex
+
+func getID() uint {
+	globalIDLock.Lock()
+	if globalID == 0 {
+		globalID = 1
+	}
+	id := globalID
+	globalID++
+	globalIDLock.Unlock()
+	return id
+}
+
+// GenerateID returns a system unique ID string (with name prefix).
+func GenerateID(name string) string {
+	return fmt.Sprintf("%s%d", name, getID())
 }
 
 //-----------------------------------------------------------------------------

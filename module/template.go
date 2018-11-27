@@ -15,19 +15,27 @@ import (
 
 //-----------------------------------------------------------------------------
 
-// Info returns the module information.
+var xModuleInfo = core.ModuleInfo{
+	Name: "xModule",
+	In:   nil,
+	Out:  nil,
+}
+
+// Info returns the general module information.
 func (m *xModule) Info() *core.ModuleInfo {
-	return &core.ModuleInfo{
-		Name: "xModule",
-		In:   nil,
-		Out:  nil,
-	}
+	return &xModuleInfo
+}
+
+// ID returns the unique module identifier.
+func (m *xModule) ID() string {
+	return m.id
 }
 
 //-----------------------------------------------------------------------------
 
 type xModule struct {
 	synth *core.Synth // top-level synth
+	id    string      // module identifier
 }
 
 // NewX returns an X module.
@@ -35,6 +43,7 @@ func NewX(s *core.Synth) core.Module {
 	log.Info.Printf("")
 	return &xModule{
 		synth: s,
+		id:    core.GenerateID(xModuleInfo.Name),
 	}
 }
 
