@@ -61,12 +61,14 @@ func NewPoly(s *core.Synth, sm func(s *core.Synth) core.Module) core.Module {
 	poly := midi.NewPoly(s, midiCh, sm, 16)
 	// pan the output to left/right channels
 	pan := mix.NewPan(s)
-	panCtrl := midi.NewCtrl(s, midiCh, midiCtrl+0, pan, "pan")
-	volCtrl := midi.NewCtrl(s, midiCh, midiCtrl+1, pan, "volume")
+	panCtrl := midi.NewCtrl(s, midiCh, midiCtrl+0)
+	core.Connect(panCtrl, "val", pan, "pan")
+	volCtrl := midi.NewCtrl(s, midiCh, midiCtrl+1)
+	core.Connect(volCtrl, "val", pan, "vol")
 
 	// pan defaults
 	core.SendEventFloat(pan, "pan", 0.5)
-	core.SendEventFloat(pan, "volume", 1)
+	core.SendEventFloat(pan, "vol", 1)
 
 	return &polyPatch{
 		synth:   s,

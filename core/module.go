@@ -112,8 +112,7 @@ var dstPortMap = map[string][]dstPort{}
 
 // portKey is a globally unique key for a port on a module.
 func portKey(m Module, name string) string {
-	//return m.Id() + ":" + name
-	return "foo" + ":" + name
+	return m.ID() + ":" + name
 }
 
 // Connect source/destination module event ports.
@@ -143,7 +142,7 @@ func Disconnect(m Module, name string) {
 	delete(dstPortMap, portKey(m, name))
 }
 
-// EventOut sends an event from the named port of a module.
+// EventOut sends an event from the named output port of a module.
 func EventOut(m Module, name string, e *Event) {
 	key := portKey(m, name)
 	if dstPorts, ok := dstPortMap[key]; ok {

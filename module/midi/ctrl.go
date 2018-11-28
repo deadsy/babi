@@ -22,7 +22,9 @@ var ctrlMidiInfo = core.ModuleInfo{
 	In: []core.PortInfo{
 		{"midi", "midi input", core.PortTypeMIDI, ctrlMidiIn},
 	},
-	Out: nil,
+	Out: []core.PortInfo{
+		{"val", "float value (0..1)", core.PortTypeFloat, nil},
+	},
 }
 
 // Info returns the module information.
@@ -42,21 +44,16 @@ type ctrlMidi struct {
 	id    string      // module identifier
 	ch    uint8       // MIDI channel
 	cc    uint8       // MIDI control change number
-	dst   core.Module // destination module
-	name  string      // port name on destination module
 }
 
 // NewCtrl returns a MIDI control module.
-func NewCtrl(s *core.Synth, ch, cc uint8, dst core.Module, name string) core.Module {
-	mi := dst.Info()
-	log.Info.Printf("midi ch %d cc %d controlling %s.%s port", ch, cc, mi.Name, name)
+func NewCtrl(s *core.Synth, ch, cc uint8) core.Module {
+	log.Info.Printf("midi ch %d cc %d", ch, cc)
 	return &ctrlMidi{
 		synth: s,
 		id:    core.GenerateID(ctrlMidiInfo.Name),
 		ch:    ch,
 		cc:    cc,
-		dst:   dst,
-		name:  name,
 	}
 }
 
@@ -77,10 +74,8 @@ func ctrlMidiIn(cm core.Module, e *core.Event) {
 	me := e.GetEventMIDIChannel(m.ch)
 	if me != nil {
 		if me.GetType() == core.EventMIDIControlChange && me.GetCtrlNum() == m.cc {
-			// convert to a float event and send
-			val := core.MIDIMap(me.GetCtrlVal(), 0, 1)
-			log.Info.Printf("send float event to %s.%s val %f", core.ModuleName(m.dst), m.name, val)
-			core.SendEventFloat(m.dst, m.name, val)
+			// convert to a float value and output
+			core.EventOutFloat(m, "val", core.MIDIMap(me.GetCtrlVal(), 0, 1))
 		}
 	}
 }

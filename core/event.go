@@ -205,9 +205,14 @@ func (e *Event) GetEventFloat() *EventFloat {
 	return nil
 }
 
-// SendEventFloat sends a float event to a named port on a module.
+// SendEventFloat sends a float event to a named input port on a module.
 func SendEventFloat(m Module, name string, val float32) {
 	SendEvent(m, name, NewEventFloat(val))
+}
+
+// EventOutFloat sends a float event from a named output port on a module.
+func EventOutFloat(m Module, name string, val float32) {
+	EventOut(m, name, NewEventFloat(val))
 }
 
 //-----------------------------------------------------------------------------

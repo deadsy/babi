@@ -23,7 +23,7 @@ var panMixInfo = core.ModuleInfo{
 	Name: "panMix",
 	In: []core.PortInfo{
 		{"in", "input", core.PortTypeAudio, nil},
-		{"volume", "volume (0..1)", core.PortTypeFloat, panMixVolume},
+		{"vol", "volume (0..1)", core.PortTypeFloat, panMixVolume},
 		{"pan", "left/right pan (0..1)", core.PortTypeFloat, panMixPan},
 	},
 	Out: []core.PortInfo{
