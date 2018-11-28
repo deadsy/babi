@@ -17,21 +17,29 @@ import (
 
 //-----------------------------------------------------------------------------
 
+var noteMidiInfo = core.ModuleInfo{
+	Name: "noteMidi",
+	In: []core.PortInfo{
+		{"midi_in", "midi input", core.PortTypeMIDI, noteMidiIn},
+	},
+	Out: nil,
+}
+
 // Info returns the module information.
 func (m *noteMidi) Info() *core.ModuleInfo {
-	return &core.ModuleInfo{
-		Name: "noteMidi",
-		In: []core.PortInfo{
-			{"midi_in", "midi input", core.PortTypeMIDI, noteMidiIn},
-		},
-		Out: nil,
-	}
+	return &noteMidiInfo
+}
+
+// ID returns the unique module identifier.
+func (m *noteMidi) ID() string {
+	return m.id
 }
 
 //-----------------------------------------------------------------------------
 
 type noteMidi struct {
 	synth *core.Synth // top-level synth
+	id    string      // module identifier
 	ch    uint8       // MIDI channel
 	note  uint8       // MIDI note number
 	dst   core.Module // destination module
@@ -44,6 +52,7 @@ func NewNote(s *core.Synth, ch, note uint8, dst core.Module, name string) core.M
 	log.Info.Printf("midi ch %d note %d controlling %s.%s port", ch, note, mi.Name, name)
 	return &noteMidi{
 		synth: s,
+		id:    core.GenerateID(noteMidiInfo.Name),
 		ch:    ch,
 		note:  note,
 		dst:   dst,

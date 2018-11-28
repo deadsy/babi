@@ -23,15 +23,22 @@ import (
 
 //-----------------------------------------------------------------------------
 
+var noiseOscInfo = core.ModuleInfo{
+	Name: "noiseOsc",
+	In:   nil,
+	Out: []core.PortInfo{
+		{"out", "output", core.PortTypeAudio, nil},
+	},
+}
+
 // Info returns the module information.
-func (m *noiseModule) Info() *core.ModuleInfo {
-	return &core.ModuleInfo{
-		Name: "noise",
-		In:   nil,
-		Out: []core.PortInfo{
-			{"out", "output", core.PortTypeAudio, nil},
-		},
-	}
+func (m *noiseOsc) Info() *core.ModuleInfo {
+	return &noiseOscInfo
+}
+
+// ID returns the unique module identifier.
+func (m *noiseOsc) ID() string {
+	return m.id
 }
 
 //-----------------------------------------------------------------------------
@@ -46,8 +53,9 @@ const (
 	noiseTypeBrown
 )
 
-type noiseModule struct {
+type noiseOsc struct {
 	synth          *core.Synth  // top-level synth
+	id             string       // module identifier
 	ntype          noiseType    // noise type
 	rand           *core.Rand32 // random state
 	b0, b1, b2, b3 float32      // state variables
@@ -55,8 +63,9 @@ type noiseModule struct {
 }
 
 func newNoise(s *core.Synth, ntype noiseType) core.Module {
-	return &noiseModule{
+	return &noiseOsc{
 		synth: s,
+		id:    core.GenerateID(noiseOscInfo.Name),
 		ntype: ntype,
 		rand:  core.NewRand32(0),
 	}
@@ -91,12 +100,12 @@ func NewNoisePink2(s *core.Synth) core.Module {
 }
 
 // Return the child modules.
-func (m *noiseModule) Child() []core.Module {
+func (m *noiseOsc) Child() []core.Module {
 	return nil
 }
 
 // Stop and performs any cleanup of a module.
-func (m *noiseModule) Stop() {
+func (m *noiseOsc) Stop() {
 }
 
 //-----------------------------------------------------------------------------
@@ -104,13 +113,13 @@ func (m *noiseModule) Stop() {
 
 //-----------------------------------------------------------------------------
 
-func (m *noiseModule) generateWhite(out *core.Buf) {
+func (m *noiseOsc) generateWhite(out *core.Buf) {
 	for i := 0; i < len(out); i++ {
 		out[i] = m.rand.Float32()
 	}
 }
 
-func (m *noiseModule) generateBrown(out *core.Buf) {
+func (m *noiseOsc) generateBrown(out *core.Buf) {
 	b0 := m.b0
 	for i := 0; i < len(out); i++ {
 		white := m.rand.Float32()
@@ -120,7 +129,7 @@ func (m *noiseModule) generateBrown(out *core.Buf) {
 	m.b0 = b0
 }
 
-func (m *noiseModule) generatePink1(out *core.Buf) {
+func (m *noiseOsc) generatePink1(out *core.Buf) {
 	b0 := m.b0
 	b1 := m.b1
 	b2 := m.b2
@@ -137,7 +146,7 @@ func (m *noiseModule) generatePink1(out *core.Buf) {
 	m.b2 = b2
 }
 
-func (m *noiseModule) generatePink2(out *core.Buf) {
+func (m *noiseOsc) generatePink2(out *core.Buf) {
 	b0 := m.b0
 	b1 := m.b1
 	b2 := m.b2
@@ -167,7 +176,7 @@ func (m *noiseModule) generatePink2(out *core.Buf) {
 }
 
 // Process runs the module DSP.
-func (m *noiseModule) Process(buf ...*core.Buf) {
+func (m *noiseOsc) Process(buf ...*core.Buf) {
 	out := buf[0]
 	switch m.ntype {
 	case noiseTypeWhite:
@@ -184,7 +193,7 @@ func (m *noiseModule) Process(buf ...*core.Buf) {
 }
 
 // Active return true if the module has non-zero output.
-func (m *noiseModule) Active() bool {
+func (m *noiseOsc) Active() bool {
 	return true
 }
 

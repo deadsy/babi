@@ -161,7 +161,8 @@ type Module interface {
 	Process(buf ...*Buf) // run the module dsp
 	Active() bool        // return true if the module has non-zero output
 	Stop()               // stop the module
-	Info() *ModuleInfo   // return the module information
+	Info() *ModuleInfo   // return general module information
+	ID() string          // return the unique identifier for this module instance
 	Child() []Module     // return the child modules
 }
 

@@ -18,24 +18,32 @@ import (
 
 //-----------------------------------------------------------------------------
 
+var ksVoiceInfo = core.ModuleInfo{
+	Name: "ksVoice",
+	In: []core.PortInfo{
+		{"gate", "oscillator gate, attack(>0) or mute(=0)", core.PortTypeFloat, ksVoiceGate},
+		{"frequency", "frequency (Hz)", core.PortTypeFloat, ksVoiceFrequency},
+	},
+	Out: []core.PortInfo{
+		{"out", "output", core.PortTypeAudio, nil},
+	},
+}
+
 // Info returns the module information.
 func (m *ksVoice) Info() *core.ModuleInfo {
-	return &core.ModuleInfo{
-		Name: "ksVoice",
-		In: []core.PortInfo{
-			{"gate", "oscillator gate, attack(>0) or mute(=0)", core.PortTypeFloat, ksVoiceGate},
-			{"frequency", "frequency (Hz)", core.PortTypeFloat, ksVoiceFrequency},
-		},
-		Out: []core.PortInfo{
-			{"out", "output", core.PortTypeAudio, nil},
-		},
-	}
+	return &ksVoiceInfo
+}
+
+// ID returns the unique module identifier.
+func (m *ksVoice) ID() string {
+	return m.id
 }
 
 //-----------------------------------------------------------------------------
 
 type ksVoice struct {
 	synth *core.Synth // top-level synth
+	id    string      // module identifier
 	ks    core.Module // karplus strong oscillator
 }
 
@@ -49,6 +57,7 @@ func NewKarplusStrong(s *core.Synth) core.Module {
 
 	return &ksVoice{
 		synth: s,
+		id:    core.GenerateID(ksVoiceInfo.Name),
 		ks:    ks,
 	}
 }

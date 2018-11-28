@@ -18,24 +18,32 @@ import (
 
 //-----------------------------------------------------------------------------
 
+var oscVoiceInfo = core.ModuleInfo{
+	Name: "oscVoice",
+	In: []core.PortInfo{
+		{"gate", "oscillator gate, attack(>0) or mute(=0)", core.PortTypeFloat, oscVoiceGate},
+		{"frequency", "frequency (Hz)", core.PortTypeFloat, oscVoiceFrequency},
+	},
+	Out: []core.PortInfo{
+		{"out", "output", core.PortTypeAudio, nil},
+	},
+}
+
 // Info returns the module information.
 func (m *oscVoice) Info() *core.ModuleInfo {
-	return &core.ModuleInfo{
-		Name: "oscVoice",
-		In: []core.PortInfo{
-			{"gate", "oscillator gate, attack(>0) or mute(=0)", core.PortTypeFloat, oscVoiceGate},
-			{"frequency", "frequency (Hz)", core.PortTypeFloat, oscVoiceFrequency},
-		},
-		Out: []core.PortInfo{
-			{"out", "output", core.PortTypeAudio, nil},
-		},
-	}
+	return &oscVoiceInfo
+}
+
+// ID returns the unique module identifier.
+func (m *oscVoice) ID() string {
+	return m.id
 }
 
 //-----------------------------------------------------------------------------
 
 type oscVoice struct {
 	synth *core.Synth // top-level synth
+	id    string      // module identifier
 	adsr  core.Module // adsr envelope
 	osc   core.Module // oscillator
 }
@@ -58,6 +66,7 @@ func NewOsc(s *core.Synth, osc core.Module) core.Module {
 
 	return &oscVoice{
 		synth: s,
+		id:    core.GenerateID(oscVoiceInfo.Name),
 		adsr:  adsr,
 		osc:   osc,
 	}

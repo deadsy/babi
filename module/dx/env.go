@@ -49,23 +49,31 @@ var outputLevel = [100]int{
 
 //-----------------------------------------------------------------------------
 
+var envDxInfo = core.ModuleInfo{
+	Name: "envDx",
+	In: []core.PortInfo{
+		{"gate", "envelope gate, attack(>0) or release(=0)", core.PortTypeFloat, envDxGate},
+	},
+	Out: []core.PortInfo{
+		{"out", "output", core.PortTypeAudio, nil},
+	},
+}
+
 // Info returns the module information.
 func (m *envDx) Info() *core.ModuleInfo {
-	return &core.ModuleInfo{
-		Name: "envDx",
-		In: []core.PortInfo{
-			{"gate", "envelope gate, attack(>0) or release(=0)", core.PortTypeFloat, envDxGate},
-		},
-		Out: []core.PortInfo{
-			{"out", "output", core.PortTypeAudio, nil},
-		},
-	}
+	return &envDxInfo
+}
+
+// ID returns the unique module identifier.
+func (m *envDx) ID() string {
+	return m.id
 }
 
 //-----------------------------------------------------------------------------
 
 type envDx struct {
 	synth          *core.Synth // top-level synth
+	id             string      // module identifier
 	levels         *[4]int     // levels for this envelope
 	rates          *[4]int     // rates for this envelope
 	level          float32     // current level
@@ -84,6 +92,7 @@ func NewEnv(s *core.Synth, levels, rates *[4]int) core.Module {
 	log.Info.Printf("")
 	return &envDx{
 		synth:  s,
+		id:     core.GenerateID(envDxInfo.Name),
 		levels: levels,
 		rates:  rates,
 	}

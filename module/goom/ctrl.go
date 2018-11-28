@@ -19,19 +19,27 @@ import (
 
 //-----------------------------------------------------------------------------
 
+var ctrlGoomInfo = core.ModuleInfo{
+	Name: "ctrlGoom",
+	In:   nil,
+	Out:  nil,
+}
+
 // Info returns the module information.
 func (m *ctrlGoom) Info() *core.ModuleInfo {
-	return &core.ModuleInfo{
-		Name: "ctrlGoom",
-		In:   nil,
-		Out:  nil,
-	}
+	return &ctrlGoomInfo
+}
+
+// ID returns the unique module identifier.
+func (m *ctrlGoom) ID() string {
+	return m.id
 }
 
 //-----------------------------------------------------------------------------
 
 type ctrlGoom struct {
 	synth *core.Synth // top-level synth
+	id    string      // module identifier
 }
 
 // NewX returns an X module.
@@ -39,6 +47,7 @@ func NewX(s *core.Synth) core.Module {
 	log.Info.Printf("")
 	return &ctrlGoom{
 		synth: s,
+		id:    core.GenerateID(ctrlGoomInfo.Name),
 	}
 }
 

@@ -20,47 +20,54 @@ import (
 
 //-----------------------------------------------------------------------------
 
+var voiceGoomInfo = core.ModuleInfo{
+	Name: "voiceGoom",
+	In: []core.PortInfo{
+		// overall control
+		{"note", "note value (midi)", core.PortTypeFloat, goomPortNote},
+		{"gate", "voice gate, attack(>0) or release(=0)", core.PortTypeFloat, goomPortGate},
+		{"omode", "oscillator combine mode (0,1,2)", core.PortTypeInt, goomPortOscillatorMode},
+		{"fmode", "frequency mode (0,1,2)", core.PortTypeInt, goomPortFrequencyMode},
+		// amplitude envelope
+		{"amp_attack", "amplitude attack time (secs)", core.PortTypeFloat, goomPortAmplitudeAttack},
+		{"amp_decay", "amplitude decay time (secs)", core.PortTypeFloat, goomPortAmplitudeDecay},
+		{"amp_sustain", "amplitude sustain level 0..1", core.PortTypeFloat, goomPortAmplitudeSustain},
+		{"amp_release", "amplitude release time (secs)", core.PortTypeFloat, goomPortAmplitudeRelease},
+		// wave oscillator
+		{"wav_duty", "wave duty cycle (0..1)", core.PortTypeFloat, goomPortWaveDuty},
+		{"wav_slope", "wave slope (0..1)", core.PortTypeFloat, goomPortWaveSlope},
+		// modulation envelope
+		{"mod_attack", "modulation attack time (secs)", core.PortTypeFloat, goomPortModulationAttack},
+		{"mod_decay", "modulation decay time (secs)", core.PortTypeFloat, goomPortModulationDecay},
+		// modulation oscillator
+		{"mod_duty", "modulation duty cycle (0..1)", core.PortTypeFloat, goomPortModulationDuty},
+		{"mod_slope", "modulation slope (0..1)", core.PortTypeFloat, goomPortModulationSlope},
+		// modulation control
+		{"mod_tuning", "modulation tuning (0..1)", core.PortTypeFloat, goomPortModulationTuning},
+		{"mod_level", "modulation level (0..1)", core.PortTypeFloat, goomPortModulationLevel},
+		// filter envelope
+		{"flt_attack", "filter attack time (secs)", core.PortTypeFloat, goomPortFilterAttack},
+		{"flt_decay", "filter decay time (secs)", core.PortTypeFloat, goomPortFilterDecay},
+		{"flt_sustain", "filter sustain level 0..1", core.PortTypeFloat, goomPortFilterSustain},
+		{"flt_release", "filter release time (secs)", core.PortTypeFloat, goomPortFilterRelease},
+		// filter control
+		{"flt_sensitivity", "low pass filter sensitivity", core.PortTypeFloat, goomPortFilterSensitivity},
+		{"flt_cutoff", "low pass filter cutoff frequency (Hz)", core.PortTypeFloat, goomPortFilterCutoff},
+		{"flt_resonance", "low pass filter resonance (0..1)", core.PortTypeFloat, goomPortFilterResonance},
+	},
+	Out: []core.PortInfo{
+		{"out", "output", core.PortTypeAudio, nil},
+	},
+}
+
 // Info returns the module information.
 func (m *voiceGoom) Info() *core.ModuleInfo {
-	return &core.ModuleInfo{
-		Name: "voiceGoom",
-		In: []core.PortInfo{
-			// overall control
-			{"note", "note value (midi)", core.PortTypeFloat, goomPortNote},
-			{"gate", "voice gate, attack(>0) or release(=0)", core.PortTypeFloat, goomPortGate},
-			{"omode", "oscillator combine mode (0,1,2)", core.PortTypeInt, goomPortOscillatorMode},
-			{"fmode", "frequency mode (0,1,2)", core.PortTypeInt, goomPortFrequencyMode},
-			// amplitude envelope
-			{"amp_attack", "amplitude attack time (secs)", core.PortTypeFloat, goomPortAmplitudeAttack},
-			{"amp_decay", "amplitude decay time (secs)", core.PortTypeFloat, goomPortAmplitudeDecay},
-			{"amp_sustain", "amplitude sustain level 0..1", core.PortTypeFloat, goomPortAmplitudeSustain},
-			{"amp_release", "amplitude release time (secs)", core.PortTypeFloat, goomPortAmplitudeRelease},
-			// wave oscillator
-			{"wav_duty", "wave duty cycle (0..1)", core.PortTypeFloat, goomPortWaveDuty},
-			{"wav_slope", "wave slope (0..1)", core.PortTypeFloat, goomPortWaveSlope},
-			// modulation envelope
-			{"mod_attack", "modulation attack time (secs)", core.PortTypeFloat, goomPortModulationAttack},
-			{"mod_decay", "modulation decay time (secs)", core.PortTypeFloat, goomPortModulationDecay},
-			// modulation oscillator
-			{"mod_duty", "modulation duty cycle (0..1)", core.PortTypeFloat, goomPortModulationDuty},
-			{"mod_slope", "modulation slope (0..1)", core.PortTypeFloat, goomPortModulationSlope},
-			// modulation control
-			{"mod_tuning", "modulation tuning (0..1)", core.PortTypeFloat, goomPortModulationTuning},
-			{"mod_level", "modulation level (0..1)", core.PortTypeFloat, goomPortModulationLevel},
-			// filter envelope
-			{"flt_attack", "filter attack time (secs)", core.PortTypeFloat, goomPortFilterAttack},
-			{"flt_decay", "filter decay time (secs)", core.PortTypeFloat, goomPortFilterDecay},
-			{"flt_sustain", "filter sustain level 0..1", core.PortTypeFloat, goomPortFilterSustain},
-			{"flt_release", "filter release time (secs)", core.PortTypeFloat, goomPortFilterRelease},
-			// filter control
-			{"flt_sensitivity", "low pass filter sensitivity", core.PortTypeFloat, goomPortFilterSensitivity},
-			{"flt_cutoff", "low pass filter cutoff frequency (Hz)", core.PortTypeFloat, goomPortFilterCutoff},
-			{"flt_resonance", "low pass filter resonance (0..1)", core.PortTypeFloat, goomPortFilterResonance},
-		},
-		Out: []core.PortInfo{
-			{"out", "output", core.PortTypeAudio, nil},
-		},
-	}
+	return &voiceGoomInfo
+}
+
+// ID returns the unique module identifier.
+func (m *voiceGoom) ID() string {
+	return m.id
 }
 
 //-----------------------------------------------------------------------------
@@ -85,6 +92,7 @@ const (
 
 type voiceGoom struct {
 	synth          *core.Synth // top-level synth
+	id             string      // module identifier
 	ampEnv         core.Module // amplitude envelope generator
 	wavOsc         core.Module // wave oscillator
 	modEnv         core.Module // modulation envelope generator
@@ -113,6 +121,7 @@ func NewGoom(s *core.Synth) core.Module {
 
 	return &voiceGoom{
 		synth:  s,
+		id:     core.GenerateID(voiceGoomInfo.Name),
 		ampEnv: ampEnv,
 		wavOsc: wavOsc,
 		modEnv: modEnv,

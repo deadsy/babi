@@ -17,17 +17,24 @@ import (
 
 //-----------------------------------------------------------------------------
 
+var sawOscInfo = core.ModuleInfo{
+	Name: "sawOsc",
+	In: []core.PortInfo{
+		{"frequency", "frequency (Hz)", core.PortTypeFloat, sawPortFrequency},
+	},
+	Out: []core.PortInfo{
+		{"out", "output", core.PortTypeAudio, nil},
+	},
+}
+
 // Info returns the module information.
-func (m *sawModule) Info() *core.ModuleInfo {
-	return &core.ModuleInfo{
-		Name: "saw",
-		In: []core.PortInfo{
-			{"frequency", "frequency (Hz)", core.PortTypeFloat, sawPortFrequency},
-		},
-		Out: []core.PortInfo{
-			{"out", "output", core.PortTypeAudio, nil},
-		},
-	}
+func (m *sawOsc) Info() *core.ModuleInfo {
+	return &sawOscInfo
+}
+
+// ID returns the unique module identifier.
+func (m *sawOsc) ID() string {
+	return m.id
 }
 
 //-----------------------------------------------------------------------------
@@ -40,8 +47,9 @@ const (
 	sawTypeBLEP
 )
 
-type sawModule struct {
+type sawOsc struct {
 	synth *core.Synth // top-level synth
+	id    string      // module identifier
 	stype sawType     // sawtooth type
 	freq  float32     // base frequency
 	x     uint32      // phase position
@@ -49,8 +57,9 @@ type sawModule struct {
 }
 
 func newSawtooth(s *core.Synth, stype sawType) core.Module {
-	return &sawModule{
+	return &sawOsc{
 		synth: s,
+		id:    core.GenerateID(sawOscInfo.Name),
 		stype: stype,
 	}
 }
@@ -68,19 +77,19 @@ func NewSawtoothBLEP(s *core.Synth) core.Module {
 }
 
 // Child returns the child modules of this module.
-func (m *sawModule) Child() []core.Module {
+func (m *sawOsc) Child() []core.Module {
 	return nil
 }
 
 // Stop performs any cleanup of a module.
-func (m *sawModule) Stop() {
+func (m *sawOsc) Stop() {
 }
 
 //-----------------------------------------------------------------------------
 // Port Events
 
 func sawPortFrequency(cm core.Module, e *core.Event) {
-	m := cm.(*sawModule)
+	m := cm.(*sawOsc)
 	frequency := core.ClampLo(e.GetEventFloat().Val, 0)
 	log.Info.Printf("set frequency %f Hz", frequency)
 	m.freq = frequency
@@ -89,7 +98,7 @@ func sawPortFrequency(cm core.Module, e *core.Event) {
 
 //-----------------------------------------------------------------------------
 
-func (m *sawModule) generateBasic(out *core.Buf) {
+func (m *sawOsc) generateBasic(out *core.Buf) {
 	for i := 0; i < len(out); i++ {
 		out[i] = (2.0/float32(core.FullCycle))*float32(m.x) - 1.0
 		// step the phase
@@ -97,12 +106,12 @@ func (m *sawModule) generateBasic(out *core.Buf) {
 	}
 }
 
-func (m *sawModule) generateBLEP(out *core.Buf) {
+func (m *sawOsc) generateBLEP(out *core.Buf) {
 	// TODO
 }
 
 // Process runs the module DSP.
-func (m *sawModule) Process(buf ...*core.Buf) {
+func (m *sawOsc) Process(buf ...*core.Buf) {
 	out := buf[0]
 	switch m.stype {
 	case sawTypeBasic:
@@ -115,7 +124,7 @@ func (m *sawModule) Process(buf ...*core.Buf) {
 }
 
 // Active returns true if the module has non-zero output.
-func (m *sawModule) Active() bool {
+func (m *sawOsc) Active() bool {
 	return true
 }
 

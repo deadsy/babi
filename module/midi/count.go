@@ -17,23 +17,31 @@ import (
 
 //-----------------------------------------------------------------------------
 
+var countMidiInfo = core.ModuleInfo{
+	Name: "countMidi",
+	In: []core.PortInfo{
+		{"midi", "midi", core.PortTypeMIDI, countMidiIn},
+	},
+	Out: []core.PortInfo{
+		{"count", "counter", core.PortTypeInt, nil},
+	},
+}
+
 // Info returns the module information.
 func (m *countMidi) Info() *core.ModuleInfo {
-	return &core.ModuleInfo{
-		Name: "countMidi",
-		In: []core.PortInfo{
-			{"midi", "midi", core.PortTypeMIDI, countMidiIn},
-		},
-		Out: []core.PortInfo{
-			{"count", "counter", core.PortTypeInt, nil},
-		},
-	}
+	return &countMidiInfo
+}
+
+// ID returns the unique module identifier.
+func (m *countMidi) ID() string {
+	return m.id
 }
 
 //-----------------------------------------------------------------------------
 
 type countMidi struct {
 	synth *core.Synth // top-level synth
+	id    string      // module identifier
 	ch    uint8       // MIDI channel
 	note  uint8       // MIDI note number
 	k     uint        // modulo number
@@ -45,6 +53,7 @@ func NewCounter(s *core.Synth, ch, note uint8, k uint) core.Module {
 	log.Info.Printf("")
 	return &countMidi{
 		synth: s,
+		id:    core.GenerateID(countMidiInfo.Name),
 		ch:    ch,
 		note:  note,
 		k:     k,

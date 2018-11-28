@@ -24,19 +24,26 @@ import (
 
 //-----------------------------------------------------------------------------
 
+var ksOscInfo = core.ModuleInfo{
+	Name: "ksOsc",
+	In: []core.PortInfo{
+		{"gate", "oscillator gate, attack(>0) or mute(=0)", core.PortTypeFloat, ksPortGate},
+		{"frequency", "frequency (Hz)", core.PortTypeFloat, ksPortFrequency},
+		{"attenuation", "attenuation (0..1)", core.PortTypeFloat, ksPortAttenuation},
+	},
+	Out: []core.PortInfo{
+		{"out", "output", core.PortTypeAudio, nil},
+	},
+}
+
 // Info returns the module information.
 func (m *ksOsc) Info() *core.ModuleInfo {
-	return &core.ModuleInfo{
-		Name: "ksOsc",
-		In: []core.PortInfo{
-			{"gate", "oscillator gate, attack(>0) or mute(=0)", core.PortTypeFloat, ksPortGate},
-			{"frequency", "frequency (Hz)", core.PortTypeFloat, ksPortFrequency},
-			{"attenuation", "attenuation (0..1)", core.PortTypeFloat, ksPortAttenuation},
-		},
-		Out: []core.PortInfo{
-			{"out", "output", core.PortTypeAudio, nil},
-		},
-	}
+	return &ksOscInfo
+}
+
+// ID returns the unique module identifier.
+func (m *ksOsc) ID() string {
+	return m.id
 }
 
 //-----------------------------------------------------------------------------
@@ -51,6 +58,7 @@ const ksFracScale = 1 / (1 << ksFracBits)
 
 type ksOsc struct {
 	synth *core.Synth // top-level synth
+	id    string      // module identifier
 	rand  *core.Rand32
 	delay [ksDelaySize]float32 // delay line
 	k     float32              // attenuation and averaging constant 0 to 0.5
@@ -64,6 +72,7 @@ func NewKarplusStrong(s *core.Synth) core.Module {
 	log.Info.Printf("new osc")
 	return &ksOsc{
 		synth: s,
+		id:    core.GenerateID(ksOscInfo.Name),
 		rand:  core.NewRand32(0),
 	}
 }

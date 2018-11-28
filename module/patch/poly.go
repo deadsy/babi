@@ -17,24 +17,32 @@ import (
 
 //-----------------------------------------------------------------------------
 
+var polyPatchInfo = core.ModuleInfo{
+	Name: "polyPatch",
+	In: []core.PortInfo{
+		{"midi_in", "midi input", core.PortTypeMIDI, polyPatchMidiIn},
+	},
+	Out: []core.PortInfo{
+		{"out_left", "left channel output", core.PortTypeAudio, nil},
+		{"out_right", "right channel output", core.PortTypeAudio, nil},
+	},
+}
+
 // Info returns the module information.
 func (m *polyPatch) Info() *core.ModuleInfo {
-	return &core.ModuleInfo{
-		Name: "polyPatch",
-		In: []core.PortInfo{
-			{"midi_in", "midi input", core.PortTypeMIDI, polyPatchMidiIn},
-		},
-		Out: []core.PortInfo{
-			{"out_left", "left channel output", core.PortTypeAudio, nil},
-			{"out_right", "right channel output", core.PortTypeAudio, nil},
-		},
-	}
+	return &polyPatchInfo
+}
+
+// ID returns the unique module identifier.
+func (m *polyPatch) ID() string {
+	return m.id
 }
 
 //-----------------------------------------------------------------------------
 
 type polyPatch struct {
 	synth   *core.Synth // top-level synth
+	id      string      // module identifier
 	ch      uint8       // MIDI channel
 	poly    core.Module // polyphony
 	pan     core.Module // pan left/right
@@ -62,6 +70,7 @@ func NewPoly(s *core.Synth, sm func(s *core.Synth) core.Module) core.Module {
 
 	return &polyPatch{
 		synth:   s,
+		id:      core.GenerateID(polyPatchInfo.Name),
 		ch:      midiCh,
 		poly:    poly,
 		pan:     pan,

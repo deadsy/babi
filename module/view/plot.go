@@ -23,23 +23,31 @@ import (
 
 //-----------------------------------------------------------------------------
 
+var plotViewInfo = core.ModuleInfo{
+	Name: "plotView",
+	In: []core.PortInfo{
+		{"x", "x-input", core.PortTypeAudio, nil},
+		{"y0", "y-input 0", core.PortTypeAudio, nil},
+		{"trigger", "trigger", core.PortTypeBool, plotViewTrigger},
+	},
+	Out: nil,
+}
+
 // Info returns the module information.
 func (m *plotView) Info() *core.ModuleInfo {
-	return &core.ModuleInfo{
-		Name: "plotView",
-		In: []core.PortInfo{
-			{"x", "x-input", core.PortTypeAudio, nil},
-			{"y0", "y-input 0", core.PortTypeAudio, nil},
-			{"trigger", "trigger", core.PortTypeBool, plotViewTrigger},
-		},
-		Out: nil,
-	}
+	return &plotViewInfo
+}
+
+// ID returns the unique module identifier.
+func (m *plotView) ID() string {
+	return m.id
 }
 
 //-----------------------------------------------------------------------------
 
 type plotView struct {
 	synth       *core.Synth   // top-level synth
+	id          string        // module identifier
 	cfg         *PlotConfig   // plot configuration
 	x           uint64        // current x-value
 	samples     int           // number of samples to plot per trigger
@@ -86,6 +94,7 @@ func NewPlot(s *core.Synth, cfg *PlotConfig) core.Module {
 
 	return &plotView{
 		synth:   s,
+		id:      core.GenerateID(plotViewInfo.Name),
 		cfg:     cfg,
 		samples: samples,
 	}

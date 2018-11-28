@@ -17,19 +17,26 @@ import (
 
 //-----------------------------------------------------------------------------
 
+var svFilterInfo = core.ModuleInfo{
+	Name: "svFilter",
+	In: []core.PortInfo{
+		{"in", "input", core.PortTypeAudio, nil},
+		{"cutoff", "cutoff frequency (Hz)", core.PortTypeFloat, svfPortCutoff},
+		{"resonance", "resonance (0..1)", core.PortTypeFloat, svfPortResonance},
+	},
+	Out: []core.PortInfo{
+		{"out", "output", core.PortTypeAudio, nil},
+	},
+}
+
 // Info returns the module information.
-func (m *svfModule) Info() *core.ModuleInfo {
-	return &core.ModuleInfo{
-		Name: "svf",
-		In: []core.PortInfo{
-			{"in", "input", core.PortTypeAudio, nil},
-			{"cutoff", "cutoff frequency (Hz)", core.PortTypeFloat, svfPortCutoff},
-			{"resonance", "resonance (0..1)", core.PortTypeFloat, svfPortResonance},
-		},
-		Out: []core.PortInfo{
-			{"out", "output", core.PortTypeAudio, nil},
-		},
-	}
+func (m *svFilter) Info() *core.ModuleInfo {
+	return &svFilterInfo
+}
+
+// ID returns the unique module identifier.
+func (m *svFilter) ID() string {
+	return m.id
 }
 
 //-----------------------------------------------------------------------------
@@ -42,8 +49,9 @@ const (
 	svfTypeTrapezoidal
 )
 
-type svfModule struct {
+type svFilter struct {
 	synth *core.Synth // top-level synth
+	id    string      // module identifier
 	ftype svfType     // filter type
 	// svfTypeHC
 	kf float32 // constant for cutoff frequency
@@ -58,8 +66,9 @@ type svfModule struct {
 }
 
 func newSVF(s *core.Synth, t svfType) core.Module {
-	return &svfModule{
+	return &svFilter{
 		synth: s,
+		id:    core.GenerateID(svFilterInfo.Name),
 		ftype: t,
 	}
 }
@@ -79,19 +88,19 @@ func NewSVFilterTrapezoidal(s *core.Synth) core.Module {
 }
 
 // Child returns the child modules of this module.
-func (m *svfModule) Child() []core.Module {
+func (m *svFilter) Child() []core.Module {
 	return nil
 }
 
 // Stop performs any cleanup of a module.
-func (m *svfModule) Stop() {
+func (m *svFilter) Stop() {
 }
 
 //-----------------------------------------------------------------------------
 // Port Events
 
 func svfPortCutoff(cm core.Module, e *core.Event) {
-	m := cm.(*svfModule)
+	m := cm.(*svFilter)
 	cutoff := core.Clamp(e.GetEventFloat().Val, 0, 0.5*core.AudioSampleFrequency)
 	log.Info.Printf("set cutoff frequency %f Hz", cutoff)
 	switch m.ftype {
@@ -105,7 +114,7 @@ func svfPortCutoff(cm core.Module, e *core.Event) {
 }
 
 func svfPortResonance(cm core.Module, e *core.Event) {
-	m := cm.(*svfModule)
+	m := cm.(*svFilter)
 	resonance := core.Clamp(e.GetEventFloat().Val, 0, 1)
 	log.Info.Printf("set resonance %f", resonance)
 	switch m.ftype {
@@ -120,7 +129,7 @@ func svfPortResonance(cm core.Module, e *core.Event) {
 
 //-----------------------------------------------------------------------------
 
-func (m *svfModule) filterHC(in, out *core.Buf) {
+func (m *svFilter) filterHC(in, out *core.Buf) {
 	lp := m.lp
 	bp := m.bp
 	kf := m.kf
@@ -136,7 +145,7 @@ func (m *svfModule) filterHC(in, out *core.Buf) {
 	m.bp = bp
 }
 
-func (m *svfModule) filterTrapezoidal(in, out *core.Buf) {
+func (m *svFilter) filterTrapezoidal(in, out *core.Buf) {
 	ic1eq := m.ic1eq
 	ic2eq := m.ic2eq
 	a1 := 1.0 / (1.0 + (m.g * (m.g + m.k)))
@@ -163,7 +172,7 @@ func (m *svfModule) filterTrapezoidal(in, out *core.Buf) {
 }
 
 // Process runs the module DSP.
-func (m *svfModule) Process(buf ...*core.Buf) {
+func (m *svFilter) Process(buf ...*core.Buf) {
 	in := buf[0]
 	out := buf[1]
 	switch m.ftype {
@@ -177,7 +186,7 @@ func (m *svfModule) Process(buf ...*core.Buf) {
 }
 
 // Active returns true if the module has non-zero output.
-func (m *svfModule) Active() bool {
+func (m *svFilter) Active() bool {
 	return true
 }
 

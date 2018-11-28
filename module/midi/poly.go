@@ -19,17 +19,24 @@ import (
 
 //-----------------------------------------------------------------------------
 
+var polyMidiInfo = core.ModuleInfo{
+	Name: "polyMidi",
+	In: []core.PortInfo{
+		{"midi_in", "midi input", core.PortTypeMIDI, polyMidiIn},
+	},
+	Out: []core.PortInfo{
+		{"out", "output", core.PortTypeAudio, nil},
+	},
+}
+
 // Info returns the module information.
 func (m *polyMidi) Info() *core.ModuleInfo {
-	return &core.ModuleInfo{
-		Name: "polyMidi",
-		In: []core.PortInfo{
-			{"midi_in", "midi input", core.PortTypeMIDI, polyMidiIn},
-		},
-		Out: []core.PortInfo{
-			{"out", "output", core.PortTypeAudio, nil},
-		},
-	}
+	return &polyMidiInfo
+}
+
+// ID returns the unique module identifier.
+func (m *polyMidi) ID() string {
+	return m.id
 }
 
 //-----------------------------------------------------------------------------
@@ -41,6 +48,7 @@ type voiceInfo struct {
 
 type polyMidi struct {
 	synth *core.Synth                     // top-level synth
+	id    string                          // module identifier
 	ch    uint8                           // MIDI channel
 	sm    func(s *core.Synth) core.Module // new function for voice sub-module
 	voice []voiceInfo                     // voices
@@ -53,6 +61,7 @@ func NewPoly(s *core.Synth, ch uint8, sm func(s *core.Synth) core.Module, maxvoi
 	log.Info.Printf("")
 	return &polyMidi{
 		synth: s,
+		id:    core.GenerateID(polyMidiInfo.Name),
 		ch:    ch,
 		sm:    sm,
 		voice: make([]voiceInfo, maxvoices),

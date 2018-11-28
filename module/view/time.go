@@ -17,37 +17,46 @@ import (
 
 //-----------------------------------------------------------------------------
 
+var timeViewInfo = core.ModuleInfo{
+	Name: "timeView",
+	In:   nil,
+	Out:  nil,
+}
+
 // Info returns the module information.
-func (m *timeModule) Info() *core.ModuleInfo {
-	return &core.ModuleInfo{
-		Name: "time",
-		In:   nil,
-		Out:  nil,
-	}
+func (m *timeView) Info() *core.ModuleInfo {
+	return &timeViewInfo
+}
+
+// ID returns the unique module identifier.
+func (m *timeView) ID() string {
+	return m.id
 }
 
 //-----------------------------------------------------------------------------
 
-type timeModule struct {
+type timeView struct {
 	synth *core.Synth // top-level synth
+	id    string      // module identifier
 	x     uint64      // current x-value
 }
 
 // NewTime returns a time base module.
 func NewTime(s *core.Synth) core.Module {
 	log.Info.Printf("")
-	return &timeModule{
+	return &timeView{
 		synth: s,
+		id:    core.GenerateID(timeViewInfo.Name),
 	}
 }
 
 // Child returns the child modules of this module.
-func (m *timeModule) Child() []core.Module {
+func (m *timeView) Child() []core.Module {
 	return nil
 }
 
 // Stop performs any cleanup of a module.
-func (m *timeModule) Stop() {
+func (m *timeView) Stop() {
 }
 
 //-----------------------------------------------------------------------------
@@ -56,7 +65,7 @@ func (m *timeModule) Stop() {
 //-----------------------------------------------------------------------------
 
 // Process runs the module DSP.
-func (m *timeModule) Process(buf ...*core.Buf) {
+func (m *timeView) Process(buf ...*core.Buf) {
 	out := buf[0]
 	for i := range out {
 		out[i] = float32(m.x) * core.AudioSamplePeriod
@@ -65,7 +74,7 @@ func (m *timeModule) Process(buf ...*core.Buf) {
 }
 
 // Active returns true if the module has non-zero output.
-func (m *timeModule) Active() bool {
+func (m *timeView) Active() bool {
 	return true
 }
 

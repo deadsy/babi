@@ -15,23 +15,31 @@ import (
 
 //-----------------------------------------------------------------------------
 
+var sineOscInfo = core.ModuleInfo{
+	Name: "sineOsc",
+	In: []core.PortInfo{
+		{"frequency", "frequency (Hz)", core.PortTypeFloat, sinePortFrequency},
+	},
+	Out: []core.PortInfo{
+		{"out", "output", core.PortTypeAudio, nil},
+	},
+}
+
 // Info returns the module information.
-func (m *sineModule) Info() *core.ModuleInfo {
-	return &core.ModuleInfo{
-		Name: "sine",
-		In: []core.PortInfo{
-			{"frequency", "frequency (Hz)", core.PortTypeFloat, sinePortFrequency},
-		},
-		Out: []core.PortInfo{
-			{"out", "output", core.PortTypeAudio, nil},
-		},
-	}
+func (m *sineOsc) Info() *core.ModuleInfo {
+	return &sineOscInfo
+}
+
+// ID returns the unique module identifier.
+func (m *sineOsc) ID() string {
+	return m.id
 }
 
 //-----------------------------------------------------------------------------
 
-type sineModule struct {
+type sineOsc struct {
 	synth *core.Synth // top-level synth
+	id    string      // module identifier
 	freq  float32     // base frequency
 	x     uint32      // current x-value
 	xstep uint32      // current x-step
@@ -40,25 +48,26 @@ type sineModule struct {
 // NewSine returns an sine oscillator module.
 func NewSine(s *core.Synth) core.Module {
 	log.Info.Printf("")
-	return &sineModule{
+	return &sineOsc{
 		synth: s,
+		id:    core.GenerateID(sineOscInfo.Name),
 	}
 }
 
 // Return the child modules.
-func (m *sineModule) Child() []core.Module {
+func (m *sineOsc) Child() []core.Module {
 	return nil
 }
 
 // Stop and performs any cleanup of a module.
-func (m *sineModule) Stop() {
+func (m *sineOsc) Stop() {
 }
 
 //-----------------------------------------------------------------------------
 // Events
 
 func sinePortFrequency(cm core.Module, e *core.Event) {
-	m := cm.(*sineModule)
+	m := cm.(*sineOsc)
 	frequency := core.ClampLo(e.GetEventFloat().Val, 0)
 	log.Info.Printf("set frequency %f Hz", frequency)
 	m.freq = frequency
@@ -68,7 +77,7 @@ func sinePortFrequency(cm core.Module, e *core.Event) {
 //-----------------------------------------------------------------------------
 
 // Process runs the module DSP.
-func (m *sineModule) Process(buf ...*core.Buf) {
+func (m *sineOsc) Process(buf ...*core.Buf) {
 	out := buf[0]
 	for i := 0; i < len(out); i++ {
 		out[i] = core.CosLookup(m.x)
@@ -77,7 +86,7 @@ func (m *sineModule) Process(buf ...*core.Buf) {
 }
 
 // Active return true if the module has non-zero output.
-func (m *sineModule) Active() bool {
+func (m *sineOsc) Active() bool {
 	return true
 }
 

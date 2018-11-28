@@ -19,36 +19,43 @@ const ticksPerBeat = 16
 
 //-----------------------------------------------------------------------------
 
+var basicSeqInfo = core.ModuleInfo{
+	Name: "basicSeq",
+	In: []core.PortInfo{
+		{"bpm", "beats per minute", core.PortTypeFloat, seqPortBpm},
+		{"ctrl", "control", core.PortTypeInt, seqPortCtrl},
+	},
+	Out: []core.PortInfo{
+		{"midi_out", "midi output", core.PortTypeMIDI, nil},
+	},
+}
+
 // Info returns the module information.
-func (m *seqModule) Info() *core.ModuleInfo {
-	return &core.ModuleInfo{
-		Name: "seq",
-		In: []core.PortInfo{
-			{"bpm", "beats per minute", core.PortTypeFloat, seqPortBpm},
-			{"ctrl", "control", core.PortTypeInt, seqPortCtrl},
-		},
-		Out: []core.PortInfo{
-			{"midi_out", "midi output", core.PortTypeMIDI, nil},
-		},
-	}
+func (m *basicSeq) Info() *core.ModuleInfo {
+	return &basicSeqInfo
+}
+
+// ID returns the unique module identifier.
+func (m *basicSeq) ID() string {
+	return m.id
 }
 
 //-----------------------------------------------------------------------------
 // operations
 
 // Op is a sequencer operation function.
-type Op func(m *seqModule, sm *seqStateMachine) int
+type Op func(m *basicSeq, sm *seqStateMachine) int
 
 // OpNOP returns a nop operation.
 func OpNOP() Op {
-	return func(m *seqModule, sm *seqStateMachine) int {
+	return func(m *basicSeq, sm *seqStateMachine) int {
 		return 1
 	}
 }
 
 // OpLoop returns a loop operation.
 func OpLoop() Op {
-	return func(m *seqModule, sm *seqStateMachine) int {
+	return func(m *basicSeq, sm *seqStateMachine) int {
 		log.Info.Printf("loop (%d)", m.ticks)
 		sm.pc = -1
 		return 1
@@ -57,7 +64,7 @@ func OpLoop() Op {
 
 // OpNote returns a note operation.
 func OpNote(channel, note, velocity uint8, duration uint) Op {
-	return func(m *seqModule, sm *seqStateMachine) int {
+	return func(m *basicSeq, sm *seqStateMachine) int {
 		if sm.ostate == opStateInit {
 			sm.duration = duration
 			sm.ostate = opStateWait
@@ -79,7 +86,7 @@ func OpNote(channel, note, velocity uint8, duration uint) Op {
 
 // OpRest returns a rest operation.
 func OpRest(duration uint) Op {
-	return func(m *seqModule, sm *seqStateMachine) int {
+	return func(m *basicSeq, sm *seqStateMachine) int {
 		if sm.ostate == opStateInit {
 			sm.duration = duration
 			sm.ostate = opStateWait
@@ -95,7 +102,7 @@ func OpRest(duration uint) Op {
 	}
 }
 
-func (m *seqModule) tick(sm *seqStateMachine) {
+func (m *basicSeq) tick(sm *seqStateMachine) {
 	// auto stop zero length programs
 	if len(sm.prog) == 0 {
 		sm.sstate = seqStateStop
@@ -132,8 +139,9 @@ type seqStateMachine struct {
 	duration uint     // operation duration
 }
 
-type seqModule struct {
+type basicSeq struct {
 	synth       *core.Synth      // top-level synth
+	id          string           // module identifier
 	secsPerTick float32          // seconds per tick
 	tickError   float32          // current tick error
 	ticks       uint             // full ticks
@@ -143,19 +151,20 @@ type seqModule struct {
 // NewSequencer returns a basic sequencer module.
 func NewSequencer(s *core.Synth, prog []Op) core.Module {
 	log.Info.Printf("")
-	return &seqModule{
+	return &basicSeq{
 		synth: s,
+		id:    core.GenerateID(basicSeqInfo.Name),
 		sm:    &seqStateMachine{prog: prog},
 	}
 }
 
 // Child returns the child modules of this module.
-func (m *seqModule) Child() []core.Module {
+func (m *basicSeq) Child() []core.Module {
 	return nil
 }
 
 // Stop performs any cleanup of a module.
-func (m *seqModule) Stop() {
+func (m *basicSeq) Stop() {
 }
 
 //-----------------------------------------------------------------------------
@@ -169,14 +178,14 @@ const (
 )
 
 func seqPortBpm(cm core.Module, e *core.Event) {
-	m := cm.(*seqModule)
+	m := cm.(*basicSeq)
 	bpm := core.Clamp(e.GetEventFloat().Val, core.MinBeatsPerMin, core.MaxBeatsPerMin)
 	log.Info.Printf("set bpm %f", bpm)
 	m.secsPerTick = core.SecsPerMin / (bpm * ticksPerBeat)
 }
 
 func seqPortCtrl(cm core.Module, e *core.Event) {
-	m := cm.(*seqModule)
+	m := cm.(*basicSeq)
 	ctrl := e.GetEventInt().Val
 	switch ctrl {
 	case CtrlStop: // stop the sequencer
@@ -198,7 +207,7 @@ func seqPortCtrl(cm core.Module, e *core.Event) {
 //-----------------------------------------------------------------------------
 
 // Process runs the module DSP.
-func (m *seqModule) Process(buf ...*core.Buf) {
+func (m *basicSeq) Process(buf ...*core.Buf) {
 	// This routine is being used as a periodic call for timed event generation.
 	// The sequencer does not process audio buffers.
 
@@ -215,7 +224,7 @@ func (m *seqModule) Process(buf ...*core.Buf) {
 }
 
 // Active returns true if the module has non-zero output.
-func (m *seqModule) Active() bool {
+func (m *basicSeq) Active() bool {
 	return true
 }
 

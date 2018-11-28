@@ -32,24 +32,32 @@ var metronome = []seq.Op{
 
 //-----------------------------------------------------------------------------
 
+var seqPatchInfo = core.ModuleInfo{
+	Name: "seqPatch",
+	In: []core.PortInfo{
+		{"midi_in", "midi input", core.PortTypeMIDI, seqtestPortMidiIn},
+	},
+	Out: []core.PortInfo{
+		{"out_left", "left channel output", core.PortTypeAudio, nil},
+		{"out_right", "right channel output", core.PortTypeAudio, nil},
+	},
+}
+
 // Info returns the module information.
-func (m *seqtestModule) Info() *core.ModuleInfo {
-	return &core.ModuleInfo{
-		Name: "seqtest",
-		In: []core.PortInfo{
-			{"midi_in", "midi input", core.PortTypeMIDI, seqtestPortMidiIn},
-		},
-		Out: []core.PortInfo{
-			{"out_left", "left channel output", core.PortTypeAudio, nil},
-			{"out_right", "right channel output", core.PortTypeAudio, nil},
-		},
-	}
+func (m *seqPatch) Info() *core.ModuleInfo {
+	return &seqPatchInfo
+}
+
+// ID returns the unique module identifier.
+func (m *seqPatch) ID() string {
+	return m.id
 }
 
 //-----------------------------------------------------------------------------
 
-type seqtestModule struct {
+type seqPatch struct {
 	synth *core.Synth // top-level synth
+	id    string      // module identifier
 	seq   core.Module // sequencer
 }
 
@@ -63,19 +71,20 @@ func NewSequencerTest(s *core.Synth, prog []seq.Op) core.Module {
 	core.SendEventFloat(sx, "bpm", 120.0)
 	core.SendEventInt(sx, "ctrl", seq.CtrlStart)
 
-	return &seqtestModule{
+	return &seqPatch{
 		synth: s,
+		id:    core.GenerateID(seqPatchInfo.Name),
 		seq:   sx,
 	}
 }
 
 // Child returns the child modules of this module.
-func (m *seqtestModule) Child() []core.Module {
+func (m *seqPatch) Child() []core.Module {
 	return []core.Module{m.seq}
 }
 
 // Stop performs any cleanup of a module.
-func (m *seqtestModule) Stop() {
+func (m *seqPatch) Stop() {
 }
 
 //-----------------------------------------------------------------------------
@@ -88,12 +97,12 @@ func seqtestPortMidiIn(cm core.Module, e *core.Event) {
 //-----------------------------------------------------------------------------
 
 // Process runs the module DSP.
-func (m *seqtestModule) Process(buf ...*core.Buf) {
+func (m *seqPatch) Process(buf ...*core.Buf) {
 	m.seq.Process(nil)
 }
 
 // Active returns true if the module has non-zero output.
-func (m *seqtestModule) Active() bool {
+func (m *seqPatch) Active() bool {
 	return true
 }
 

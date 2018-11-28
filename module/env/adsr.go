@@ -18,21 +18,28 @@ import (
 
 //-----------------------------------------------------------------------------
 
+var adsrEnvInfo = core.ModuleInfo{
+	Name: "adsrEnv",
+	In: []core.PortInfo{
+		{"gate", "envelope gate, attack(>0) or release(=0)", core.PortTypeFloat, adsrPortGate},
+		{"attack", "attack time (secs)", core.PortTypeFloat, adsrPortAttack},
+		{"decay", "decay time (secs)", core.PortTypeFloat, adsrPortDecay},
+		{"sustain", "sustain level 0..1", core.PortTypeFloat, adsrPortSustain},
+		{"release", "release time (secs)", core.PortTypeFloat, adsrPortRelease},
+	},
+	Out: []core.PortInfo{
+		{"out", "output", core.PortTypeAudio, nil},
+	},
+}
+
 // Info returns the module information.
-func (m *adsrModule) Info() *core.ModuleInfo {
-	return &core.ModuleInfo{
-		Name: "adsr",
-		In: []core.PortInfo{
-			{"gate", "envelope gate, attack(>0) or release(=0)", core.PortTypeFloat, adsrPortGate},
-			{"attack", "attack time (secs)", core.PortTypeFloat, adsrPortAttack},
-			{"decay", "decay time (secs)", core.PortTypeFloat, adsrPortDecay},
-			{"sustain", "sustain level 0..1", core.PortTypeFloat, adsrPortSustain},
-			{"release", "release time (secs)", core.PortTypeFloat, adsrPortRelease},
-		},
-		Out: []core.PortInfo{
-			{"out", "output", core.PortTypeAudio, nil},
-		},
-	}
+func (m *adsrEnv) Info() *core.ModuleInfo {
+	return &adsrEnvInfo
+}
+
+// ID returns the unique module identifier.
+func (m *adsrEnv) ID() string {
+	return m.id
 }
 
 //-----------------------------------------------------------------------------
@@ -61,8 +68,9 @@ const (
 	stateRelease
 )
 
-type adsrModule struct {
+type adsrEnv struct {
 	synth    *core.Synth // top-level synth
+	id       string      // module identifier
 	state    adsrState   // envelope state
 	s        float32     // sustain level
 	ka       float32     // attack constant
@@ -77,25 +85,26 @@ type adsrModule struct {
 // NewADSREnv returns an Attack/Decay/Sustain/Release envelope module.
 func NewADSREnv(s *core.Synth) core.Module {
 	log.Info.Printf("")
-	return &adsrModule{
+	return &adsrEnv{
 		synth: s,
+		id:    core.GenerateID(adsrEnvInfo.Name),
 	}
 }
 
 // Return the child modules.
-func (m *adsrModule) Child() []core.Module {
+func (m *adsrEnv) Child() []core.Module {
 	return nil
 }
 
 // Stop stops and performs any cleanup of a module.
-func (m *adsrModule) Stop() {
+func (m *adsrEnv) Stop() {
 }
 
 //-----------------------------------------------------------------------------
 // Port Events
 
 func adsrPortGate(cm core.Module, e *core.Event) {
-	m := cm.(*adsrModule)
+	m := cm.(*adsrEnv)
 	gate := e.GetEventFloat().Val
 	log.Info.Printf("gate %f", gate)
 	if gate != 0 {
@@ -116,21 +125,21 @@ func adsrPortGate(cm core.Module, e *core.Event) {
 }
 
 func adsrPortAttack(cm core.Module, e *core.Event) {
-	m := cm.(*adsrModule)
+	m := cm.(*adsrEnv)
 	attack := core.ClampLo(e.GetEventFloat().Val, 0)
 	log.Info.Printf("set attack time %f secs", attack)
 	m.ka = getK(attack, core.AudioSampleFrequency)
 }
 
 func adsrPortDecay(cm core.Module, e *core.Event) {
-	m := cm.(*adsrModule)
+	m := cm.(*adsrEnv)
 	decay := core.ClampLo(e.GetEventFloat().Val, 0)
 	log.Info.Printf("set decay time %f secs", decay)
 	m.kd = getK(decay, core.AudioSampleFrequency)
 }
 
 func adsrPortSustain(cm core.Module, e *core.Event) {
-	m := cm.(*adsrModule)
+	m := cm.(*adsrEnv)
 	sustain := core.Clamp(e.GetEventFloat().Val, 0, 1)
 	log.Info.Printf("set sustain level %f", sustain)
 	m.s = sustain
@@ -140,7 +149,7 @@ func adsrPortSustain(cm core.Module, e *core.Event) {
 }
 
 func adsrPortRelease(cm core.Module, e *core.Event) {
-	m := cm.(*adsrModule)
+	m := cm.(*adsrEnv)
 	release := core.ClampLo(e.GetEventFloat().Val, 0)
 	log.Info.Printf("set release time %f secs", release)
 	m.kr = getK(release, core.AudioSampleFrequency)
@@ -149,7 +158,7 @@ func adsrPortRelease(cm core.Module, e *core.Event) {
 //-----------------------------------------------------------------------------
 
 // Process runs the module DSP.
-func (m *adsrModule) Process(buf ...*core.Buf) {
+func (m *adsrEnv) Process(buf ...*core.Buf) {
 	out := buf[0]
 	for i := 0; i < len(out); i++ {
 		switch m.state {
@@ -198,7 +207,7 @@ func (m *adsrModule) Process(buf ...*core.Buf) {
 }
 
 // Active return true if the module has non-zero output.
-func (m *adsrModule) Active() bool {
+func (m *adsrEnv) Active() bool {
 	return m.state != stateIdle
 }
 

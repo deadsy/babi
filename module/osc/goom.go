@@ -28,25 +28,33 @@ import (
 
 //-----------------------------------------------------------------------------
 
+var goomOscInfo = core.ModuleInfo{
+	Name: "goomOsc",
+	In: []core.PortInfo{
+		{"frequency", "frequency (Hz)", core.PortTypeFloat, goomPortFrequency},
+		{"duty", "duty cycle (0..1)", core.PortTypeFloat, goomPortDuty},
+		{"slope", "slope (0..1)", core.PortTypeFloat, goomPortSlope},
+	},
+	Out: []core.PortInfo{
+		{"out", "output", core.PortTypeAudio, nil},
+	},
+}
+
 // Info returns the module information.
 func (m *goomOsc) Info() *core.ModuleInfo {
-	return &core.ModuleInfo{
-		Name: "goomOsc",
-		In: []core.PortInfo{
-			{"frequency", "frequency (Hz)", core.PortTypeFloat, goomPortFrequency},
-			{"duty", "duty cycle (0..1)", core.PortTypeFloat, goomPortDuty},
-			{"slope", "slope (0..1)", core.PortTypeFloat, goomPortSlope},
-		},
-		Out: []core.PortInfo{
-			{"out", "output", core.PortTypeAudio, nil},
-		},
-	}
+	return &goomOscInfo
+}
+
+// ID returns the unique module identifier.
+func (m *goomOsc) ID() string {
+	return m.id
 }
 
 //-----------------------------------------------------------------------------
 
 type goomOsc struct {
 	synth *core.Synth // top-level synth
+	id    string      // module identifier
 	freq  float32     // base frequency
 	tp    uint32      // s0f0 to s1f1 transition point
 	k0    float32     // scaling factor for slope 0
@@ -60,6 +68,7 @@ func NewGoom(s *core.Synth) core.Module {
 	log.Info.Printf("")
 	return &goomOsc{
 		synth: s,
+		id:    core.GenerateID(goomOscInfo.Name),
 	}
 }
 

@@ -19,26 +19,34 @@ import (
 
 //-----------------------------------------------------------------------------
 
+var panMixInfo = core.ModuleInfo{
+	Name: "panMix",
+	In: []core.PortInfo{
+		{"in", "input", core.PortTypeAudio, nil},
+		{"volume", "volume (0..1)", core.PortTypeFloat, panMixVolume},
+		{"pan", "left/right pan (0..1)", core.PortTypeFloat, panMixPan},
+	},
+	Out: []core.PortInfo{
+		{"out_left", "left channel output", core.PortTypeAudio, nil},
+		{"out_right", "right channel output", core.PortTypeAudio, nil},
+	},
+}
+
 // Info returns the module information.
 func (m *panMix) Info() *core.ModuleInfo {
-	return &core.ModuleInfo{
-		Name: "panMix",
-		In: []core.PortInfo{
-			{"in", "input", core.PortTypeAudio, nil},
-			{"volume", "volume (0..1)", core.PortTypeFloat, panMixVolume},
-			{"pan", "left/right pan (0..1)", core.PortTypeFloat, panMixPan},
-		},
-		Out: []core.PortInfo{
-			{"out_left", "left channel output", core.PortTypeAudio, nil},
-			{"out_right", "right channel output", core.PortTypeAudio, nil},
-		},
-	}
+	return &panMixInfo
+}
+
+// ID returns the unique module identifier.
+func (m *panMix) ID() string {
+	return m.id
 }
 
 //-----------------------------------------------------------------------------
 
 type panMix struct {
 	synth *core.Synth // top-level synth
+	id    string      // module identifier
 	vol   float32     // overall volume
 	pan   float32     // pan value 0 == left, 1 == right
 	volL  float32     // left channel volume
@@ -50,6 +58,7 @@ func NewPan(s *core.Synth) core.Module {
 	log.Info.Printf("")
 	return &panMix{
 		synth: s,
+		id:    core.GenerateID(panMixInfo.Name),
 	}
 }
 

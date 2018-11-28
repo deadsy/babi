@@ -17,21 +17,29 @@ import (
 
 //-----------------------------------------------------------------------------
 
+var ctrlMidiInfo = core.ModuleInfo{
+	Name: "ctrlMidi",
+	In: []core.PortInfo{
+		{"midi_in", "midi input", core.PortTypeMIDI, ctrlMidiIn},
+	},
+	Out: nil,
+}
+
 // Info returns the module information.
 func (m *ctrlMidi) Info() *core.ModuleInfo {
-	return &core.ModuleInfo{
-		Name: "ctrlMidi",
-		In: []core.PortInfo{
-			{"midi_in", "midi input", core.PortTypeMIDI, ctrlMidiIn},
-		},
-		Out: nil,
-	}
+	return &ctrlMidiInfo
+}
+
+// ID returns the unique module identifier.
+func (m *ctrlMidi) ID() string {
+	return m.id
 }
 
 //-----------------------------------------------------------------------------
 
 type ctrlMidi struct {
 	synth *core.Synth // top-level synth
+	id    string      // module identifier
 	ch    uint8       // MIDI channel
 	cc    uint8       // MIDI control change number
 	dst   core.Module // destination module
@@ -44,6 +52,7 @@ func NewCtrl(s *core.Synth, ch, cc uint8, dst core.Module, name string) core.Mod
 	log.Info.Printf("midi ch %d cc %d controlling %s.%s port", ch, cc, mi.Name, name)
 	return &ctrlMidi{
 		synth: s,
+		id:    core.GenerateID(ctrlMidiInfo.Name),
 		ch:    ch,
 		cc:    cc,
 		dst:   dst,

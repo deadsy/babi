@@ -15,26 +15,34 @@ import (
 
 //-----------------------------------------------------------------------------
 
+var lfoDxInfo = core.ModuleInfo{
+	Name: "lfoDx",
+	In: []core.PortInfo{
+		{"rate", "rate (0..99)", core.PortTypeInt, lfoDxRate},
+		{"delay", "delay (0..99)", core.PortTypeInt, lfoDxDelay},
+		{"wave", "waveform (0..5)", core.PortTypeInt, lfoDxWave},
+		{"sync", "key sync (off/on)", core.PortTypeBool, lfoDxSync},
+	},
+	Out: []core.PortInfo{
+		{"out", "output", core.PortTypeAudio, nil},
+	},
+}
+
 // Info returns the module information.
 func (m *lfoDx) Info() *core.ModuleInfo {
-	return &core.ModuleInfo{
-		Name: "lfoDx",
-		In: []core.PortInfo{
-			{"rate", "rate (0..99)", core.PortTypeInt, lfoDxRate},
-			{"delay", "delay (0..99)", core.PortTypeInt, lfoDxDelay},
-			{"wave", "waveform (0..5)", core.PortTypeInt, lfoDxWave},
-			{"sync", "key sync (off/on)", core.PortTypeBool, lfoDxSync},
-		},
-		Out: []core.PortInfo{
-			{"out", "output", core.PortTypeAudio, nil},
-		},
-	}
+	return &lfoDxInfo
+}
+
+// ID returns the unique module identifier.
+func (m *lfoDx) ID() string {
+	return m.id
 }
 
 //-----------------------------------------------------------------------------
 
 type lfoDx struct {
 	synth      *core.Synth // top-level synth
+	id         string      // module identifier
 	unit       uint32
 	wave       lfoWaveType // wave type
 	sync       bool        // key sync
@@ -52,6 +60,7 @@ func NewLFO(s *core.Synth, cfg *lfoConfig) core.Module {
 
 	m := &lfoDx{
 		synth: s,
+		id:    core.GenerateID(lfoDxInfo.Name),
 	}
 
 	n := float64(1 << 6)
