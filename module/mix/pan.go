@@ -27,8 +27,8 @@ var panMixInfo = core.ModuleInfo{
 		{"pan", "left/right pan (0..1)", core.PortTypeFloat, panMixPan},
 	},
 	Out: []core.PortInfo{
-		{"out_left", "left channel output", core.PortTypeAudio, nil},
-		{"out_right", "right channel output", core.PortTypeAudio, nil},
+		{"out0", "left channel output", core.PortTypeAudio, nil},
+		{"out1", "right channel output", core.PortTypeAudio, nil},
 	},
 }
 

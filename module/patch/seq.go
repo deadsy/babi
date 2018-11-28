@@ -35,11 +35,11 @@ var metronome = []seq.Op{
 var seqPatchInfo = core.ModuleInfo{
 	Name: "seqPatch",
 	In: []core.PortInfo{
-		{"midi_in", "midi input", core.PortTypeMIDI, seqtestPortMidiIn},
+		{"midi", "midi input", core.PortTypeMIDI, seqtestPortMidiIn},
 	},
 	Out: []core.PortInfo{
-		{"out_left", "left channel output", core.PortTypeAudio, nil},
-		{"out_right", "right channel output", core.PortTypeAudio, nil},
+		{"out0", "left channel output", core.PortTypeAudio, nil},
+		{"out1", "right channel output", core.PortTypeAudio, nil},
 	},
 }
 

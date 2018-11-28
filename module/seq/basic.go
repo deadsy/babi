@@ -26,7 +26,7 @@ var basicSeqInfo = core.ModuleInfo{
 		{"ctrl", "control", core.PortTypeInt, seqPortCtrl},
 	},
 	Out: []core.PortInfo{
-		{"midi_out", "midi output", core.PortTypeMIDI, nil},
+		{"midi", "midi output", core.PortTypeMIDI, nil},
 	},
 }
 
@@ -69,14 +69,14 @@ func OpNote(channel, note, velocity uint8, duration uint) Op {
 			sm.duration = duration
 			sm.ostate = opStateWait
 			log.Info.Printf("note on %d (%d)", note, m.ticks)
-			m.synth.PushEvent(nil, "midi_in", core.NewEventMIDI(core.EventMIDINoteOn, channel, note, velocity))
+			m.synth.PushEvent(nil, "midi", core.NewEventMIDI(core.EventMIDINoteOn, channel, note, velocity))
 		}
 		sm.duration--
 		if sm.duration == 0 {
 			// done
 			sm.ostate = opStateInit
 			log.Info.Printf("note off (%d)", m.ticks)
-			m.synth.PushEvent(nil, "midi_in", core.NewEventMIDI(core.EventMIDINoteOff, channel, note, 0))
+			m.synth.PushEvent(nil, "midi", core.NewEventMIDI(core.EventMIDINoteOff, channel, note, 0))
 			return 1
 		}
 		// waiting...

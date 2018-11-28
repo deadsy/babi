@@ -20,11 +20,11 @@ import (
 var polyPatchInfo = core.ModuleInfo{
 	Name: "polyPatch",
 	In: []core.PortInfo{
-		{"midi_in", "midi input", core.PortTypeMIDI, polyPatchMidiIn},
+		{"midi", "midi input", core.PortTypeMIDI, polyPatchMidiIn},
 	},
 	Out: []core.PortInfo{
-		{"out_left", "left channel output", core.PortTypeAudio, nil},
-		{"out_right", "right channel output", core.PortTypeAudio, nil},
+		{"out0", "left channel output", core.PortTypeAudio, nil},
+		{"out1", "right channel output", core.PortTypeAudio, nil},
 	},
 }
 
@@ -95,9 +95,9 @@ func polyPatchMidiIn(cm core.Module, e *core.Event) {
 	m := cm.(*polyPatch)
 	me := e.GetEventMIDIChannel(m.ch)
 	if me != nil {
-		core.SendEvent(m.poly, "midi_in", e)
-		core.SendEvent(m.panCtrl, "midi_in", e)
-		core.SendEvent(m.volCtrl, "midi_in", e)
+		core.SendEvent(m.poly, "midi", e)
+		core.SendEvent(m.panCtrl, "midi", e)
+		core.SendEvent(m.volCtrl, "midi", e)
 	}
 }
 

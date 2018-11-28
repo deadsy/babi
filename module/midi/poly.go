@@ -22,7 +22,7 @@ import (
 var polyMidiInfo = core.ModuleInfo{
 	Name: "polyMidi",
 	In: []core.PortInfo{
-		{"midi_in", "midi input", core.PortTypeMIDI, polyMidiIn},
+		{"midi", "midi input", core.PortTypeMIDI, polyMidiIn},
 	},
 	Out: []core.PortInfo{
 		{"out", "output", core.PortTypeAudio, nil},
@@ -162,7 +162,7 @@ func polyMidiIn(cm core.Module, e *core.Event) {
 			for i := range m.voice {
 				v := &m.voice[i]
 				if v.module != nil {
-					core.SendEvent(v.module, "midi_in", e)
+					core.SendEvent(v.module, "midi", e)
 				}
 			}
 		}

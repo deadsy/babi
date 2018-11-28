@@ -30,7 +30,7 @@ func (j *Jack) process(nframes uint32) int {
 			midiEvent := convertToMIDIEvent(e.Data)
 			if midiEvent != nil {
 				log.Info.Printf("%s", midiEvent.String())
-				j.synth.PushEvent(nil, "midi_in", midiEvent)
+				j.synth.PushEvent(nil, "midi", midiEvent)
 			}
 		}
 	}

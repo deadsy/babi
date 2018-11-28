@@ -20,7 +20,7 @@ import (
 var ctrlMidiInfo = core.ModuleInfo{
 	Name: "ctrlMidi",
 	In: []core.PortInfo{
-		{"midi_in", "midi input", core.PortTypeMIDI, ctrlMidiIn},
+		{"midi", "midi input", core.PortTypeMIDI, ctrlMidiIn},
 	},
 	Out: nil,
 }
