@@ -95,14 +95,22 @@ func (ps PortSet) numPortsByName(name string) int {
 	return n
 }
 
+// portTypeByName returns the port type for a port with a given name.
+func (ps PortSet) portTypeByName(name string) PortType {
+	for _, pi := range ps {
+		if pi.Name == name {
+			return pi.Ptype
+		}
+	}
+	return PortTypeNull
+}
+
 //-----------------------------------------------------------------------------
 
 // Connect source/destination module event ports.
 func Connect(s Module, sname string, d Module, dname string) {
-
 	si := s.Info()
 	di := d.Info()
-
 	// check output on source module
 	n := si.Out.numPortsByName(sname)
 	if n != 1 {
@@ -113,8 +121,15 @@ func Connect(s Module, sname string, d Module, dname string) {
 	if n != 1 {
 		panic(fmt.Sprintf("module \"%s\" must have one input port with name \"%s\"", di.Name, dname))
 	}
-	// TODO check port types
-
+	// check the port types match
+	st := si.Out.portTypeByName(sname)
+	dt := di.In.portTypeByName(dname)
+	if st != dt {
+		panic(fmt.Sprintf("port types for \"%s:%s\" and \"%s:%s\" must be the same", si.Name, sname, di.Name, dname))
+	}
+	if st == PortTypeAudio {
+		panic(fmt.Sprintf("Connect() can only be used for event ports"))
+	}
 	// destination port function
 	pf := di.getPortFunc(dname)
 	if pf == nil {
@@ -159,11 +174,6 @@ func ModuleString(m Module) string {
 		return fmt.Sprintf("%s (%s)", mi.Name, strings.Join(s, " "))
 	}
 	return fmt.Sprintf("%s", mi.Name)
-}
-
-// ModuleName returns the name of a module
-func ModuleName(m Module) string {
-	return m.Info().Name
 }
 
 // ModuleStop calls Stop() for each module in a tree of modules.
