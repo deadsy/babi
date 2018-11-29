@@ -33,12 +33,7 @@ var noiseOscInfo = core.ModuleInfo{
 
 // Info returns the module information.
 func (m *noiseOsc) Info() *core.ModuleInfo {
-	return &noiseOscInfo
-}
-
-// ID returns the unique module identifier.
-func (m *noiseOsc) ID() string {
-	return m.id
+	return &m.info
 }
 
 //-----------------------------------------------------------------------------
@@ -54,21 +49,20 @@ const (
 )
 
 type noiseOsc struct {
-	synth          *core.Synth  // top-level synth
-	id             string       // module identifier
-	ntype          noiseType    // noise type
-	rand           *core.Rand32 // random state
-	b0, b1, b2, b3 float32      // state variables
-	b4, b5, b6     float32      // state variables
+	info           core.ModuleInfo // module info
+	ntype          noiseType       // noise type
+	rand           *core.Rand32    // random state
+	b0, b1, b2, b3 float32         // state variables
+	b4, b5, b6     float32         // state variables
 }
 
 func newNoise(s *core.Synth, ntype noiseType) core.Module {
-	return &noiseOsc{
-		synth: s,
-		id:    core.GenerateID(noiseOscInfo.Name),
+	m := &noiseOsc{
+		info:  noiseOscInfo,
 		ntype: ntype,
 		rand:  core.NewRand32(0),
 	}
+	return s.Register(m)
 }
 
 // NewNoiseWhite returns a white noise generator module.

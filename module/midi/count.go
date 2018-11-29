@@ -29,35 +29,29 @@ var countMidiInfo = core.ModuleInfo{
 
 // Info returns the module information.
 func (m *countMidi) Info() *core.ModuleInfo {
-	return &countMidiInfo
-}
-
-// ID returns the unique module identifier.
-func (m *countMidi) ID() string {
-	return m.id
+	return &m.info
 }
 
 //-----------------------------------------------------------------------------
 
 type countMidi struct {
-	synth *core.Synth // top-level synth
-	id    string      // module identifier
-	ch    uint8       // MIDI channel
-	note  uint8       // MIDI note number
-	k     uint        // modulo number
-	count uint        // counter
+	info  core.ModuleInfo // module info
+	ch    uint8           // MIDI channel
+	note  uint8           // MIDI note number
+	k     uint            // modulo number
+	count uint            // counter
 }
 
 // NewCounter returns a MIDI counter module.
 func NewCounter(s *core.Synth, ch, note uint8, k uint) core.Module {
 	log.Info.Printf("")
-	return &countMidi{
-		synth: s,
-		id:    core.GenerateID(countMidiInfo.Name),
-		ch:    ch,
-		note:  note,
-		k:     k,
+	m := &countMidi{
+		info: countMidiInfo,
+		ch:   ch,
+		note: note,
+		k:    k,
 	}
+	return s.Register(m)
 }
 
 // Child returns the child modules of this module.
@@ -74,22 +68,17 @@ func (m *countMidi) Stop() {
 
 func countMidiIn(cm core.Module, e *core.Event) {
 	m := cm.(*countMidi)
-
 	me := e.GetEventMIDIChannel(m.ch)
 	if me != nil {
 		switch me.GetType() {
 		case core.EventMIDINoteOn:
 			if me.GetNote() == m.note {
-
 				m.count = (m.count + 1) % m.k
-
-				// TODO send ....
-
+				core.EventOutInt(m, "count", int(m.count))
 			}
 		default:
 		}
 	}
-
 }
 
 //-----------------------------------------------------------------------------

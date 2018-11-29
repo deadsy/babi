@@ -25,29 +25,23 @@ var timeViewInfo = core.ModuleInfo{
 
 // Info returns the module information.
 func (m *timeView) Info() *core.ModuleInfo {
-	return &timeViewInfo
-}
-
-// ID returns the unique module identifier.
-func (m *timeView) ID() string {
-	return m.id
+	return &m.info
 }
 
 //-----------------------------------------------------------------------------
 
 type timeView struct {
-	synth *core.Synth // top-level synth
-	id    string      // module identifier
-	x     uint64      // current x-value
+	info core.ModuleInfo // module info
+	x    uint64          // current x-value
 }
 
 // NewTime returns a time base module.
 func NewTime(s *core.Synth) core.Module {
 	log.Info.Printf("")
-	return &timeView{
-		synth: s,
-		id:    core.GenerateID(timeViewInfo.Name),
+	m := &timeView{
+		info: timeViewInfo,
 	}
+	return s.Register(m)
 }
 
 // Child returns the child modules of this module.

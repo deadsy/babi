@@ -31,12 +31,7 @@ var polyMidiInfo = core.ModuleInfo{
 
 // Info returns the module information.
 func (m *polyMidi) Info() *core.ModuleInfo {
-	return &polyMidiInfo
-}
-
-// ID returns the unique module identifier.
-func (m *polyMidi) ID() string {
-	return m.id
+	return &m.info
 }
 
 //-----------------------------------------------------------------------------
@@ -47,8 +42,7 @@ type voiceInfo struct {
 }
 
 type polyMidi struct {
-	synth *core.Synth                     // top-level synth
-	id    string                          // module identifier
+	info  core.ModuleInfo                 // module info
 	ch    uint8                           // MIDI channel
 	sm    func(s *core.Synth) core.Module // new function for voice sub-module
 	voice []voiceInfo                     // voices
@@ -59,13 +53,13 @@ type polyMidi struct {
 // NewPoly returns a MIDI polyphonic voice control module.
 func NewPoly(s *core.Synth, ch uint8, sm func(s *core.Synth) core.Module, maxvoices uint) core.Module {
 	log.Info.Printf("")
-	return &polyMidi{
-		synth: s,
-		id:    core.GenerateID(polyMidiInfo.Name),
+	m := &polyMidi{
+		info:  polyMidiInfo,
 		ch:    ch,
 		sm:    sm,
 		voice: make([]voiceInfo, maxvoices),
 	}
+	return s.Register(m)
 }
 
 // Return the child modules.
@@ -111,7 +105,7 @@ func (m *polyMidi) voiceAlloc(note uint8) *voiceInfo {
 	}
 	// setup the new voice
 	v.note = note
-	v.module = m.sm(m.synth)
+	v.module = m.sm(m.Info().Synth)
 	// set the voice frequency
 	f := core.MIDIToFrequency(float32(v.note) + m.bend)
 	core.SendEventFloat(v.module, "frequency", f)

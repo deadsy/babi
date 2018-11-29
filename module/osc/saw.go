@@ -29,12 +29,7 @@ var sawOscInfo = core.ModuleInfo{
 
 // Info returns the module information.
 func (m *sawOsc) Info() *core.ModuleInfo {
-	return &sawOscInfo
-}
-
-// ID returns the unique module identifier.
-func (m *sawOsc) ID() string {
-	return m.id
+	return &m.info
 }
 
 //-----------------------------------------------------------------------------
@@ -48,20 +43,19 @@ const (
 )
 
 type sawOsc struct {
-	synth *core.Synth // top-level synth
-	id    string      // module identifier
-	stype sawType     // sawtooth type
-	freq  float32     // base frequency
-	x     uint32      // phase position
-	xstep uint32      // phase step per sample
+	info  core.ModuleInfo // module info
+	stype sawType         // sawtooth type
+	freq  float32         // base frequency
+	x     uint32          // phase position
+	xstep uint32          // phase step per sample
 }
 
 func newSawtooth(s *core.Synth, stype sawType) core.Module {
-	return &sawOsc{
-		synth: s,
-		id:    core.GenerateID(sawOscInfo.Name),
+	m := &sawOsc{
+		info:  sawOscInfo,
 		stype: stype,
 	}
+	return s.Register(m)
 }
 
 // NewSawtoothBasic returns a non bandwidth limited sawtooth oscillator.

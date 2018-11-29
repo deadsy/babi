@@ -30,19 +30,13 @@ var lfoDxInfo = core.ModuleInfo{
 
 // Info returns the module information.
 func (m *lfoDx) Info() *core.ModuleInfo {
-	return &lfoDxInfo
-}
-
-// ID returns the unique module identifier.
-func (m *lfoDx) ID() string {
-	return m.id
+	return &m.info
 }
 
 //-----------------------------------------------------------------------------
 
 type lfoDx struct {
-	synth      *core.Synth // top-level synth
-	id         string      // module identifier
+	info       core.ModuleInfo // module info
 	unit       uint32
 	wave       lfoWaveType // wave type
 	sync       bool        // key sync
@@ -59,8 +53,7 @@ func NewLFO(s *core.Synth, cfg *lfoConfig) core.Module {
 	log.Info.Printf("")
 
 	m := &lfoDx{
-		synth: s,
-		id:    core.GenerateID(lfoDxInfo.Name),
+		info: lfoDxInfo,
 	}
 
 	n := float64(1 << 6)
@@ -74,7 +67,7 @@ func NewLFO(s *core.Synth, cfg *lfoConfig) core.Module {
 		m.sync = cfg.sync
 	}
 
-	return m
+	return s.Register(m)
 }
 
 // Child returns the child modules of this module.

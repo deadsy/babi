@@ -34,12 +34,7 @@ var adsrEnvInfo = core.ModuleInfo{
 
 // Info returns the module information.
 func (m *adsrEnv) Info() *core.ModuleInfo {
-	return &adsrEnvInfo
-}
-
-// ID returns the unique module identifier.
-func (m *adsrEnv) ID() string {
-	return m.id
+	return &m.info
 }
 
 //-----------------------------------------------------------------------------
@@ -69,26 +64,25 @@ const (
 )
 
 type adsrEnv struct {
-	synth    *core.Synth // top-level synth
-	id       string      // module identifier
-	state    adsrState   // envelope state
-	s        float32     // sustain level
-	ka       float32     // attack constant
-	kd       float32     // decay constant
-	kr       float32     // release constant
-	dTrigger float32     // attack->decay trigger level
-	sTrigger float32     // decay->sustain trigger level
-	iTrigger float32     // release->idle trigger level
-	val      float32     // output value
+	info     core.ModuleInfo // module info
+	state    adsrState       // envelope state
+	s        float32         // sustain level
+	ka       float32         // attack constant
+	kd       float32         // decay constant
+	kr       float32         // release constant
+	dTrigger float32         // attack->decay trigger level
+	sTrigger float32         // decay->sustain trigger level
+	iTrigger float32         // release->idle trigger level
+	val      float32         // output value
 }
 
 // NewADSREnv returns an Attack/Decay/Sustain/Release envelope module.
 func NewADSREnv(s *core.Synth) core.Module {
 	log.Info.Printf("")
-	return &adsrEnv{
-		synth: s,
-		id:    core.GenerateID(adsrEnvInfo.Name),
+	m := &adsrEnv{
+		info: adsrEnvInfo,
 	}
+	return s.Register(m)
 }
 
 // Return the child modules.

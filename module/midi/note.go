@@ -22,42 +22,33 @@ var noteMidiInfo = core.ModuleInfo{
 	In: []core.PortInfo{
 		{"midi", "midi input", core.PortTypeMIDI, noteMidiIn},
 	},
-	Out: nil,
+	Out: []core.PortInfo{
+		{"gate", "gate ouput", core.PortTypeFloat, nil},
+	},
 }
 
 // Info returns the module information.
 func (m *noteMidi) Info() *core.ModuleInfo {
-	return &noteMidiInfo
-}
-
-// ID returns the unique module identifier.
-func (m *noteMidi) ID() string {
-	return m.id
+	return &m.info
 }
 
 //-----------------------------------------------------------------------------
 
 type noteMidi struct {
-	synth *core.Synth // top-level synth
-	id    string      // module identifier
-	ch    uint8       // MIDI channel
-	note  uint8       // MIDI note number
-	dst   core.Module // destination module
-	name  string      // gate port name
+	info core.ModuleInfo // module info
+	ch   uint8           // MIDI channel
+	note uint8           // MIDI note number
 }
 
 // NewNote returns a MIDI note on/off gate control module.
-func NewNote(s *core.Synth, ch, note uint8, dst core.Module, name string) core.Module {
-	mi := dst.Info()
-	log.Info.Printf("midi ch %d note %d controlling %s.%s port", ch, note, mi.Name, name)
-	return &noteMidi{
-		synth: s,
-		id:    core.GenerateID(noteMidiInfo.Name),
-		ch:    ch,
-		note:  note,
-		dst:   dst,
-		name:  name,
+func NewNote(s *core.Synth, ch, note uint8) core.Module {
+	log.Info.Printf("midi ch %d note %d", ch, note)
+	m := &noteMidi{
+		info: noteMidiInfo,
+		ch:   ch,
+		note: note,
 	}
+	return s.Register(m)
 }
 
 // Return the child modules.
@@ -80,11 +71,11 @@ func noteMidiIn(cm core.Module, e *core.Event) {
 		case core.EventMIDINoteOn:
 			if me.GetNote() == m.note {
 				vel := core.MIDIMap(me.GetVelocity(), 0, 1)
-				core.SendEventFloat(m.dst, m.name, vel)
+				core.EventOutFloat(m, "gate", vel)
 			}
 		case core.EventMIDINoteOff:
 			if me.GetNote() == m.note {
-				core.SendEventFloat(m.dst, m.name, 0)
+				core.EventOutFloat(m, "gate", 0)
 			}
 		default:
 		}

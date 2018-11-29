@@ -62,12 +62,7 @@ var voiceGoomInfo = core.ModuleInfo{
 
 // Info returns the module information.
 func (m *voiceGoom) Info() *core.ModuleInfo {
-	return &voiceGoomInfo
-}
-
-// ID returns the unique module identifier.
-func (m *voiceGoom) ID() string {
-	return m.id
+	return &m.info
 }
 
 //-----------------------------------------------------------------------------
@@ -91,21 +86,20 @@ const (
 )
 
 type voiceGoom struct {
-	synth          *core.Synth // top-level synth
-	id             string      // module identifier
-	ampEnv         core.Module // amplitude envelope generator
-	wavOsc         core.Module // wave oscillator
-	modEnv         core.Module // modulation envelope generator
-	modOsc         core.Module // modulation oscillator
-	fltEnv         core.Module // filter envelope generator
-	lpf            core.Module // low pass filter
-	oMode          oModeType   // oscillator mode
-	fMode          fModeType   // frequency mode
-	modTuning      float32     // modulation tuning
-	modLevel       float32     // modulation level
-	fltSensitivity float32     // filter sensitivity
-	fltCutoff      float32     // filter cutoff
-	velocity       float32     // note velocity
+	info           core.ModuleInfo // module info
+	ampEnv         core.Module     // amplitude envelope generator
+	wavOsc         core.Module     // wave oscillator
+	modEnv         core.Module     // modulation envelope generator
+	modOsc         core.Module     // modulation oscillator
+	fltEnv         core.Module     // filter envelope generator
+	lpf            core.Module     // low pass filter
+	oMode          oModeType       // oscillator mode
+	fMode          fModeType       // frequency mode
+	modTuning      float32         // modulation tuning
+	modLevel       float32         // modulation level
+	fltSensitivity float32         // filter sensitivity
+	fltCutoff      float32         // filter cutoff
+	velocity       float32         // note velocity
 }
 
 // NewGoom returns a Goom voice.
@@ -119,9 +113,8 @@ func NewGoom(s *core.Synth) core.Module {
 	fltEnv := env.NewADSREnv(s)
 	lpf := filter.NewSVFilterTrapezoidal(s)
 
-	return &voiceGoom{
-		synth:  s,
-		id:     core.GenerateID(voiceGoomInfo.Name),
+	m := &voiceGoom{
+		info:   voiceGoomInfo,
 		ampEnv: ampEnv,
 		wavOsc: wavOsc,
 		modEnv: modEnv,
@@ -129,6 +122,7 @@ func NewGoom(s *core.Synth) core.Module {
 		fltEnv: fltEnv,
 		lpf:    lpf,
 	}
+	return s.Register(m)
 }
 
 // Child returns the child modules of this module.

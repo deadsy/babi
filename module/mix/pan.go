@@ -34,32 +34,26 @@ var panMixInfo = core.ModuleInfo{
 
 // Info returns the module information.
 func (m *panMix) Info() *core.ModuleInfo {
-	return &panMixInfo
-}
-
-// ID returns the unique module identifier.
-func (m *panMix) ID() string {
-	return m.id
+	return &m.info
 }
 
 //-----------------------------------------------------------------------------
 
 type panMix struct {
-	synth *core.Synth // top-level synth
-	id    string      // module identifier
-	vol   float32     // overall volume
-	pan   float32     // pan value 0 == left, 1 == right
-	volL  float32     // left channel volume
-	volR  float32     // right channel volume
+	info core.ModuleInfo // module info
+	vol  float32         // overall volume
+	pan  float32         // pan value 0 == left, 1 == right
+	volL float32         // left channel volume
+	volR float32         // right channel volume
 }
 
 // NewPan returns a left/right pan and volume module.
 func NewPan(s *core.Synth) core.Module {
 	log.Info.Printf("")
-	return &panMix{
-		synth: s,
-		id:    core.GenerateID(panMixInfo.Name),
+	m := &panMix{
+		info: panMixInfo,
 	}
+	return s.Register(m)
 }
 
 // Return the child modules.

@@ -31,21 +31,15 @@ var oscVoiceInfo = core.ModuleInfo{
 
 // Info returns the module information.
 func (m *oscVoice) Info() *core.ModuleInfo {
-	return &oscVoiceInfo
-}
-
-// ID returns the unique module identifier.
-func (m *oscVoice) ID() string {
-	return m.id
+	return &m.info
 }
 
 //-----------------------------------------------------------------------------
 
 type oscVoice struct {
-	synth *core.Synth // top-level synth
-	id    string      // module identifier
-	adsr  core.Module // adsr envelope
-	osc   core.Module // oscillator
+	info core.ModuleInfo // module info
+	adsr core.Module     // adsr envelope
+	osc  core.Module     // oscillator
 }
 
 // NewOsc returns an oscillator voice module.
@@ -64,12 +58,12 @@ func NewOsc(s *core.Synth, osc core.Module) core.Module {
 	core.SendEventFloat(adsr, "sustain", 0.05)
 	core.SendEventFloat(adsr, "release", 1)
 
-	return &oscVoice{
-		synth: s,
-		id:    core.GenerateID(oscVoiceInfo.Name),
-		adsr:  adsr,
-		osc:   osc,
+	m := &oscVoice{
+		info: oscVoiceInfo,
+		adsr: adsr,
+		osc:  osc,
 	}
+	return s.Register(m)
 }
 
 // Child returns the child modules of this module.

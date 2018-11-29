@@ -61,27 +61,21 @@ var envDxInfo = core.ModuleInfo{
 
 // Info returns the module information.
 func (m *envDx) Info() *core.ModuleInfo {
-	return &envDxInfo
-}
-
-// ID returns the unique module identifier.
-func (m *envDx) ID() string {
-	return m.id
+	return &m.info
 }
 
 //-----------------------------------------------------------------------------
 
 type envDx struct {
-	synth          *core.Synth // top-level synth
-	id             string      // module identifier
-	levels         *[4]int     // levels for this envelope
-	rates          *[4]int     // rates for this envelope
-	level          float32     // current level
-	targetlevel    float32     // target level
-	state          int         // current state
-	rising         bool        // rising or falling?
-	down           bool        // key state
-	idx            int         // incremented every sample
+	info           core.ModuleInfo // module info
+	levels         *[4]int         // levels for this envelope
+	rates          *[4]int         // rates for this envelope
+	level          float32         // current level
+	targetlevel    float32         // target level
+	state          int             // current state
+	rising         bool            // rising or falling?
+	down           bool            // key state
+	idx            int             // incremented every sample
 	qr             int
 	shift          int
 	decayIncrement float32 // decay increment
@@ -90,12 +84,12 @@ type envDx struct {
 // NewEnv returns an DX7 envelope module.
 func NewEnv(s *core.Synth, levels, rates *[4]int) core.Module {
 	log.Info.Printf("")
-	return &envDx{
-		synth:  s,
-		id:     core.GenerateID(envDxInfo.Name),
+	m := &envDx{
+		info:   envDxInfo,
 		levels: levels,
 		rates:  rates,
 	}
+	return s.Register(m)
 }
 
 // Child returns the child modules of this module.

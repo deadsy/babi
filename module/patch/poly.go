@@ -28,26 +28,20 @@ var polyPatchInfo = core.ModuleInfo{
 	},
 }
 
-// Info returns the module information.
+// Info returns the general module information.
 func (m *polyPatch) Info() *core.ModuleInfo {
-	return &polyPatchInfo
-}
-
-// ID returns the unique module identifier.
-func (m *polyPatch) ID() string {
-	return m.id
+	return &m.info
 }
 
 //-----------------------------------------------------------------------------
 
 type polyPatch struct {
-	synth   *core.Synth // top-level synth
-	id      string      // module identifier
-	ch      uint8       // MIDI channel
-	poly    core.Module // polyphony
-	pan     core.Module // pan left/right
-	panCtrl core.Module // MIDI to pan control
-	volCtrl core.Module // MIDI to volume control
+	info    core.ModuleInfo // module info
+	ch      uint8           // MIDI channel
+	poly    core.Module     // polyphony
+	pan     core.Module     // pan left/right
+	panCtrl core.Module     // MIDI to pan control
+	volCtrl core.Module     // MIDI to volume control
 }
 
 // NewPoly returns a polyPatch module.
@@ -70,15 +64,15 @@ func NewPoly(s *core.Synth, sm func(s *core.Synth) core.Module) core.Module {
 	core.SendEventFloat(pan, "pan", 0.5)
 	core.SendEventFloat(pan, "vol", 1)
 
-	return &polyPatch{
-		synth:   s,
-		id:      core.GenerateID(polyPatchInfo.Name),
+	m := &polyPatch{
+		info:    polyPatchInfo,
 		ch:      midiCh,
 		poly:    poly,
 		pan:     pan,
 		panCtrl: panCtrl,
 		volCtrl: volCtrl,
 	}
+	return s.Register(m)
 }
 
 // Child returns the child modules of this module.

@@ -38,12 +38,7 @@ var ksOscInfo = core.ModuleInfo{
 
 // Info returns the module information.
 func (m *ksOsc) Info() *core.ModuleInfo {
-	return &ksOscInfo
-}
-
-// ID returns the unique module identifier.
-func (m *ksOsc) ID() string {
-	return m.id
+	return &m.info
 }
 
 //-----------------------------------------------------------------------------
@@ -57,8 +52,7 @@ const ksFracMask = (1 << ksFracBits) - 1
 const ksFracScale = 1 / (1 << ksFracBits)
 
 type ksOsc struct {
-	synth *core.Synth // top-level synth
-	id    string      // module identifier
+	info  core.ModuleInfo // module info
 	rand  *core.Rand32
 	delay [ksDelaySize]float32 // delay line
 	k     float32              // attenuation and averaging constant 0 to 0.5
@@ -70,11 +64,11 @@ type ksOsc struct {
 // NewKarplusStrong returns a Karplus Strong oscillator module.
 func NewKarplusStrong(s *core.Synth) core.Module {
 	log.Info.Printf("new osc")
-	return &ksOsc{
-		synth: s,
-		id:    core.GenerateID(ksOscInfo.Name),
-		rand:  core.NewRand32(0),
+	m := &ksOsc{
+		info: ksOscInfo,
+		rand: core.NewRand32(0),
 	}
+	return s.Register(m)
 }
 
 // Return the child modules.

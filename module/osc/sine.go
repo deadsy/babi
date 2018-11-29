@@ -27,31 +27,25 @@ var sineOscInfo = core.ModuleInfo{
 
 // Info returns the module information.
 func (m *sineOsc) Info() *core.ModuleInfo {
-	return &sineOscInfo
-}
-
-// ID returns the unique module identifier.
-func (m *sineOsc) ID() string {
-	return m.id
+	return &m.info
 }
 
 //-----------------------------------------------------------------------------
 
 type sineOsc struct {
-	synth *core.Synth // top-level synth
-	id    string      // module identifier
-	freq  float32     // base frequency
-	x     uint32      // current x-value
-	xstep uint32      // current x-step
+	info  core.ModuleInfo // module info
+	freq  float32         // base frequency
+	x     uint32          // current x-value
+	xstep uint32          // current x-step
 }
 
 // NewSine returns an sine oscillator module.
 func NewSine(s *core.Synth) core.Module {
 	log.Info.Printf("")
-	return &sineOsc{
-		synth: s,
-		id:    core.GenerateID(sineOscInfo.Name),
+	m := &sineOsc{
+		info: sineOscInfo,
 	}
+	return s.Register(m)
 }
 
 // Return the child modules.

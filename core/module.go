@@ -11,7 +11,6 @@ package core
 import (
 	"fmt"
 	"strings"
-	"sync"
 )
 
 //-----------------------------------------------------------------------------
@@ -58,7 +57,7 @@ type ModuleInfo struct {
 	Name   string                  // module name
 	In     PortSet                 // input ports
 	Out    PortSet                 // output ports
-	synth  *Synth                  // top-level synth
+	Synth  *Synth                  // top-level synth
 	inMap  map[string]PortFuncType // map input port names to port functions
 	outMap map[string][]dstPort    // map output port names to input ports of other modules
 }
@@ -176,27 +175,6 @@ func ModuleStop(m Module) {
 		ModuleStop(c)
 	}
 	m.Stop()
-}
-
-//-----------------------------------------------------------------------------
-
-var globalID uint
-var globalIDLock sync.Mutex
-
-func getID() uint {
-	globalIDLock.Lock()
-	if globalID == 0 {
-		globalID = 1
-	}
-	id := globalID
-	globalID++
-	globalIDLock.Unlock()
-	return id
-}
-
-// GenerateID returns a system unique ID string (with name prefix).
-func GenerateID(name string) string {
-	return fmt.Sprintf("%s%d", name, getID())
 }
 
 //-----------------------------------------------------------------------------

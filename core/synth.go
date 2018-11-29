@@ -125,7 +125,7 @@ func (s *Synth) Close() {
 func (s *Synth) Register(m Module) Module {
 	mi := m.Info()
 	// set a reference to the top-level synth in the module info
-	mi.synth = s
+	mi.Synth = s
 	// build the name to port function mapping for the inputs
 	mi.inMap = make(map[string]PortFuncType)
 	for i := range mi.In {

@@ -29,32 +29,26 @@ var ctrlMidiInfo = core.ModuleInfo{
 
 // Info returns the module information.
 func (m *ctrlMidi) Info() *core.ModuleInfo {
-	return &ctrlMidiInfo
-}
-
-// ID returns the unique module identifier.
-func (m *ctrlMidi) ID() string {
-	return m.id
+	return &m.info
 }
 
 //-----------------------------------------------------------------------------
 
 type ctrlMidi struct {
-	synth *core.Synth // top-level synth
-	id    string      // module identifier
-	ch    uint8       // MIDI channel
-	cc    uint8       // MIDI control change number
+	info core.ModuleInfo // module info
+	ch   uint8           // MIDI channel
+	cc   uint8           // MIDI control change number
 }
 
 // NewCtrl returns a MIDI control module.
 func NewCtrl(s *core.Synth, ch, cc uint8) core.Module {
 	log.Info.Printf("midi ch %d cc %d", ch, cc)
-	return &ctrlMidi{
-		synth: s,
-		id:    core.GenerateID(ctrlMidiInfo.Name),
-		ch:    ch,
-		cc:    cc,
+	m := &ctrlMidi{
+		info: ctrlMidiInfo,
+		ch:   ch,
+		cc:   cc,
 	}
+	return s.Register(m)
 }
 
 // Return the child modules.

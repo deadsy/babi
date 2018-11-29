@@ -30,12 +30,7 @@ var sqrOscInfo = core.ModuleInfo{
 
 // Info returns the module information.
 func (m *sqrOsc) Info() *core.ModuleInfo {
-	return &sqrOscInfo
-}
-
-// ID returns the unique module identifier.
-func (m *sqrOsc) ID() string {
-	return m.id
+	return &m.info
 }
 
 //-----------------------------------------------------------------------------
@@ -49,21 +44,20 @@ const (
 )
 
 type sqrOsc struct {
-	synth *core.Synth // top-level synth
-	id    string      // module identifier
-	stype sqrType     // square type
-	tp    uint32      // 1/0 transition point
-	freq  float32     // base frequency
-	x     uint32      // phase position
-	xstep uint32      // phase step per sample
+	info  core.ModuleInfo // module info
+	stype sqrType         // square type
+	tp    uint32          // 1/0 transition point
+	freq  float32         // base frequency
+	x     uint32          // phase position
+	xstep uint32          // phase step per sample
 }
 
 func newSquare(s *core.Synth, stype sqrType) core.Module {
-	return &sqrOsc{
-		synth: s,
-		id:    core.GenerateID(sqrOscInfo.Name),
+	m := &sqrOsc{
+		info:  sqrOscInfo,
 		stype: stype,
 	}
+	return s.Register(m)
 }
 
 // NewSquareBasic returns a non bandwidth limited square wave oscillator.

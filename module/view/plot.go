@@ -35,27 +35,21 @@ var plotViewInfo = core.ModuleInfo{
 
 // Info returns the module information.
 func (m *plotView) Info() *core.ModuleInfo {
-	return &plotViewInfo
-}
-
-// ID returns the unique module identifier.
-func (m *plotView) ID() string {
-	return m.id
+	return &m.info
 }
 
 //-----------------------------------------------------------------------------
 
 type plotView struct {
-	synth       *core.Synth   // top-level synth
-	id          string        // module identifier
-	cfg         *PlotConfig   // plot configuration
-	x           uint64        // current x-value
-	samples     int           // number of samples to plot per trigger
-	samplesLeft int           // samples left in this trigger
-	idx         int           // file index number
-	triggered   bool          // are we currently triggered?
-	file        *os.File      // output file
-	buf         *bufio.Writer // buffered io to output file
+	info        core.ModuleInfo // module info
+	cfg         *PlotConfig     // plot configuration
+	x           uint64          // current x-value
+	samples     int             // number of samples to plot per trigger
+	samplesLeft int             // samples left in this trigger
+	idx         int             // file index number
+	triggered   bool            // are we currently triggered?
+	file        *os.File        // output file
+	buf         *bufio.Writer   // buffered io to output file
 }
 
 // PlotConfig provides the configuration for a plotting module.
@@ -92,12 +86,12 @@ func NewPlot(s *core.Synth, cfg *PlotConfig) core.Module {
 		samples = core.Max(16, int(cfg.Duration/core.AudioSamplePeriod))
 	}
 
-	return &plotView{
-		synth:   s,
-		id:      core.GenerateID(plotViewInfo.Name),
+	m := &plotView{
+		info:    plotViewInfo,
 		cfg:     cfg,
 		samples: samples,
 	}
+	return s.Register(m)
 }
 
 // Child returns the child modules of this module.

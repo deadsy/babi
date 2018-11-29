@@ -32,12 +32,7 @@ var basicSeqInfo = core.ModuleInfo{
 
 // Info returns the module information.
 func (m *basicSeq) Info() *core.ModuleInfo {
-	return &basicSeqInfo
-}
-
-// ID returns the unique module identifier.
-func (m *basicSeq) ID() string {
-	return m.id
+	return &m.info
 }
 
 //-----------------------------------------------------------------------------
@@ -69,14 +64,14 @@ func OpNote(channel, note, velocity uint8, duration uint) Op {
 			sm.duration = duration
 			sm.ostate = opStateWait
 			log.Info.Printf("note on %d (%d)", note, m.ticks)
-			m.synth.PushEvent(nil, "midi", core.NewEventMIDI(core.EventMIDINoteOn, channel, note, velocity))
+			m.Info().Synth.PushEvent(nil, "midi", core.NewEventMIDI(core.EventMIDINoteOn, channel, note, velocity))
 		}
 		sm.duration--
 		if sm.duration == 0 {
 			// done
 			sm.ostate = opStateInit
 			log.Info.Printf("note off (%d)", m.ticks)
-			m.synth.PushEvent(nil, "midi", core.NewEventMIDI(core.EventMIDINoteOff, channel, note, 0))
+			m.Info().Synth.PushEvent(nil, "midi", core.NewEventMIDI(core.EventMIDINoteOff, channel, note, 0))
 			return 1
 		}
 		// waiting...
@@ -140,8 +135,7 @@ type seqStateMachine struct {
 }
 
 type basicSeq struct {
-	synth       *core.Synth      // top-level synth
-	id          string           // module identifier
+	info        core.ModuleInfo  // module info
 	secsPerTick float32          // seconds per tick
 	tickError   float32          // current tick error
 	ticks       uint             // full ticks
@@ -151,11 +145,11 @@ type basicSeq struct {
 // NewSequencer returns a basic sequencer module.
 func NewSequencer(s *core.Synth, prog []Op) core.Module {
 	log.Info.Printf("")
-	return &basicSeq{
-		synth: s,
-		id:    core.GenerateID(basicSeqInfo.Name),
-		sm:    &seqStateMachine{prog: prog},
+	m := &basicSeq{
+		info: basicSeqInfo,
+		sm:   &seqStateMachine{prog: prog},
 	}
+	return s.Register(m)
 }
 
 // Child returns the child modules of this module.

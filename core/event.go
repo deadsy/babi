@@ -246,6 +246,11 @@ func SendEventInt(m Module, name string, val int) {
 	SendEvent(m, name, NewEventInt(val))
 }
 
+// EventOutInt sends a integer event from a named output port on a module.
+func EventOutInt(m Module, name string, val int) {
+	EventOut(m, name, NewEventInt(val))
+}
+
 //-----------------------------------------------------------------------------
 // Boolean Events
 

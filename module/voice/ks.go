@@ -31,20 +31,14 @@ var ksVoiceInfo = core.ModuleInfo{
 
 // Info returns the module information.
 func (m *ksVoice) Info() *core.ModuleInfo {
-	return &ksVoiceInfo
-}
-
-// ID returns the unique module identifier.
-func (m *ksVoice) ID() string {
-	return m.id
+	return &m.info
 }
 
 //-----------------------------------------------------------------------------
 
 type ksVoice struct {
-	synth *core.Synth // top-level synth
-	id    string      // module identifier
-	ks    core.Module // karplus strong oscillator
+	info core.ModuleInfo // module info
+	ks   core.Module     // karplus strong oscillator
 }
 
 // NewKarplusStrong returns an karplus strong voice module.
@@ -55,11 +49,11 @@ func NewKarplusStrong(s *core.Synth) core.Module {
 	// ks default
 	core.SendEventFloat(ks, "attenuation", 1.0)
 
-	return &ksVoice{
-		synth: s,
-		id:    core.GenerateID(ksVoiceInfo.Name),
-		ks:    ks,
+	m := &ksVoice{
+		info: ksVoiceInfo,
+		ks:   ks,
 	}
+	return s.Register(m)
 }
 
 // Child returns the child modules of this module.

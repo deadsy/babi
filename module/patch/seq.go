@@ -45,20 +45,14 @@ var seqPatchInfo = core.ModuleInfo{
 
 // Info returns the module information.
 func (m *seqPatch) Info() *core.ModuleInfo {
-	return &seqPatchInfo
-}
-
-// ID returns the unique module identifier.
-func (m *seqPatch) ID() string {
-	return m.id
+	return &m.info
 }
 
 //-----------------------------------------------------------------------------
 
 type seqPatch struct {
-	synth *core.Synth // top-level synth
-	id    string      // module identifier
-	seq   core.Module // sequencer
+	info core.ModuleInfo // module info
+	seq  core.Module     // sequencer
 }
 
 // NewSequencerTest returns a seqeuncer test patch.
@@ -71,11 +65,11 @@ func NewSequencerTest(s *core.Synth, prog []seq.Op) core.Module {
 	core.SendEventFloat(sx, "bpm", 120.0)
 	core.SendEventInt(sx, "ctrl", seq.CtrlStart)
 
-	return &seqPatch{
-		synth: s,
-		id:    core.GenerateID(seqPatchInfo.Name),
-		seq:   sx,
+	m := &seqPatch{
+		info: seqPatchInfo,
+		seq:  sx,
 	}
+	return s.Register(m)
 }
 
 // Child returns the child modules of this module.

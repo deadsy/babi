@@ -31,12 +31,7 @@ var svFilterInfo = core.ModuleInfo{
 
 // Info returns the module information.
 func (m *svFilter) Info() *core.ModuleInfo {
-	return &svFilterInfo
-}
-
-// ID returns the unique module identifier.
-func (m *svFilter) ID() string {
-	return m.id
+	return &m.info
 }
 
 //-----------------------------------------------------------------------------
@@ -50,9 +45,8 @@ const (
 )
 
 type svFilter struct {
-	synth *core.Synth // top-level synth
-	id    string      // module identifier
-	ftype svfType     // filter type
+	info  core.ModuleInfo // module info
+	ftype svfType         // filter type
 	// svfTypeHC
 	kf float32 // constant for cutoff frequency
 	kq float32 // constant for filter resonance
@@ -66,11 +60,11 @@ type svFilter struct {
 }
 
 func newSVF(s *core.Synth, t svfType) core.Module {
-	return &svFilter{
-		synth: s,
-		id:    core.GenerateID(svFilterInfo.Name),
+	m := &svFilter{
+		info:  svFilterInfo,
 		ftype: t,
 	}
+	return s.Register(m)
 }
 
 // NewSVFilterHC returns a state variable filter.

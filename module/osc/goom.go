@@ -42,34 +42,28 @@ var goomOscInfo = core.ModuleInfo{
 
 // Info returns the module information.
 func (m *goomOsc) Info() *core.ModuleInfo {
-	return &goomOscInfo
-}
-
-// ID returns the unique module identifier.
-func (m *goomOsc) ID() string {
-	return m.id
+	return &m.info
 }
 
 //-----------------------------------------------------------------------------
 
 type goomOsc struct {
-	synth *core.Synth // top-level synth
-	id    string      // module identifier
-	freq  float32     // base frequency
-	tp    uint32      // s0f0 to s1f1 transition point
-	k0    float32     // scaling factor for slope 0
-	k1    float32     // scaling factor for slope 1
-	x     uint32      // phase position
-	xstep uint32      // phase step per sample
+	info  core.ModuleInfo // module info
+	freq  float32         // base frequency
+	tp    uint32          // s0f0 to s1f1 transition point
+	k0    float32         // scaling factor for slope 0
+	k1    float32         // scaling factor for slope 1
+	x     uint32          // phase position
+	xstep uint32          // phase step per sample
 }
 
 // NewGoom returns a goom oscillator module.
 func NewGoom(s *core.Synth) core.Module {
 	log.Info.Printf("")
-	return &goomOsc{
-		synth: s,
-		id:    core.GenerateID(goomOscInfo.Name),
+	m := &goomOsc{
+		info: goomOscInfo,
 	}
+	return s.Register(m)
 }
 
 // Child returns the child modules of this module.

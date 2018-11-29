@@ -27,28 +27,22 @@ var ctrlGoomInfo = core.ModuleInfo{
 
 // Info returns the module information.
 func (m *ctrlGoom) Info() *core.ModuleInfo {
-	return &ctrlGoomInfo
-}
-
-// ID returns the unique module identifier.
-func (m *ctrlGoom) ID() string {
-	return m.id
+	return &m.info
 }
 
 //-----------------------------------------------------------------------------
 
 type ctrlGoom struct {
-	synth *core.Synth // top-level synth
-	id    string      // module identifier
+	info core.ModuleInfo // module info
 }
 
 // NewX returns an X module.
 func NewX(s *core.Synth) core.Module {
 	log.Info.Printf("")
-	return &ctrlGoom{
-		synth: s,
-		id:    core.GenerateID(ctrlGoomInfo.Name),
+	m := &ctrlGoom{
+		info: ctrlGoomInfo,
 	}
+	return s.Register(m)
 }
 
 // Child returns the child modules of this module.
