@@ -47,29 +47,25 @@ type PortSet []PortInfo
 //-----------------------------------------------------------------------------
 // Module Information
 
-// ModuleInfo contains the information describing a module.
-type ModuleInfo struct {
-	Name string                  // module name
-	In   PortSet                 // input ports
-	Out  PortSet                 // output ports
-	n2p  map[string]PortFuncType // port name to port function mapping
+// dstPort stores the module and port function for sending an event
+type dstPort struct {
+	module   Module       // destination module
+	portFunc PortFuncType // destination port function
 }
 
-// getPortFunc returns the input port function associated with the the port name.
+// ModuleInfo describes a modules ports and connectivity.
+type ModuleInfo struct {
+	Name   string                  // module name
+	In     PortSet                 // input ports
+	Out    PortSet                 // output ports
+	synth  *Synth                  // top-level synth
+	inMap  map[string]PortFuncType // map input port names to port functions
+	outMap map[string][]dstPort    // map output port names to input ports of other modules
+}
+
+// getPortFunc returns the port function for the input port name.
 func (mi *ModuleInfo) getPortFunc(name string) PortFuncType {
-	// build the name to port function map
-	if mi.n2p == nil {
-		mi.n2p = make(map[string]PortFuncType)
-		// input ports
-		for i := range mi.In {
-			if _, ok := mi.n2p[mi.In[i].Name]; ok {
-				panic(fmt.Sprintf("module \"%s\" must have one input port with name \"%s\"", mi.Name, mi.In[i].Name))
-			}
-			mi.n2p[mi.In[i].Name] = mi.In[i].PortFunc
-		}
-	}
-	// lookup the name
-	if pf, ok := mi.n2p[name]; ok {
+	if pf, ok := mi.inMap[name]; ok {
 		return pf
 	}
 	//log.Info.Printf("module \"%s\" has no port named \"%s\"", mi.Name, name)
@@ -102,50 +98,38 @@ func (ps PortSet) numPortsByName(name string) int {
 
 //-----------------------------------------------------------------------------
 
-type dstPort struct {
-	module   Module       // destination module
-	portFunc PortFuncType // destination port function
-}
-
-// dstPortMap maps a source port to a destination module/port.
-var dstPortMap = map[string][]dstPort{}
-
-// portKey is a globally unique key for a port on a module.
-func portKey(m Module, name string) string {
-	return m.ID() + ":" + name
-}
-
 // Connect source/destination module event ports.
 func Connect(s Module, sname string, d Module, dname string) {
+
+	si := s.Info()
+	di := d.Info()
+
 	// check output on source module
-	n := s.Info().Out.numPortsByName(sname)
+	n := si.Out.numPortsByName(sname)
 	if n != 1 {
-		panic(fmt.Sprintf("module \"%s\" must have one output port with name \"%s\"", s.Info().Name, sname))
+		panic(fmt.Sprintf("module \"%s\" must have one output port with name \"%s\"", si.Name, sname))
 	}
 	// check input on destination module
-	n = d.Info().In.numPortsByName(dname)
+	n = di.In.numPortsByName(dname)
 	if n != 1 {
-		panic(fmt.Sprintf("module \"%s\" must have one input port with name \"%s\"", d.Info().Name, dname))
+		panic(fmt.Sprintf("module \"%s\" must have one input port with name \"%s\"", di.Name, dname))
 	}
+	// TODO check port types
+
 	// destination port function
-	portFunc := d.Info().getPortFunc(dname)
-	if portFunc == nil {
+	pf := di.getPortFunc(dname)
+	if pf == nil {
 		return
 	}
-	// add it to the destination port functions for this source
-	key := portKey(s, sname)
-	dstPortMap[key] = append(dstPortMap[key], dstPort{d, portFunc})
-}
-
-// Disconnect the output port of a module.
-func Disconnect(m Module, name string) {
-	delete(dstPortMap, portKey(m, name))
+	// add it to the output port mapping for this source
+	si.outMap[sname] = append(si.outMap[sname], dstPort{d, pf})
 }
 
 // EventOut sends an event from the named output port of a module.
+// The event will be sent to input ports connected to the output port.
 func EventOut(m Module, name string, e *Event) {
-	key := portKey(m, name)
-	if dstPorts, ok := dstPortMap[key]; ok {
+	mi := m.Info()
+	if dstPorts, ok := mi.outMap[name]; ok {
 		for i := range dstPorts {
 			dstPorts[i].portFunc(dstPorts[i].module, e)
 		}
@@ -158,10 +142,9 @@ func EventOut(m Module, name string, e *Event) {
 // Module is the interface for an audio/event processing module.
 type Module interface {
 	Process(buf ...*Buf) // run the module dsp
-	Active() bool        // return true if the module has non-zero output
+	Active() bool        // return true if the module should be run for dsp output
 	Stop()               // stop the module
-	Info() *ModuleInfo   // return general module information
-	ID() string          // return the unique identifier for this module instance
+	Info() *ModuleInfo   // return module information
 	Child() []Module     // return the child modules
 }
 

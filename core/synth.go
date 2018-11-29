@@ -10,6 +10,7 @@ package core
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/deadsy/babi/utils/cbuf"
 	"github.com/deadsy/babi/utils/log"
@@ -118,6 +119,32 @@ func (s *Synth) Close() {
 		s.jack.Close()
 	}
 	ModuleStop(s.root)
+}
+
+// Register registers a new module with the synth.
+func (s *Synth) Register(m Module) Module {
+	mi := m.Info()
+	// set a reference to the top-level synth in the module info
+	mi.synth = s
+	// build the name to port function mapping for the inputs
+	mi.inMap = make(map[string]PortFuncType)
+	for i := range mi.In {
+		name := mi.In[i].Name
+		if _, ok := mi.inMap[name]; ok {
+			panic(fmt.Sprintf("module \"%s\" must have only one input port with name \"%s\"", mi.Name, name))
+		}
+		mi.inMap[name] = mi.In[i].PortFunc
+	}
+	// build the name to port mapping for the outputs
+	mi.outMap = make(map[string][]dstPort)
+	for i := range mi.Out {
+		name := mi.Out[i].Name
+		if _, ok := mi.outMap[name]; ok {
+			panic(fmt.Sprintf("module \"%s\" must have only one output port with name \"%s\"", mi.Name, name))
+		}
+		mi.outMap[name] = []dstPort{}
+	}
+	return m
 }
 
 //-----------------------------------------------------------------------------

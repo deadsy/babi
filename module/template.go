@@ -23,28 +23,22 @@ var xModuleInfo = core.ModuleInfo{
 
 // Info returns the general module information.
 func (m *xModule) Info() *core.ModuleInfo {
-	return &xModuleInfo
-}
-
-// ID returns the unique module identifier.
-func (m *xModule) ID() string {
-	return m.id
+	return &m.info
 }
 
 //-----------------------------------------------------------------------------
 
 type xModule struct {
-	synth *core.Synth // top-level synth
-	id    string      // module identifier
+	info core.ModuleInfo // module info
 }
 
 // NewX returns an X module.
 func NewX(s *core.Synth) core.Module {
 	log.Info.Printf("")
-	return &xModule{
-		synth: s,
-		id:    core.GenerateID(xModuleInfo.Name),
+	m := &xModule{
+		info: xModuleInfo,
 	}
+	return s.Register(m)
 }
 
 // Child returns the child modules of this module.
