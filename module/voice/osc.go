@@ -22,7 +22,7 @@ var oscVoiceInfo = core.ModuleInfo{
 	Name: "oscVoice",
 	In: []core.PortInfo{
 		{"gate", "oscillator gate, attack(>0) or mute(=0)", core.PortTypeFloat, oscVoiceGate},
-		{"frequency", "frequency (Hz)", core.PortTypeFloat, oscVoiceFrequency},
+		{"note", "midi note value", core.PortTypeFloat, oscVoiceNote},
 	},
 	Out: []core.PortInfo{
 		{"out", "output", core.PortTypeAudio, nil},
@@ -83,9 +83,10 @@ func oscVoiceGate(cm core.Module, e *core.Event) {
 	core.SendEvent(m.adsr, "gate", e)
 }
 
-func oscVoiceFrequency(cm core.Module, e *core.Event) {
+func oscVoiceNote(cm core.Module, e *core.Event) {
 	m := cm.(*oscVoice)
-	core.SendEvent(m.osc, "frequency", e)
+	f := core.MIDIToFrequency(e.GetEventFloat().Val)
+	core.SendEventFloat(m.osc, "frequency", f)
 }
 
 //-----------------------------------------------------------------------------

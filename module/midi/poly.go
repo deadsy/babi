@@ -106,9 +106,8 @@ func (m *polyMidi) voiceAlloc(note uint8) *voiceInfo {
 	// setup the new voice
 	v.note = note
 	v.module = m.sm(m.Info().Synth)
-	// set the voice frequency
-	f := core.MIDIToFrequency(float32(v.note) + m.bend)
-	core.SendEventFloat(v.module, "frequency", f)
+	// set the voice note
+	core.SendEventFloat(v.module, "note", float32(v.note)+m.bend)
 	return v
 }
 
@@ -147,8 +146,7 @@ func polyMidiIn(cm core.Module, e *core.Event) {
 			for i := range m.voice {
 				v := &m.voice[i]
 				if v.module != nil {
-					f := core.MIDIToFrequency(float32(v.note) + m.bend)
-					core.SendEventFloat(v.module, "frequency", f)
+					core.SendEventFloat(v.module, "note", float32(v.note)+m.bend)
 				}
 			}
 		default:

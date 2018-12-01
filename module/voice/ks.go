@@ -22,7 +22,7 @@ var ksVoiceInfo = core.ModuleInfo{
 	Name: "ksVoice",
 	In: []core.PortInfo{
 		{"gate", "oscillator gate, attack(>0) or mute(=0)", core.PortTypeFloat, ksVoiceGate},
-		{"frequency", "frequency (Hz)", core.PortTypeFloat, ksVoiceFrequency},
+		{"note", "midi note value", core.PortTypeFloat, ksVoiceNote},
 	},
 	Out: []core.PortInfo{
 		{"out", "output", core.PortTypeAudio, nil},
@@ -73,9 +73,10 @@ func ksVoiceGate(cm core.Module, e *core.Event) {
 	core.SendEvent(m.ks, "gate", e)
 }
 
-func ksVoiceFrequency(cm core.Module, e *core.Event) {
+func ksVoiceNote(cm core.Module, e *core.Event) {
 	m := cm.(*ksVoice)
-	core.SendEvent(m.ks, "frequency", e)
+	f := core.MIDIToFrequency(e.GetEventFloat().Val)
+	core.SendEventFloat(m.ks, "frequency", f)
 }
 
 //-----------------------------------------------------------------------------
