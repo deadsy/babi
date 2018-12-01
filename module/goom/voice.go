@@ -102,8 +102,8 @@ type voiceGoom struct {
 	velocity       float32         // note velocity
 }
 
-// NewGoom returns a Goom voice.
-func NewGoom(s *core.Synth) core.Module {
+// NewVoice returns a Goom voice.
+func NewVoice(s *core.Synth) core.Module {
 	log.Info.Printf("")
 
 	ampEnv := env.NewADSREnv(s)

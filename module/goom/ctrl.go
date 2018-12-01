@@ -20,10 +20,11 @@ import (
 
 //-----------------------------------------------------------------------------
 
-const midiOscillatorModeNote = 49 // drum pad for oscillator mode
-const midiFrequencyModeNote = 50  // drum pad for frequency mode
-const midiCCModeNote = 51         // drum pad for cc mode
+const midiOscillatorModeNote = 49 // note for oscillator mode
+const midiFrequencyModeNote = 50  // note for frequency mode
+const midiCCModeNote = 51         // note for cc mode
 
+const midiPanCC = 23            // pan and vol(+1) cc
 const midiOscillatorModeCC = 25 // oscillator mode cc
 const midiFrequencyModeCC = 26  // frequency mode cc
 
@@ -56,8 +57,8 @@ type ctrlGoom struct {
 	ccMode uint8           // cc mode  (0,1,2)
 }
 
-// NewController returns a goom voice MIDI controller.
-func NewController(s *core.Synth, ch uint8) core.Module {
+// NewCtrl returns a goom voice MIDI controller.
+func NewCtrl(s *core.Synth, ch uint8) core.Module {
 	log.Info.Printf("")
 	m := &ctrlGoom{
 		info: ctrlGoomInfo,
@@ -88,14 +89,17 @@ func ctrlGoomMidiIn(cm core.Module, e *core.Event) {
 			switch me.GetNote() {
 			case midiOscillatorModeNote:
 				m.oMode = (m.oMode + 1) % 3
+				log.Info.Printf("omode %d", m.oMode)
 				core.EventOutMidiCC(m, "midi", midiOscillatorModeCC, m.oMode)
 				return
 			case midiFrequencyModeNote:
 				m.fMode = (m.fMode + 1) % 3
+				log.Info.Printf("fmode %d", m.fMode)
 				core.EventOutMidiCC(m, "midi", midiFrequencyModeCC, m.fMode)
 				return
 			case midiCCModeNote:
 				m.ccMode = (m.ccMode + 1) % 3
+				log.Info.Printf("ccmode %d", m.ccMode)
 				return
 			}
 		// Ignore the note off events for our special keys.

@@ -114,12 +114,12 @@ func Connect(s Module, sname string, d Module, dname string) {
 	// check output on source module
 	n := si.Out.numPortsByName(sname)
 	if n != 1 {
-		panic(fmt.Sprintf("module \"%s\" must have one output port with name \"%s\"", si.Name, sname))
+		panic(fmt.Sprintf("module \"%s\" must have one output port named \"%s\"", si.Name, sname))
 	}
 	// check input on destination module
 	n = di.In.numPortsByName(dname)
 	if n != 1 {
-		panic(fmt.Sprintf("module \"%s\" must have one input port with name \"%s\"", di.Name, dname))
+		panic(fmt.Sprintf("module \"%s\" must have one input port named \"%s\"", di.Name, dname))
 	}
 	// check the port types match
 	st := si.Out.portTypeByName(sname)

@@ -1,12 +1,12 @@
 //-----------------------------------------------------------------------------
 /*
 
-Poly Patch
+Goom synth root level patch.
 
 */
 //-----------------------------------------------------------------------------
 
-package patch
+package goom
 
 import (
 	"github.com/deadsy/babi/core"
@@ -17,10 +17,10 @@ import (
 
 //-----------------------------------------------------------------------------
 
-var polyPatchInfo = core.ModuleInfo{
-	Name: "polyPatch",
+var patchGoomInfo = core.ModuleInfo{
+	Name: "patchGoom",
 	In: []core.PortInfo{
-		{"midi", "midi input", core.PortTypeMIDI, polyPatchMidiIn},
+		{"midi", "midi input", core.PortTypeMIDI, patchGoomMidiIn},
 	},
 	Out: []core.PortInfo{
 		{"out0", "left channel output", core.PortTypeAudio, nil},
@@ -29,33 +29,40 @@ var polyPatchInfo = core.ModuleInfo{
 }
 
 // Info returns the general module information.
-func (m *polyPatch) Info() *core.ModuleInfo {
+func (m *patchGoom) Info() *core.ModuleInfo {
 	return &m.info
 }
 
 //-----------------------------------------------------------------------------
 
-type polyPatch struct {
+type patchGoom struct {
 	info core.ModuleInfo // module info
-	ch   uint8           // MIDI channel
+	ctrl core.Module     // MIDI filter/processor
 	poly core.Module     // polyphony
 	pan  core.Module     // pan left/right
 }
 
-// NewPoly returns a polyPatch module.
-func NewPoly(s *core.Synth, ch uint8, sm func(s *core.Synth) core.Module) core.Module {
-	log.Info.Printf("")
+// NewPatch returns an goom root module.
+func NewPatch(s *core.Synth, ch uint8) core.Module {
 
-	const midiCtrl = 7
+	// process incoming midi
+	ctrl := NewCtrl(s, ch)
+
+	// create a goom voice
+	voice := func(s *core.Synth) core.Module { return NewVoice(s) }
 
 	// polyphony
-	poly := midi.NewPoly(s, ch, sm, 16)
-	// pan the output to left/right channels
-	pan := mix.NewPan(s, ch, midiCtrl)
+	poly := midi.NewPoly(s, ch, voice, 16)
+	core.Connect(ctrl, "midi", poly, "midi")
 
-	m := &polyPatch{
-		info: polyPatchInfo,
-		ch:   ch,
+	// pan the output to left/right channels
+	pan := mix.NewPan(s, ch, midiPanCC)
+	core.Connect(ctrl, "midi", pan, "midi")
+
+	log.Info.Printf("")
+	m := &patchGoom{
+		info: patchGoomInfo,
+		ctrl: ctrl,
 		poly: poly,
 		pan:  pan,
 	}
@@ -63,30 +70,26 @@ func NewPoly(s *core.Synth, ch uint8, sm func(s *core.Synth) core.Module) core.M
 }
 
 // Child returns the child modules of this module.
-func (m *polyPatch) Child() []core.Module {
-	return []core.Module{m.poly, m.pan}
+func (m *patchGoom) Child() []core.Module {
+	return []core.Module{m.ctrl, m.poly, m.pan}
 }
 
 // Stop performs any cleanup of a module.
-func (m *polyPatch) Stop() {
+func (m *patchGoom) Stop() {
 }
 
 //-----------------------------------------------------------------------------
 // Port Events
 
-func polyPatchMidiIn(cm core.Module, e *core.Event) {
-	m := cm.(*polyPatch)
-	me := e.GetEventMIDIChannel(m.ch)
-	if me != nil {
-		core.SendEvent(m.poly, "midi", e)
-		core.SendEvent(m.pan, "midi", e)
-	}
+func patchGoomMidiIn(cm core.Module, e *core.Event) {
+	m := cm.(*patchGoom)
+	core.SendEvent(m.ctrl, "midi", e)
 }
 
 //-----------------------------------------------------------------------------
 
 // Process runs the module DSP.
-func (m *polyPatch) Process(buf ...*core.Buf) {
+func (m *patchGoom) Process(buf ...*core.Buf) {
 	out0 := buf[0]
 	out1 := buf[1]
 	// polyphony
@@ -97,7 +100,7 @@ func (m *polyPatch) Process(buf ...*core.Buf) {
 }
 
 // Active returns true if the module has non-zero output.
-func (m *polyPatch) Active() bool {
+func (m *patchGoom) Active() bool {
 	return true
 }
 

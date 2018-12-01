@@ -1,5 +1,6 @@
 
 DIRS = poly \
+       goom \
        plots \
 
 all:

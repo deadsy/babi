@@ -1,7 +1,9 @@
 //-----------------------------------------------------------------------------
 /*
 
-Polyphonic Voice Player
+Goom Synth
+
+Inspired by: https://www.quinapalus.com/goom.html
 
 */
 //-----------------------------------------------------------------------------
@@ -13,9 +15,7 @@ import (
 	"os/signal"
 
 	"github.com/deadsy/babi/core"
-	"github.com/deadsy/babi/module/osc"
-	"github.com/deadsy/babi/module/patch"
-	"github.com/deadsy/babi/module/voice"
+	"github.com/deadsy/babi/module/goom"
 	"github.com/deadsy/babi/utils/log"
 )
 
@@ -25,16 +25,8 @@ func main() {
 
 	s := core.NewSynth()
 
-	// Pick a voice
-	//v := func(s *core.Synth) core.Module { return voice.NewOsc(s, osc.NewSine(s)) }
-	//v := func(s *core.Synth) core.Module { return voice.NewOsc(s, osc.NewSquareBasic(s)) }
-	//v := func(s *core.Synth) core.Module { return voice.NewOsc(s, osc.NewNoisePink2(s)) }
-	//v := func(s *core.Synth) core.Module { return voice.NewOsc(s, osc.NewSawtoothBasic(s)) }
-	v := func(s *core.Synth) core.Module { return voice.NewOsc(s, osc.NewGoom(s)) }
-	//v := voice.NewKarplusStrong
-
-	// create the polyphonic patch
-	p := patch.NewPoly(s, 0, v)
+	// create the goom patch
+	p := goom.NewPatch(s, 0)
 
 	// set the root patch for the synth
 	s.SetPatch(p)

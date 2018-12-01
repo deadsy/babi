@@ -4,8 +4,6 @@
 Left/Right Pan and Volume Module
 
 Takes a single audio buffer stream as input and outputs left and right channels.
-The "pan" control pans the signal between the left and right channels with
-constant power. The "volume" control sets the overall power output.
 
 */
 //-----------------------------------------------------------------------------
@@ -23,6 +21,7 @@ var panMixInfo = core.ModuleInfo{
 	Name: "panMix",
 	In: []core.PortInfo{
 		{"in", "input", core.PortTypeAudio, nil},
+		{"midi", "midi input", core.PortTypeMIDI, panMixMidiIn},
 		{"vol", "volume (0..1)", core.PortTypeFloat, panMixVolume},
 		{"pan", "left/right pan (0..1)", core.PortTypeFloat, panMixPan},
 	},
@@ -40,19 +39,30 @@ func (m *panMix) Info() *core.ModuleInfo {
 //-----------------------------------------------------------------------------
 
 type panMix struct {
-	info core.ModuleInfo // module info
-	vol  float32         // overall volume
-	pan  float32         // pan value 0 == left, 1 == right
-	volL float32         // left channel volume
-	volR float32         // right channel volume
+	info  core.ModuleInfo // module info
+	ch    uint8           // MIDI channel
+	ccPan uint8           // MIDI CC number for pan control
+	ccVol uint8           // MIDI CC number for volume control
+	vol   float32         // overall volume
+	pan   float32         // pan value 0 == left, 1 == right
+	volL  float32         // left channel volume
+	volR  float32         // right channel volume
 }
 
 // NewPan returns a left/right pan and volume module.
-func NewPan(s *core.Synth) core.Module {
+func NewPan(s *core.Synth, ch, cc uint8) core.Module {
 	log.Info.Printf("")
 	m := &panMix{
-		info: panMixInfo,
+		info:  panMixInfo,
+		ch:    ch,
+		ccPan: cc,
+		ccVol: cc + 1,
 	}
+
+	// set some defaults
+	m.setVol(0.6)
+	m.setPan(0.5)
+
 	return s.Register(m)
 }
 
@@ -74,21 +84,44 @@ func (m *panMix) set() {
 	m.volR = m.vol * core.Sin(m.pan)
 }
 
-func panMixVolume(cm core.Module, e *core.Event) {
-	m := cm.(*panMix)
-	vol := core.Clamp(e.GetEventFloat().Val, 0, 1)
+func (m *panMix) setVol(vol float32) {
 	log.Info.Printf("set volume %f", vol)
 	// convert to a linear volume
 	m.vol = core.Pow2(vol) - 1.0
 	m.set()
 }
 
-func panMixPan(cm core.Module, e *core.Event) {
-	m := cm.(*panMix)
-	pan := core.Clamp(e.GetEventFloat().Val, 0, 1)
+func (m *panMix) setPan(pan float32) {
 	log.Info.Printf("set pan %f", pan)
 	m.pan = pan * (core.Pi / 2.0)
 	m.set()
+}
+
+func panMixVolume(cm core.Module, e *core.Event) {
+	m := cm.(*panMix)
+	m.setVol(core.Clamp(e.GetEventFloat().Val, 0, 1))
+}
+
+func panMixPan(cm core.Module, e *core.Event) {
+	m := cm.(*panMix)
+	m.setPan(core.Clamp(e.GetEventFloat().Val, 0, 1))
+}
+
+func panMixMidiIn(cm core.Module, e *core.Event) {
+	m := cm.(*panMix)
+	me := e.GetEventMIDIChannel(m.ch)
+	if me != nil {
+		if me.GetType() == core.EventMIDIControlChange {
+			switch me.GetCtrlNum() {
+			case m.ccVol:
+				m.setVol(core.MIDIMap(me.GetCtrlVal(), 0, 1))
+			case m.ccPan:
+				m.setPan(core.MIDIMap(me.GetCtrlVal(), 0, 1))
+			default:
+				// ignore
+			}
+		}
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -96,14 +129,14 @@ func panMixPan(cm core.Module, e *core.Event) {
 // Process runs the module DSP.
 func (m *panMix) Process(buf ...*core.Buf) {
 	in := buf[0]
-	outL := buf[1]
-	outR := buf[2]
+	out0 := buf[1]
+	out1 := buf[2]
 	// left
-	outL.Copy(in)
-	outL.MulScalar(m.volL)
+	out0.Copy(in)
+	out0.MulScalar(m.volL)
 	// right
-	outR.Copy(in)
-	outR.MulScalar(m.volR)
+	out1.Copy(in)
+	out1.MulScalar(m.volR)
 }
 
 // Active return true if the module has non-zero output.
