@@ -24,7 +24,7 @@ var voiceGoomInfo = core.ModuleInfo{
 	Name: "voiceGoom",
 	In: []core.PortInfo{
 		// overall control
-		{"note", "note value (midi)", core.PortTypeFloat, goomPortNote},
+		{"note", "note value", core.PortTypeFloat, goomPortNote},
 		{"gate", "voice gate, attack(>0) or release(=0)", core.PortTypeFloat, goomPortGate},
 		{"omode", "oscillator combine mode (0,1,2)", core.PortTypeInt, goomPortOscillatorMode},
 		{"fmode", "frequency mode (0,1,2)", core.PortTypeInt, goomPortFrequencyMode},

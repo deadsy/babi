@@ -48,16 +48,20 @@ func NewPatch(s *core.Synth, ch uint8) core.Module {
 	// process incoming midi
 	ctrl := NewCtrl(s, ch)
 
-	// create a goom voice
-	voice := func(s *core.Synth) core.Module { return NewVoice(s) }
+	// function to create a goom voices
+	//voice := func(s *core.Synth) core.Module { return NewVoice(s) }
 
 	// polyphony
-	poly := midi.NewPoly(s, ch, voice, 16)
+	poly := midi.NewPoly(s, ch, NewVoice, 16)
 	core.Connect(ctrl, "midi", poly, "midi")
 
 	// pan the output to left/right channels
 	pan := mix.NewPan(s, ch, midiPanCC)
 	core.Connect(ctrl, "midi", pan, "midi")
+
+	// monitor the MIDI events
+	mon := midi.NewMonitor(s, ch)
+	core.Connect(ctrl, "midi", mon, "midi")
 
 	log.Info.Printf("")
 	m := &patchGoom{

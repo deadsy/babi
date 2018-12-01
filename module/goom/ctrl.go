@@ -20,9 +20,9 @@ import (
 
 //-----------------------------------------------------------------------------
 
-const midiOscillatorModeNote = 49 // note for oscillator mode
-const midiFrequencyModeNote = 50  // note for frequency mode
-const midiCCModeNote = 51         // note for cc mode
+const midiOscillatorModeNote = 45 // note for oscillator mode
+const midiFrequencyModeNote = 46  // note for frequency mode
+const midiCCModeNote = 47         // note for cc mode
 
 const midiPanCC = 23            // pan and vol(+1) cc
 const midiOscillatorModeCC = 25 // oscillator mode cc

@@ -29,7 +29,7 @@ func (j *Jack) process(nframes uint32) int {
 			e := &event[k]
 			midiEvent := convertToMIDIEvent(e.Data)
 			if midiEvent != nil {
-				log.Info.Printf("%s", midiEvent.String())
+				//log.Info.Printf("%s", midiEvent.String())
 				j.synth.PushEvent(nil, "midi", midiEvent)
 			}
 		}

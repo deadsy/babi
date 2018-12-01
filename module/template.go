@@ -17,8 +17,10 @@ import (
 
 var xModuleInfo = core.ModuleInfo{
 	Name: "xModule",
-	In:   nil,
-	Out:  nil,
+	In: []core.PortInfo{
+		{"midi", "midi input", core.PortTypeMIDI, xModuleMidiIn},
+	},
+	Out: nil,
 }
 
 // Info returns the general module information.
@@ -52,6 +54,11 @@ func (m *xModule) Stop() {
 
 //-----------------------------------------------------------------------------
 // Port Events
+
+func xModuleMidiIn(cm core.Module, e *core.Event) {
+	m := cm.(*xModule)
+	_ = m
+}
 
 //-----------------------------------------------------------------------------
 

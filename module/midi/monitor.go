@@ -1,8 +1,9 @@
 //-----------------------------------------------------------------------------
 /*
 
-Use a mode selector to multiplex a limited number of control channels to a greater
-number of control events.
+MIDI event monitor
+
+Logs the MIDI events on a MIDI channel.
 
 */
 //-----------------------------------------------------------------------------
@@ -16,61 +17,64 @@ import (
 
 //-----------------------------------------------------------------------------
 
-var modalMidiInfo = core.ModuleInfo{
-	Name: "modalMidi",
+var monitorMidiInfo = core.ModuleInfo{
+	Name: "monitorMidi",
 	In: []core.PortInfo{
-		{"midi", "midi input", core.PortTypeMIDI, modalMidiIn},
-		{"mode", "mode selector", core.PortTypeInt, modalMidiMode},
+		{"midi", "midi input", core.PortTypeMIDI, monitorMidiIn},
 	},
 	Out: nil,
 }
 
 // Info returns the general module information.
-func (m *modalMidi) Info() *core.ModuleInfo {
+func (m *monitorMidi) Info() *core.ModuleInfo {
 	return &m.info
 }
 
 //-----------------------------------------------------------------------------
 
-type modalMidi struct {
+type monitorMidi struct {
 	info core.ModuleInfo // module info
+	ch   uint8           // MIDI channel
 }
 
-// NewModal returns an modela midi control selector.
-func NewModal(s *core.Synth, ch, cc uint8, nControls, nModes int) core.Module {
-	log.Info.Printf("midi ch %d cc %d %dx%d controls", ch, cc, nModes, nControls)
-	m := &modalMidi{
-		info: modalMidiInfo,
+// NewMonitor returns a MIDI monitor module.
+func NewMonitor(s *core.Synth, ch uint8) core.Module {
+	log.Info.Printf("")
+	m := &monitorMidi{
+		info: monitorMidiInfo,
+		ch:   ch,
 	}
 	return s.Register(m)
 }
 
 // Child returns the child modules of this module.
-func (m *modalMidi) Child() []core.Module {
+func (m *monitorMidi) Child() []core.Module {
 	return nil
 }
 
 // Stop performs any cleanup of a module.
-func (m *modalMidi) Stop() {
+func (m *monitorMidi) Stop() {
 }
 
 //-----------------------------------------------------------------------------
 // Port Events
 
-func modalMidiIn(cm core.Module, e *core.Event) {
-}
-
-func modalMidiMode(cm core.Module, e *core.Event) {
+func monitorMidiIn(cm core.Module, e *core.Event) {
+	m := cm.(*monitorMidi)
+	me := e.GetEventMIDIChannel(m.ch)
+	if me != nil {
+		log.Info.Printf("%s", me.String())
+	}
 }
 
 //-----------------------------------------------------------------------------
 
 // Process runs the module DSP.
-func (m *modalMidi) Process(buf ...*core.Buf) {
+func (m *monitorMidi) Process(buf ...*core.Buf) {
 }
 
 // Active returns true if the module has non-zero output.
-func (m *modalMidi) Active() bool {
+func (m *monitorMidi) Active() bool {
 	return false
 }
 
