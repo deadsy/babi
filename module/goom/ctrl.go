@@ -24,11 +24,17 @@ const midiOscillatorModeNote = 45 // note for oscillator mode
 const midiFrequencyModeNote = 46  // note for frequency mode
 const midiCCModeNote = 47         // note for cc mode
 
-const midiPanCC = 23            // pan and vol(+1) cc
+const nControls = 8 // cc controls per mode
+
+// 3 x 8 CC values
+const midiWaveDutyCC = 1         // wave oscillator duty cycle
+const midiWaveSlopeCC = 2        // wave oscillator duty slope
+const midiPanCC = 23             // pan left/right
+const midiPanVol = midiPanCC + 1 // main volume
+
+// and keys turned into CCs
 const midiOscillatorModeCC = 25 // oscillator mode cc
 const midiFrequencyModeCC = 26  // frequency mode cc
-
-const nControls = 8 // cc controls per mode
 
 //-----------------------------------------------------------------------------
 
