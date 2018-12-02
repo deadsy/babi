@@ -179,6 +179,12 @@ func (e *EventMIDI) GetPressure() uint8 {
 	return e.arg0
 }
 
+// SendEventMidiCC sends a MIDI CC event to a named input port on a module.
+func SendEventMidiCC(m Module, name string, num, val uint8) {
+	e := NewEventMIDI(EventMIDIControlChange, midiStatusControlChange, num, val)
+	SendEvent(m, name, e)
+}
+
 // EventOutMidiCC sends a MIDI CC event from a named output port on a module.
 func EventOutMidiCC(m Module, name string, num, val uint8) {
 	e := NewEventMIDI(EventMIDIControlChange, midiStatusControlChange, num, val)

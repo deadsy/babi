@@ -31,9 +31,9 @@ import (
 var goomOscInfo = core.ModuleInfo{
 	Name: "goomOsc",
 	In: []core.PortInfo{
-		{"frequency", "frequency (Hz)", core.PortTypeFloat, goomPortFrequency},
-		{"duty", "duty cycle (0..1)", core.PortTypeFloat, goomPortDuty},
-		{"slope", "slope (0..1)", core.PortTypeFloat, goomPortSlope},
+		{"frequency", "frequency (Hz)", core.PortTypeFloat, goomOscFrequency},
+		{"duty", "duty cycle (0..1)", core.PortTypeFloat, goomOscDuty},
+		{"slope", "slope (0..1)", core.PortTypeFloat, goomOscSlope},
 	},
 	Out: []core.PortInfo{
 		{"out", "output", core.PortTypeAudio, nil},
@@ -50,6 +50,8 @@ func (m *goomOsc) Info() *core.ModuleInfo {
 type goomOsc struct {
 	info  core.ModuleInfo // module info
 	freq  float32         // base frequency
+	duty  float32         // wave duty cycle
+	slope float32         // wave slope
 	tp    uint32          // s0f0 to s1f1 transition point
 	k0    float32         // scaling factor for slope 0
 	k1    float32         // scaling factor for slope 1
@@ -63,6 +65,10 @@ func NewGoom(s *core.Synth) core.Module {
 	m := &goomOsc{
 		info: goomOscInfo,
 	}
+
+	// set some defaults
+	m.setShape(0.5, 0.5)
+
 	return s.Register(m)
 }
 
@@ -78,31 +84,44 @@ func (m *goomOsc) Stop() {
 //-----------------------------------------------------------------------------
 // Events
 
-func goomPortFrequency(cm core.Module, e *core.Event) {
-	m := cm.(*goomOsc)
-	frequency := core.ClampLo(e.GetEventFloat().Val, 0)
-	log.Info.Printf("set frequency %f Hz", frequency)
+func (m *goomOsc) setFrequency(frequency float32) {
 	m.freq = frequency
 	m.xstep = uint32(frequency * core.FrequencyScale)
 }
 
-func goomPortDuty(cm core.Module, e *core.Event) {
-	m := cm.(*goomOsc)
-	duty := core.Clamp(e.GetEventFloat().Val, 0, 1)
-	log.Info.Printf("set duty cycle %f", duty)
+func (m *goomOsc) setShape(duty, slope float32) {
+	// update duty cycle
+	m.duty = duty
 	m.tp = uint32(float32(core.FullCycle) * core.Map(duty, 0.05, 0.5))
-}
-
-func goomPortSlope(cm core.Module, e *core.Event) {
-	m := cm.(*goomOsc)
-	slope := core.Clamp(e.GetEventFloat().Val, 0, 1)
-	log.Info.Printf("set slope %f", slope)
+	// update the slope
+	m.slope = slope
 	// Work out the portion of s0f0/s1f1 that is sloped.
 	slope = core.Map(slope, 0.1, 1)
 	// scaling constant for s0, map the slope to the LUT.
 	m.k0 = 1.0 / (float32(m.tp) * slope)
 	// scaling constant for s1, map the slope to the LUT.
 	m.k1 = 1.0 / (float32(core.FullCycle-1-m.tp) * slope)
+}
+
+func goomOscFrequency(cm core.Module, e *core.Event) {
+	m := cm.(*goomOsc)
+	frequency := core.ClampLo(e.GetEventFloat().Val, 0)
+	log.Info.Printf("set frequency %f Hz", frequency)
+	m.setFrequency(frequency)
+}
+
+func goomOscDuty(cm core.Module, e *core.Event) {
+	m := cm.(*goomOsc)
+	duty := core.Clamp(e.GetEventFloat().Val, 0, 1)
+	log.Info.Printf("set duty cycle %f", duty)
+	m.setShape(duty, m.slope)
+}
+
+func goomOscSlope(cm core.Module, e *core.Event) {
+	m := cm.(*goomOsc)
+	slope := core.Clamp(e.GetEventFloat().Val, 0, 1)
+	log.Info.Printf("set slope %f", slope)
+	m.setShape(m.duty, slope)
 }
 
 //-----------------------------------------------------------------------------

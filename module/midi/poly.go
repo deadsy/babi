@@ -42,12 +42,13 @@ type voiceInfo struct {
 }
 
 type polyMidi struct {
-	info  core.ModuleInfo                 // module info
-	ch    uint8                           // MIDI channel
-	sm    func(s *core.Synth) core.Module // new function for voice sub-module
-	voice []voiceInfo                     // voices
-	idx   int                             // round-robin index for voice slice
-	bend  float32                         // pitch bending value (for all voices)
+	info    core.ModuleInfo                 // module info
+	ch      uint8                           // MIDI channel
+	sm      func(s *core.Synth) core.Module // new function for voice sub-module
+	voice   []voiceInfo                     // voices
+	idx     int                             // round-robin index for voice slice
+	bend    float32                         // pitch bending value (for all voices)
+	ccCache [128]uint8                      // cache of cc values
 }
 
 // NewPoly returns a MIDI polyphonic voice control module.
@@ -58,6 +59,10 @@ func NewPoly(s *core.Synth, ch uint8, sm func(s *core.Synth) core.Module, maxvoi
 		ch:    ch,
 		sm:    sm,
 		voice: make([]voiceInfo, maxvoices),
+	}
+	// initialise the cc cache to an unused value
+	for num := range m.ccCache {
+		m.ccCache[num] = 0xff
 	}
 	return s.Register(m)
 }
@@ -106,6 +111,13 @@ func (m *polyMidi) voiceAlloc(note uint8) *voiceInfo {
 	// setup the new voice
 	v.note = note
 	v.module = m.sm(m.Info().Synth)
+	// send the new voice the cached cc values
+	for num := range m.ccCache {
+		val := m.ccCache[num]
+		if val != 0xff {
+			core.SendEventMidiCC(v.module, "midi", uint8(num), val)
+		}
+	}
 	// set the voice note
 	core.SendEventFloat(v.module, "note", float32(v.note)+m.bend)
 	return v
@@ -149,6 +161,11 @@ func polyMidiIn(cm core.Module, e *core.Event) {
 					core.SendEventFloat(v.module, "note", float32(v.note)+m.bend)
 				}
 			}
+		case core.EventMIDIControlChange:
+			// cache the cc value
+			m.ccCache[me.GetCtrlNum()&0x7f] = me.GetCtrlVal()
+			// and pass the control change though to the voices...
+			fallthrough
 		default:
 			// perhaps the voices can use this MIDI event...
 			for i := range m.voice {
