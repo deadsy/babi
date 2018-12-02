@@ -4,8 +4,8 @@
 Goom Voice Control Module
 
 A goom voice has about 21 controls.
-My MIDI controller (AKAI MPKmini) has 8 CC knobs.
-This MIDI event processor uses drum pads as modal controls to multiplex
+My MIDI controller (AKAI MPKmini) has 8 CC controls.
+This MIDI event processor uses drum pads as modal switches to multiplex
 the CC controls into multiple groups.
 
 */
@@ -27,10 +27,30 @@ const midiCCModeNote = 47         // note for cc mode
 const nControls = 8 // cc controls per mode
 
 // 3 x 8 CC values
-const midiWaveDutyCC = 1         // wave oscillator duty cycle
-const midiWaveSlopeCC = 2        // wave oscillator duty slope
-const midiPanCC = 23             // pan left/right
-const midiPanVol = midiPanCC + 1 // main volume
+const midiWaveDutyCC = 1           // wave oscillator duty cycle
+const midiWaveSlopeCC = 2          // wave oscillator duty slope
+const midiUnusedCC3 = 3            // unused
+const midiUnusedCC4 = 4            // unused
+const midiAmpAttackCC = 5          // amplitude attack
+const midiAmpDecayCC = 6           // amplitude decay
+const midiAmpSustainCC = 7         // amplitude sustain
+const midiAmpReleaseCC = 8         // amplitude release
+const midiUnusedCC9 = 9            // unused
+const midiUnusedCC10 = 10          // unused
+const midiUnusedCC11 = 11          // unused
+const midiUnusedCC12 = 12          // unused
+const midiUnusedCC13 = 13          // unused
+const midiUnusedCC14 = 14          // unused
+const midiUnusedCC15 = 15          // unused
+const midiUnusedCC16 = 16          // unused
+const midiUnusedCC17 = 17          // unused
+const midiUnusedCC18 = 18          // unused
+const midiUnusedCC19 = 19          // unused
+const midiUnusedCC20 = 20          // unused
+const midiUnusedCC21 = 21          // unused
+const midiUnusedCC22 = 22          // unused
+const midiPanCC = 23               // pan left/right
+const midiPanVolCC = midiPanCC + 1 // main volume
 
 // and keys turned into CCs
 const midiOscillatorModeCC = 25 // oscillator mode cc
@@ -42,6 +62,7 @@ var ctrlGoomInfo = core.ModuleInfo{
 	Name: "ctrlGoom",
 	In: []core.PortInfo{
 		{"midi", "midi in", core.PortTypeMIDI, ctrlGoomMidiIn},
+		{"reset", "reset cc values", core.PortTypeBool, ctrlGoomReset},
 	},
 	Out: []core.PortInfo{
 		{"midi", "midi out", core.PortTypeMIDI, nil},
@@ -84,6 +105,27 @@ func (m *ctrlGoom) Stop() {
 
 //-----------------------------------------------------------------------------
 // Port Events
+
+func ctrlGoomReset(cm core.Module, e *core.Event) {
+	m := cm.(*ctrlGoom)
+	be := e.GetEventBool()
+	if be != nil && be.Val {
+		log.Info.Printf("")
+		core.EventOutMidiCC(m, "midi", midiWaveDutyCC, 64)
+		core.EventOutMidiCC(m, "midi", midiWaveSlopeCC, 64)
+		// amplitude envelope
+		core.EventOutMidiCC(m, "midi", midiAmpAttackCC, 64)
+		core.EventOutMidiCC(m, "midi", midiAmpDecayCC, 64)
+		core.EventOutMidiCC(m, "midi", midiAmpSustainCC, 64)
+		core.EventOutMidiCC(m, "midi", midiAmpReleaseCC, 64)
+		// output mixing
+		core.EventOutMidiCC(m, "midi", midiPanCC, 64)
+		core.EventOutMidiCC(m, "midi", midiPanVolCC, 64)
+		// oscillator/frequency modes
+		core.EventOutMidiCC(m, "midi", midiOscillatorModeCC, 0)
+		core.EventOutMidiCC(m, "midi", midiFrequencyModeCC, 0)
+	}
+}
 
 func ctrlGoomMidiIn(cm core.Module, e *core.Event) {
 	m := cm.(*ctrlGoom)

@@ -65,10 +65,6 @@ func NewGoom(s *core.Synth) core.Module {
 	m := &goomOsc{
 		info: goomOscInfo,
 	}
-
-	// set some defaults
-	m.setShape(0.5, 0.5)
-
 	return s.Register(m)
 }
 

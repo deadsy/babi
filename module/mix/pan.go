@@ -58,11 +58,6 @@ func NewPan(s *core.Synth, ch, cc uint8) core.Module {
 		ccPan: cc,
 		ccVol: cc + 1,
 	}
-
-	// set some defaults
-	m.setVol(0.5)
-	m.setPan(0.5)
-
 	return s.Register(m)
 }
 

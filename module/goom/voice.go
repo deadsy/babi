@@ -77,7 +77,6 @@ const (
 	oMode0 oModeType = iota
 	oMode1
 	oMode2
-	oModeMax // must be last
 )
 
 type fModeType uint
@@ -86,19 +85,18 @@ const (
 	fModeNote fModeType = iota
 	fModeHigh
 	fModeLow
-	fModeMax // must be last
 )
 
 type voiceGoom struct {
 	info   core.ModuleInfo // module info
 	wavOsc core.Module     // wave oscillator
+	ampEnv core.Module     // amplitude envelope generator
 	oMode  oModeType       // oscillator mode
 	fMode  fModeType       // frequency mode
 
-	ampEnv         core.Module // amplitude envelope generator
 	modEnv         core.Module // modulation envelope generator
-	modOsc         core.Module // modulation oscillator
 	fltEnv         core.Module // filter envelope generator
+	modOsc         core.Module // modulation oscillator
 	lpf            core.Module // low pass filter
 	modTuning      float32     // modulation tuning
 	modLevel       float32     // modulation level
@@ -111,11 +109,11 @@ type voiceGoom struct {
 func NewVoice(s *core.Synth) core.Module {
 	log.Info.Printf("")
 
-	ampEnv := env.NewADSREnv(s)
+	ampEnv := env.NewADSR(s)
 	wavOsc := osc.NewGoom(s)
-	modEnv := env.NewADSREnv(s)
+	modEnv := env.NewADSR(s)
 	modOsc := osc.NewGoom(s)
-	fltEnv := env.NewADSREnv(s)
+	fltEnv := env.NewADSR(s)
 	lpf := filter.NewSVFilterTrapezoidal(s)
 
 	m := &voiceGoom{
@@ -199,53 +197,40 @@ func voiceGoomMidiIn(cm core.Module, e *core.Event) {
 				// wave oscillator duty slope
 				core.SendEventFloat(m.wavOsc, "slope", fval)
 
+			case midiAmpAttackCC:
+				// amplitude attack (secs)
+				core.SendEventFloat(m.ampEnv, "attack", core.Map(fval, 0.01, 0.4))
+
+			case midiAmpDecayCC:
+				// amplitude decay (secs)
+				core.SendEventFloat(m.ampEnv, "decay", core.Map(fval, 0.01, 2.0))
+
+			case midiAmpSustainCC:
+				// amplitude sustain (0..1)
+				core.SendEventFloat(m.ampEnv, "sustain", fval)
+
+			case midiAmpReleaseCC:
+				// amplitude release (secs)
+				core.SendEventFloat(m.ampEnv, "release", core.Map(fval, 0.01, 2.0))
+
 			case midiOscillatorModeCC:
 				// oscillator combine mode
-				if !core.InEnum(int(val), int(oModeMax)) {
-					log.Info.Printf("bad value for oscillator mode %d", val)
-					return
-				}
 				log.Info.Printf("set oscillator mode %d", val)
 				m.oMode = oModeType(val)
 
 			case midiFrequencyModeCC:
 				// frequency mode
-				if !core.InEnum(int(val), int(fModeMax)) {
-					log.Info.Printf("bad value for frequency mode %d", val)
-					return
-				}
 				log.Info.Printf("set frequency mode %d", val)
 				m.fMode = fModeType(val)
 
 			default:
 				// ignore
 			}
-
 		}
 	}
 }
 
 /*
-
-func goomPortAmplitudeAttack(cm core.Module, e *core.Event) {
-	m := cm.(*voiceGoom)
-	core.SendEvent(m.ampEnv, "attack", e)
-}
-
-func goomPortAmplitudeDecay(cm core.Module, e *core.Event) {
-	m := cm.(*voiceGoom)
-	core.SendEvent(m.ampEnv, "decay", e)
-}
-
-func goomPortAmplitudeSustain(cm core.Module, e *core.Event) {
-	m := cm.(*voiceGoom)
-	core.SendEvent(m.ampEnv, "sustain", e)
-}
-
-func goomPortAmplitudeRelease(cm core.Module, e *core.Event) {
-	m := cm.(*voiceGoom)
-	core.SendEvent(m.ampEnv, "release", e)
-}
 
 func goomPortModulationAttack(cm core.Module, e *core.Event) {
 	m := cm.(*voiceGoom)
@@ -329,12 +314,18 @@ func (m *voiceGoom) Process(buf ...*core.Buf) {
 	out := buf[0]
 	// generate wave
 	m.wavOsc.Process(out)
+
+	// generate envelope
+	var env core.Buf
+	m.ampEnv.Process(&env)
+
+	// apply envelope
+	out.Mul(&env)
 }
 
 // Active returns true if the module has non-zero output.
 func (m *voiceGoom) Active() bool {
-	//return m.ampEnv.Active()
-	return true
+	return m.ampEnv.Active()
 }
 
 //-----------------------------------------------------------------------------

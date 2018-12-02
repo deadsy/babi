@@ -46,7 +46,7 @@ type oscVoice struct {
 func NewOsc(s *core.Synth, osc core.Module) core.Module {
 	log.Info.Printf("")
 
-	adsr := env.NewADSREnv(s)
+	adsr := env.NewADSR(s)
 
 	// oscillator defaults
 	core.SendEventFloat(osc, "duty", 0.1)

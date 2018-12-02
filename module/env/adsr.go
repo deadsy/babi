@@ -21,11 +21,11 @@ import (
 var adsrEnvInfo = core.ModuleInfo{
 	Name: "adsrEnv",
 	In: []core.PortInfo{
-		{"gate", "envelope gate, attack(>0) or release(=0)", core.PortTypeFloat, adsrPortGate},
-		{"attack", "attack time (secs)", core.PortTypeFloat, adsrPortAttack},
-		{"decay", "decay time (secs)", core.PortTypeFloat, adsrPortDecay},
-		{"sustain", "sustain level 0..1", core.PortTypeFloat, adsrPortSustain},
-		{"release", "release time (secs)", core.PortTypeFloat, adsrPortRelease},
+		{"gate", "envelope gate, attack(>0) or release(=0)", core.PortTypeFloat, adsrEnvGate},
+		{"attack", "attack time (secs)", core.PortTypeFloat, adsrEnvAttack},
+		{"decay", "decay time (secs)", core.PortTypeFloat, adsrEnvDecay},
+		{"sustain", "sustain level 0..1", core.PortTypeFloat, adsrEnvSustain},
+		{"release", "release time (secs)", core.PortTypeFloat, adsrEnvRelease},
 	},
 	Out: []core.PortInfo{
 		{"out", "output", core.PortTypeAudio, nil},
@@ -76,8 +76,8 @@ type adsrEnv struct {
 	val      float32         // output value
 }
 
-// NewADSREnv returns an Attack/Decay/Sustain/Release envelope module.
-func NewADSREnv(s *core.Synth) core.Module {
+// NewADSR returns an Attack/Decay/Sustain/Release envelope module.
+func NewADSR(s *core.Synth) core.Module {
 	log.Info.Printf("")
 	m := &adsrEnv{
 		info: adsrEnvInfo,
@@ -97,7 +97,7 @@ func (m *adsrEnv) Stop() {
 //-----------------------------------------------------------------------------
 // Port Events
 
-func adsrPortGate(cm core.Module, e *core.Event) {
+func adsrEnvGate(cm core.Module, e *core.Event) {
 	m := cm.(*adsrEnv)
 	gate := e.GetEventFloat().Val
 	log.Info.Printf("gate %f", gate)
@@ -118,21 +118,21 @@ func adsrPortGate(cm core.Module, e *core.Event) {
 	}
 }
 
-func adsrPortAttack(cm core.Module, e *core.Event) {
+func adsrEnvAttack(cm core.Module, e *core.Event) {
 	m := cm.(*adsrEnv)
 	attack := core.ClampLo(e.GetEventFloat().Val, 0)
 	log.Info.Printf("set attack time %f secs", attack)
 	m.ka = getK(attack, core.AudioSampleFrequency)
 }
 
-func adsrPortDecay(cm core.Module, e *core.Event) {
+func adsrEnvDecay(cm core.Module, e *core.Event) {
 	m := cm.(*adsrEnv)
 	decay := core.ClampLo(e.GetEventFloat().Val, 0)
 	log.Info.Printf("set decay time %f secs", decay)
 	m.kd = getK(decay, core.AudioSampleFrequency)
 }
 
-func adsrPortSustain(cm core.Module, e *core.Event) {
+func adsrEnvSustain(cm core.Module, e *core.Event) {
 	m := cm.(*adsrEnv)
 	sustain := core.Clamp(e.GetEventFloat().Val, 0, 1)
 	log.Info.Printf("set sustain level %f", sustain)
@@ -142,7 +142,7 @@ func adsrPortSustain(cm core.Module, e *core.Event) {
 	m.iTrigger = sustain * adsrEpsilon
 }
 
-func adsrPortRelease(cm core.Module, e *core.Event) {
+func adsrEnvRelease(cm core.Module, e *core.Event) {
 	m := cm.(*adsrEnv)
 	release := core.ClampLo(e.GetEventFloat().Val, 0)
 	log.Info.Printf("set release time %f secs", release)
@@ -184,6 +184,7 @@ func (m *adsrEnv) Process(buf ...*core.Buf) {
 			}
 		case stateSustain:
 			// sustain - do nothing
+			m.val = m.s
 		case stateRelease:
 			// release until idle level
 			if m.val > m.iTrigger {

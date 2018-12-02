@@ -70,6 +70,10 @@ func NewPatch(s *core.Synth, ch uint8) core.Module {
 		poly: poly,
 		pan:  pan,
 	}
+
+	// set the initial cc values
+	core.SendEventBool(ctrl, "reset", true)
+
 	return s.Register(m)
 }
 
