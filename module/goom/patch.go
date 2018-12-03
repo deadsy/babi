@@ -72,7 +72,7 @@ func NewPatch(s *core.Synth, ch uint8) core.Module {
 	}
 
 	// set the initial cc values
-	core.SendEventBool(ctrl, "reset", true)
+	core.EventInBool(ctrl, "reset", true)
 
 	return s.Register(m)
 }
@@ -91,7 +91,7 @@ func (m *patchGoom) Stop() {
 
 func patchGoomMidiIn(cm core.Module, e *core.Event) {
 	m := cm.(*patchGoom)
-	core.SendEvent(m.ctrl, "midi", e)
+	core.EventIn(m.ctrl, "midi", e)
 }
 
 //-----------------------------------------------------------------------------

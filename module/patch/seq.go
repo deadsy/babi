@@ -62,8 +62,8 @@ func NewSequencerTest(s *core.Synth, prog []seq.Op) core.Module {
 	sx := seq.NewSequencer(s, prog)
 
 	// defaults
-	core.SendEventFloat(sx, "bpm", 120.0)
-	core.SendEventInt(sx, "ctrl", seq.CtrlStart)
+	core.EventInFloat(sx, "bpm", 120.0)
+	core.EventInInt(sx, "ctrl", seq.CtrlStart)
 
 	m := &seqPatch{
 		info: seqPatchInfo,

@@ -144,7 +144,7 @@ func voiceGoomNote(cm core.Module, e *core.Event) {
 	m := cm.(*voiceGoom)
 	note := e.GetEventFloat().Val
 	// set the wave oscillator frequency
-	core.SendEventFloat(m.wavOsc, "frequency", core.MIDIToFrequency(note))
+	core.EventInFloat(m.wavOsc, "frequency", core.MIDIToFrequency(note))
 
 	/*
 		  // set the modulation oscillator frequency
@@ -155,7 +155,7 @@ func voiceGoomNote(cm core.Module, e *core.Event) {
 				note = 100
 			}
 			note += m.modTuning * 2 // +/- 2 semitones
-			core.SendEventFloat(m.modOsc, "frequency", core.MIDIToFrequency(note))
+			core.EventInFloat(m.modOsc, "frequency", core.MIDIToFrequency(note))
 	*/
 }
 
@@ -165,16 +165,16 @@ func voiceGoomGate(cm core.Module, e *core.Event) {
 	log.Info.Printf("gate %f", gate)
 	if gate > 0 {
 		// gate all of the envelopes
-		core.SendEventFloat(m.ampEnv, "gate", gate)
-		core.SendEventFloat(m.modEnv, "gate", gate)
-		core.SendEventFloat(m.fltEnv, "gate", gate)
+		core.EventInFloat(m.ampEnv, "gate", gate)
+		core.EventInFloat(m.modEnv, "gate", gate)
+		core.EventInFloat(m.fltEnv, "gate", gate)
 		// record the note velocity
 		m.velocity = gate
 	} else {
 		// release all of the envelopes
-		core.SendEventFloat(m.ampEnv, "gate", 0)
-		core.SendEventFloat(m.modEnv, "gate", 0)
-		core.SendEventFloat(m.fltEnv, "gate", 0)
+		core.EventInFloat(m.ampEnv, "gate", 0)
+		core.EventInFloat(m.modEnv, "gate", 0)
+		core.EventInFloat(m.fltEnv, "gate", 0)
 	}
 }
 
@@ -191,27 +191,27 @@ func voiceGoomMidiIn(cm core.Module, e *core.Event) {
 
 			case midiWaveDutyCC:
 				// wave oscillator duty cycle
-				core.SendEventFloat(m.wavOsc, "duty", fval)
+				core.EventInFloat(m.wavOsc, "duty", fval)
 
 			case midiWaveSlopeCC:
 				// wave oscillator duty slope
-				core.SendEventFloat(m.wavOsc, "slope", fval)
+				core.EventInFloat(m.wavOsc, "slope", fval)
 
 			case midiAmpAttackCC:
 				// amplitude attack (secs)
-				core.SendEventFloat(m.ampEnv, "attack", core.Map(fval, 0.01, 0.4))
+				core.EventInFloat(m.ampEnv, "attack", core.MapLin(fval, 0.01, 0.4))
 
 			case midiAmpDecayCC:
 				// amplitude decay (secs)
-				core.SendEventFloat(m.ampEnv, "decay", core.Map(fval, 0.01, 2.0))
+				core.EventInFloat(m.ampEnv, "decay", core.MapLin(fval, 0.01, 2.0))
 
 			case midiAmpSustainCC:
 				// amplitude sustain (0..1)
-				core.SendEventFloat(m.ampEnv, "sustain", fval)
+				core.EventInFloat(m.ampEnv, "sustain", fval)
 
 			case midiAmpReleaseCC:
 				// amplitude release (secs)
-				core.SendEventFloat(m.ampEnv, "release", core.Map(fval, 0.01, 2.0))
+				core.EventInFloat(m.ampEnv, "release", core.MapLin(fval, 0.01, 2.0))
 
 			case midiOscillatorModeCC:
 				// oscillator combine mode
@@ -234,22 +234,22 @@ func voiceGoomMidiIn(cm core.Module, e *core.Event) {
 
 func goomPortModulationAttack(cm core.Module, e *core.Event) {
 	m := cm.(*voiceGoom)
-	core.SendEvent(m.modEnv, "attack", e)
+	core.EventIn(m.modEnv, "attack", e)
 }
 
 func goomPortModulationDecay(cm core.Module, e *core.Event) {
 	m := cm.(*voiceGoom)
-	core.SendEvent(m.modEnv, "decay", e)
+	core.EventIn(m.modEnv, "decay", e)
 }
 
 func goomPortModulationDuty(cm core.Module, e *core.Event) {
 	m := cm.(*voiceGoom)
-	core.SendEvent(m.modOsc, "duty", e)
+	core.EventIn(m.modOsc, "duty", e)
 }
 
 func goomPortModulationSlope(cm core.Module, e *core.Event) {
 	m := cm.(*voiceGoom)
-	core.SendEvent(m.modOsc, "slope", e)
+	core.EventIn(m.modOsc, "slope", e)
 }
 
 func goomPortModulationTuning(cm core.Module, e *core.Event) {
@@ -268,22 +268,22 @@ func goomPortModulationLevel(cm core.Module, e *core.Event) {
 
 func goomPortFilterAttack(cm core.Module, e *core.Event) {
 	m := cm.(*voiceGoom)
-	core.SendEvent(m.fltEnv, "attack", e)
+	core.EventIn(m.fltEnv, "attack", e)
 }
 
 func goomPortFilterDecay(cm core.Module, e *core.Event) {
 	m := cm.(*voiceGoom)
-	core.SendEvent(m.fltEnv, "decay", e)
+	core.EventIn(m.fltEnv, "decay", e)
 }
 
 func goomPortFilterSustain(cm core.Module, e *core.Event) {
 	m := cm.(*voiceGoom)
-	core.SendEvent(m.fltEnv, "sustain", e)
+	core.EventIn(m.fltEnv, "sustain", e)
 }
 
 func goomPortFilterRelease(cm core.Module, e *core.Event) {
 	m := cm.(*voiceGoom)
-	core.SendEvent(m.fltEnv, "release", e)
+	core.EventIn(m.fltEnv, "release", e)
 }
 
 func goomPortFilterSensitivity(cm core.Module, e *core.Event) {
@@ -302,7 +302,7 @@ func goomPortFilterCutoff(cm core.Module, e *core.Event) {
 
 func goomPortFilterResonance(cm core.Module, e *core.Event) {
 	m := cm.(*voiceGoom)
-	core.SendEvent(m.lpf, "resonance", e)
+	core.EventIn(m.lpf, "resonance", e)
 }
 
 */

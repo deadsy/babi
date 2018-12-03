@@ -10,6 +10,7 @@ package core
 
 import (
 	"fmt"
+	"math"
 	"strings"
 )
 
@@ -78,9 +79,32 @@ func ClampInt(x, a, b int) int {
 
 //-----------------------------------------------------------------------------
 
-// Map returns a linear mapping from x = 0..1 to y = a..b.
-func Map(x, a, b float32) float32 {
+// MapLin returns a linear mapping from x = 0..1 to y = a..b.
+func MapLin(x, a, b float32) float32 {
 	return ((b - a) * x) + a
+}
+
+// MapLog returns a logarithmic mapping from x = 0..1 to y = a..b.
+func MapLog(x, a, b float32) float32 {
+	if x == 0 {
+		return a
+	}
+	if x == 1 {
+		return b
+	}
+	panic("todo")
+}
+
+// MapExp returns an exponential mapping from x = 0..1 to y = a..b.
+func MapExp(x, a, b float32) float32 {
+	if x == 0 {
+		return a
+	}
+	if x == 1 {
+		return b
+	}
+	k := float32(math.Log2(float64(b / a)))
+	return a * Pow2(k*x)
 }
 
 //-----------------------------------------------------------------------------

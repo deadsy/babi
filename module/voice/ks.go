@@ -47,7 +47,7 @@ func NewKarplusStrong(s *core.Synth) core.Module {
 
 	ks := osc.NewKarplusStrong(s)
 	// ks default
-	core.SendEventFloat(ks, "attenuation", 1.0)
+	core.EventInFloat(ks, "attenuation", 1.0)
 
 	m := &ksVoice{
 		info: ksVoiceInfo,
@@ -70,13 +70,13 @@ func (m *ksVoice) Stop() {
 
 func ksVoiceGate(cm core.Module, e *core.Event) {
 	m := cm.(*ksVoice)
-	core.SendEvent(m.ks, "gate", e)
+	core.EventIn(m.ks, "gate", e)
 }
 
 func ksVoiceNote(cm core.Module, e *core.Event) {
 	m := cm.(*ksVoice)
 	f := core.MIDIToFrequency(e.GetEventFloat().Val)
-	core.SendEventFloat(m.ks, "frequency", f)
+	core.EventInFloat(m.ks, "frequency", f)
 }
 
 //-----------------------------------------------------------------------------

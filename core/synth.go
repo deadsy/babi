@@ -100,7 +100,7 @@ func (s *Synth) Loop() {
 		if e.dst == nil {
 			e.dst = s.root
 		}
-		SendEvent(e.dst, e.port, e.event)
+		EventIn(e.dst, e.port, e.event)
 	}
 	// zero the audio output buffers
 	for i := s.nIn; i < len(s.audio); i++ {

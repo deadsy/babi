@@ -34,10 +34,10 @@ func envDx() {
 	rates := &[4]int{80, 80, 70, 80}
 
 	s := dx.NewEnv(nil, levels, rates)
-	core.SendEventFloat(s, "gate", 1.0)
+	core.EventInFloat(s, "gate", 1.0)
 
 	p := view.NewPlot(nil, cfg)
-	core.SendEventBool(p, "trigger", true)
+	core.EventInBool(p, "trigger", true)
 
 	for i := 0; i < 12; i++ {
 		var y core.Buf
@@ -45,7 +45,7 @@ func envDx() {
 		p.Process(nil, &y)
 	}
 
-	core.SendEventFloat(s, "gate", 0.0)
+	core.EventInFloat(s, "gate", 0.0)
 
 	for i := 0; i < 4; i++ {
 		var y core.Buf
@@ -69,12 +69,12 @@ func goom() {
 	}
 
 	s := osc.NewGoom(nil)
-	core.SendEventFloat(s, "frequency", freq)
-	core.SendEventFloat(s, "duty", 0.3)
-	core.SendEventFloat(s, "slope", 1.0)
+	core.EventInFloat(s, "frequency", freq)
+	core.EventInFloat(s, "duty", 0.3)
+	core.EventInFloat(s, "slope", 1.0)
 
 	p := view.NewPlot(nil, cfg)
-	core.SendEventBool(p, "trigger", true)
+	core.EventInBool(p, "trigger", true)
 
 	for i := 0; i < 10; i++ {
 		var y core.Buf
@@ -97,11 +97,11 @@ func lfoDx() {
 	}
 
 	s := dx.NewLFO(nil, nil)
-	core.SendEventInt(s, "rate", 70)
-	core.SendEventInt(s, "wave", int(dx.LfoTriangle))
+	core.EventInInt(s, "rate", 70)
+	core.EventInInt(s, "wave", int(dx.LfoTriangle))
 
 	p := view.NewPlot(nil, cfg)
-	core.SendEventBool(p, "trigger", true)
+	core.EventInBool(p, "trigger", true)
 
 	for i := 0; i < 50; i++ {
 		var y core.Buf

@@ -46,8 +46,19 @@ func (e *Event) String() string {
 	return "unknown event"
 }
 
-// SendEvent sends an event to a named port on a module.
-func SendEvent(m Module, name string, e *Event) {
+// EventOut sends an event from the named output port of a module.
+// The event will be sent to input ports connected to the output port.
+func EventOut(m Module, name string, e *Event) {
+	mi := m.Info()
+	if dstPorts, ok := mi.outMap[name]; ok {
+		for i := range dstPorts {
+			dstPorts[i].portFunc(dstPorts[i].module, e)
+		}
+	}
+}
+
+// EventIn sends an event to a named port on a module.
+func EventIn(m Module, name string, e *Event) {
 	portFunc := m.Info().getPortFunc(name)
 	if portFunc != nil {
 		portFunc(m, e)
@@ -179,10 +190,10 @@ func (e *EventMIDI) GetPressure() uint8 {
 	return e.arg0
 }
 
-// SendEventMidiCC sends a MIDI CC event to a named input port on a module.
-func SendEventMidiCC(m Module, name string, num, val uint8) {
+// EventInMidiCC sends a MIDI CC event to a named input port on a module.
+func EventInMidiCC(m Module, name string, num, val uint8) {
 	e := NewEventMIDI(EventMIDIControlChange, midiStatusControlChange, num, val)
-	SendEvent(m, name, e)
+	EventIn(m, name, e)
 }
 
 // EventOutMidiCC sends a MIDI CC event from a named output port on a module.
@@ -217,9 +228,9 @@ func (e *Event) GetEventFloat() *EventFloat {
 	return nil
 }
 
-// SendEventFloat sends a float event to a named input port on a module.
-func SendEventFloat(m Module, name string, val float32) {
-	SendEvent(m, name, NewEventFloat(val))
+// EventInFloat sends a float event to a named input port on a module.
+func EventInFloat(m Module, name string, val float32) {
+	EventIn(m, name, NewEventFloat(val))
 }
 
 // EventOutFloat sends a float event from a named output port on a module.
@@ -253,9 +264,9 @@ func (e *Event) GetEventInt() *EventInt {
 	return nil
 }
 
-// SendEventInt sends a integer event to a named port on a module.
-func SendEventInt(m Module, name string, val int) {
-	SendEvent(m, name, NewEventInt(val))
+// EventInInt sends a integer event to a named port on a module.
+func EventInInt(m Module, name string, val int) {
+	EventIn(m, name, NewEventInt(val))
 }
 
 // EventOutInt sends a integer event from a named output port on a module.
@@ -289,9 +300,9 @@ func (e *Event) GetEventBool() *EventBool {
 	return nil
 }
 
-// SendEventBool sends a boolean event to a named port on a module.
-func SendEventBool(m Module, name string, val bool) {
-	SendEvent(m, name, NewEventBool(val))
+// EventInBool sends a boolean event to a named port on a module.
+func EventInBool(m Module, name string, val bool) {
+	EventIn(m, name, NewEventBool(val))
 }
 
 //-----------------------------------------------------------------------------

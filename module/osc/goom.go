@@ -88,11 +88,11 @@ func (m *goomOsc) setFrequency(frequency float32) {
 func (m *goomOsc) setShape(duty, slope float32) {
 	// update duty cycle
 	m.duty = duty
-	m.tp = uint32(float32(core.FullCycle) * core.Map(duty, 0.05, 0.5))
+	m.tp = uint32(float32(core.FullCycle) * core.MapLin(duty, 0.05, 0.5))
 	// update the slope
 	m.slope = slope
 	// Work out the portion of s0f0/s1f1 that is sloped.
-	slope = core.Map(slope, 0.1, 1)
+	slope = core.MapLin(slope, 0.1, 1)
 	// scaling constant for s0, map the slope to the LUT.
 	m.k0 = 1.0 / (float32(m.tp) * slope)
 	// scaling constant for s1, map the slope to the LUT.

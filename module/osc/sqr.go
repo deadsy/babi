@@ -96,7 +96,7 @@ func sqrPortDuty(cm core.Module, e *core.Event) {
 	m := cm.(*sqrOsc)
 	duty := core.Clamp(e.GetEventFloat().Val, 0, 1)
 	log.Info.Printf("set duty cycle %f", duty)
-	m.tp = uint32(float32(core.FullCycle) * core.Map(duty, 0.05, 0.5))
+	m.tp = uint32(float32(core.FullCycle) * core.MapLin(duty, 0.05, 0.5))
 }
 
 //-----------------------------------------------------------------------------

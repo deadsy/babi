@@ -139,17 +139,6 @@ func Connect(s Module, sname string, d Module, dname string) {
 	si.outMap[sname] = append(si.outMap[sname], dstPort{d, pf})
 }
 
-// EventOut sends an event from the named output port of a module.
-// The event will be sent to input ports connected to the output port.
-func EventOut(m Module, name string, e *Event) {
-	mi := m.Info()
-	if dstPorts, ok := mi.outMap[name]; ok {
-		for i := range dstPorts {
-			dstPorts[i].portFunc(dstPorts[i].module, e)
-		}
-	}
-}
-
 //-----------------------------------------------------------------------------
 // Modules
 

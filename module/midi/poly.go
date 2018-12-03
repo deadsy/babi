@@ -115,11 +115,11 @@ func (m *polyMidi) voiceAlloc(note uint8) *voiceInfo {
 	for num := range m.ccCache {
 		val := m.ccCache[num]
 		if val != 0xff {
-			core.SendEventMidiCC(v.module, "midi", uint8(num), val)
+			core.EventInMidiCC(v.module, "midi", uint8(num), val)
 		}
 	}
 	// set the voice note
-	core.SendEventFloat(v.module, "note", float32(v.note)+m.bend)
+	core.EventInFloat(v.module, "note", float32(v.note)+m.bend)
 	return v
 }
 
@@ -133,12 +133,12 @@ func polyMidiIn(cm core.Module, e *core.Event) {
 			vel := core.MIDIMap(me.GetVelocity(), 0, 1)
 			if v != nil {
 				// note: vel=0 is the same as note off (gate=0).
-				core.SendEventFloat(v.module, "gate", vel)
+				core.EventInFloat(v.module, "gate", vel)
 			} else {
 				if vel != 0 {
 					v := m.voiceAlloc(me.GetNote())
 					if v != nil {
-						core.SendEventFloat(v.module, "gate", vel)
+						core.EventInFloat(v.module, "gate", vel)
 					} else {
 						log.Info.Printf("unable to allocate new voice")
 					}
@@ -149,7 +149,7 @@ func polyMidiIn(cm core.Module, e *core.Event) {
 			if v != nil {
 				// send a note off control event
 				// ignoring the note off velocity (for now)
-				core.SendEventFloat(v.module, "gate", 0)
+				core.EventInFloat(v.module, "gate", 0)
 			}
 		case core.EventMIDIPitchWheel:
 			// get the pitch bend value
@@ -158,7 +158,7 @@ func polyMidiIn(cm core.Module, e *core.Event) {
 			for i := range m.voice {
 				v := &m.voice[i]
 				if v.module != nil {
-					core.SendEventFloat(v.module, "note", float32(v.note)+m.bend)
+					core.EventInFloat(v.module, "note", float32(v.note)+m.bend)
 				}
 			}
 		case core.EventMIDIControlChange:
@@ -171,7 +171,7 @@ func polyMidiIn(cm core.Module, e *core.Event) {
 			for i := range m.voice {
 				v := &m.voice[i]
 				if v.module != nil {
-					core.SendEvent(v.module, "midi", e)
+					core.EventIn(v.module, "midi", e)
 				}
 			}
 		}

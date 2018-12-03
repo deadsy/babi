@@ -78,8 +78,8 @@ func polyPatchMidiIn(cm core.Module, e *core.Event) {
 	m := cm.(*polyPatch)
 	me := e.GetEventMIDIChannel(m.ch)
 	if me != nil {
-		core.SendEvent(m.poly, "midi", e)
-		core.SendEvent(m.pan, "midi", e)
+		core.EventIn(m.poly, "midi", e)
+		core.EventIn(m.pan, "midi", e)
 	}
 }
 

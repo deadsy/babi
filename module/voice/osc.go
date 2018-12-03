@@ -49,14 +49,14 @@ func NewOsc(s *core.Synth, osc core.Module) core.Module {
 	adsr := env.NewADSR(s)
 
 	// oscillator defaults
-	core.SendEventFloat(osc, "duty", 0.1)
-	core.SendEventFloat(osc, "attenuation", 1.0)
-	core.SendEventFloat(osc, "slope", 0.5)
+	core.EventInFloat(osc, "duty", 0.1)
+	core.EventInFloat(osc, "attenuation", 1.0)
+	core.EventInFloat(osc, "slope", 0.5)
 	// adsr defaults
-	core.SendEventFloat(adsr, "attack", 0.1)
-	core.SendEventFloat(adsr, "decay", 0.5)
-	core.SendEventFloat(adsr, "sustain", 0.05)
-	core.SendEventFloat(adsr, "release", 1)
+	core.EventInFloat(adsr, "attack", 0.1)
+	core.EventInFloat(adsr, "decay", 0.5)
+	core.EventInFloat(adsr, "sustain", 0.05)
+	core.EventInFloat(adsr, "release", 1)
 
 	m := &oscVoice{
 		info: oscVoiceInfo,
@@ -80,13 +80,13 @@ func (m *oscVoice) Stop() {
 
 func oscVoiceGate(cm core.Module, e *core.Event) {
 	m := cm.(*oscVoice)
-	core.SendEvent(m.adsr, "gate", e)
+	core.EventIn(m.adsr, "gate", e)
 }
 
 func oscVoiceNote(cm core.Module, e *core.Event) {
 	m := cm.(*oscVoice)
 	f := core.MIDIToFrequency(e.GetEventFloat().Val)
-	core.SendEventFloat(m.osc, "frequency", f)
+	core.EventInFloat(m.osc, "frequency", f)
 }
 
 //-----------------------------------------------------------------------------
