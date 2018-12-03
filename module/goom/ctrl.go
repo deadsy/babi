@@ -3,10 +3,23 @@
 
 Goom Voice Control Module
 
-A goom voice has about 21 controls.
+This is a MIDI event processor.
+
+A goom voice has 22 controls and 2 modal switches.
 My MIDI controller (AKAI MPKmini) has 8 CC controls.
-This MIDI event processor uses drum pads as modal switches to multiplex
-the CC controls into multiple groups.
+We use a drum pad note as a modal switch to multiplex CC controls into 3 groups.
+
+Group 0 (wave):
+duty slope pan vol
+attack decay sustain release
+
+Group 1 (modulation):
+duty slope X level
+attack decay coarse fine
+
+Group 2 (filter):
+sensitivity cutoff X resonance
+attack decay sustain release
 
 */
 //-----------------------------------------------------------------------------
@@ -29,8 +42,8 @@ const nControls = 8 // cc controls per mode
 // 3 x 8 CC values
 const midiWaveDutyCC = 1           // wave oscillator duty cycle
 const midiWaveSlopeCC = 2          // wave oscillator duty slope
-const midiUnusedCC3 = 3            // unused
-const midiUnusedCC4 = 4            // unused
+const midiPanCC = 3                // pan left/right
+const midiPanVolCC = midiPanCC + 1 // main volume
 const midiAmpAttackCC = 5          // amplitude attack
 const midiAmpDecayCC = 6           // amplitude decay
 const midiAmpSustainCC = 7         // amplitude sustain
@@ -49,8 +62,8 @@ const midiUnusedCC19 = 19          // unused
 const midiUnusedCC20 = 20          // unused
 const midiUnusedCC21 = 21          // unused
 const midiUnusedCC22 = 22          // unused
-const midiPanCC = 23               // pan left/right
-const midiPanVolCC = midiPanCC + 1 // main volume
+const midiUnusedC23 = 23           // unused
+const midiUnusedCC24 = 24          // unused
 
 // and keys turned into CCs
 const midiOscillatorModeCC = 25 // oscillator mode cc
