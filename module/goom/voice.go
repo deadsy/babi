@@ -91,13 +91,13 @@ type voiceGoom struct {
 	info   core.ModuleInfo // module info
 	wavOsc core.Module     // wave oscillator
 	ampEnv core.Module     // amplitude envelope generator
+	lpf    core.Module     // low pass filter
+	fltEnv core.Module     // filter envelope generator
 	oMode  oModeType       // oscillator mode
 	fMode  fModeType       // frequency mode
 
 	modEnv         core.Module // modulation envelope generator
-	fltEnv         core.Module // filter envelope generator
 	modOsc         core.Module // modulation oscillator
-	lpf            core.Module // low pass filter
 	modTuning      float32     // modulation tuning
 	modLevel       float32     // modulation level
 	fltSensitivity float32     // filter sensitivity
@@ -189,37 +189,50 @@ func voiceGoomMidiIn(cm core.Module, e *core.Event) {
 
 			switch me.GetCcNum() {
 
-			case midiWaveDutyCC:
-				// wave oscillator duty cycle
+			case midiWaveDutyCC: // wave oscillator duty cycle
 				core.EventInFloat(m.wavOsc, "duty", fval)
 
-			case midiWaveSlopeCC:
-				// wave oscillator duty slope
+			case midiWaveSlopeCC: // wave oscillator slope
 				core.EventInFloat(m.wavOsc, "slope", fval)
 
-			case midiAmpAttackCC:
-				// amplitude attack (secs)
+			case midiAmpAttackCC: // amplitude attack (secs)
 				core.EventInFloat(m.ampEnv, "attack", core.MapLin(fval, 0.01, 0.4))
 
-			case midiAmpDecayCC:
-				// amplitude decay (secs)
+			case midiAmpDecayCC: // amplitude decay (secs)
 				core.EventInFloat(m.ampEnv, "decay", core.MapLin(fval, 0.01, 2.0))
 
-			case midiAmpSustainCC:
-				// amplitude sustain (0..1)
+			case midiAmpSustainCC: // amplitude sustain (0..1)
 				core.EventInFloat(m.ampEnv, "sustain", fval)
 
-			case midiAmpReleaseCC:
-				// amplitude release (secs)
+			case midiAmpReleaseCC: // amplitude release (secs)
 				core.EventInFloat(m.ampEnv, "release", core.MapLin(fval, 0.02, 2.0))
 
-			case midiOscillatorModeCC:
-				// oscillator combine mode
+			case midiFltSensitivityCC: // filter sensitivity
+				// TODO
+
+			case midiFltCutoffCC: // filter cutoff
+				core.EventInFloat(m.lpf, "cutoff", core.MapLin(fval, 0, 0.5*core.AudioSampleFrequency))
+
+			case midiFltResonanceCC: // filter resonance
+				core.EventInFloat(m.lpf, "resonance", fval)
+
+			case midiFltAttackCC: // filter attack (secs)
+				core.EventInFloat(m.fltEnv, "attack", core.MapLin(fval, 0.01, 0.4))
+
+			case midiFltDecayCC: // filter decay (secs)
+				core.EventInFloat(m.fltEnv, "decay", core.MapLin(fval, 0.01, 2.0))
+
+			case midiFltSustainCC: // filter sustain (0..1)
+				core.EventInFloat(m.fltEnv, "sustain", fval)
+
+			case midiFltReleaseCC: // filter release (secs)
+				core.EventInFloat(m.fltEnv, "release", core.MapLin(fval, 0.02, 2.0))
+
+			case midiOscillatorModeCC: // oscillator combine mode (0,1,2)
 				log.Info.Printf("set oscillator mode %d", val)
 				m.oMode = oModeType(val)
 
-			case midiFrequencyModeCC:
-				// frequency mode
+			case midiFrequencyModeCC: // frequency mode (0,1,2)
 				log.Info.Printf("set frequency mode %d", val)
 				m.fMode = fModeType(val)
 
@@ -266,26 +279,6 @@ func goomPortModulationLevel(cm core.Module, e *core.Event) {
 	log.Info.Printf("set modulation level %f", m.modLevel)
 }
 
-func goomPortFilterAttack(cm core.Module, e *core.Event) {
-	m := cm.(*voiceGoom)
-	core.EventIn(m.fltEnv, "attack", e)
-}
-
-func goomPortFilterDecay(cm core.Module, e *core.Event) {
-	m := cm.(*voiceGoom)
-	core.EventIn(m.fltEnv, "decay", e)
-}
-
-func goomPortFilterSustain(cm core.Module, e *core.Event) {
-	m := cm.(*voiceGoom)
-	core.EventIn(m.fltEnv, "sustain", e)
-}
-
-func goomPortFilterRelease(cm core.Module, e *core.Event) {
-	m := cm.(*voiceGoom)
-	core.EventIn(m.fltEnv, "release", e)
-}
-
 func goomPortFilterSensitivity(cm core.Module, e *core.Event) {
 	m := cm.(*voiceGoom)
 	sensitivity := core.Clamp(e.GetEventFloat().Val, 0, 1)
@@ -300,11 +293,6 @@ func goomPortFilterCutoff(cm core.Module, e *core.Event) {
 	m.fltCutoff = cutoff
 }
 
-func goomPortFilterResonance(cm core.Module, e *core.Event) {
-	m := cm.(*voiceGoom)
-	core.EventIn(m.lpf, "resonance", e)
-}
-
 */
 
 //-----------------------------------------------------------------------------
@@ -312,14 +300,19 @@ func goomPortFilterResonance(cm core.Module, e *core.Event) {
 // Process runs the module DSP.
 func (m *voiceGoom) Process(buf ...*core.Buf) {
 	out := buf[0]
+
 	// generate wave
-	m.wavOsc.Process(out)
+	var wave core.Buf
+	m.wavOsc.Process(&wave)
+
+	// apply the low pass filter
+	m.lpf.Process(&wave, out)
 
 	// generate envelope
 	var env core.Buf
 	m.ampEnv.Process(&env)
 
-	// apply envelope
+	// apply the envelope
 	out.Mul(&env)
 }
 

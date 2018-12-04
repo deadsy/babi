@@ -56,14 +56,14 @@ const midiUnusedCC13 = 13          // unused
 const midiUnusedCC14 = 14          // unused
 const midiUnusedCC15 = 15          // unused
 const midiUnusedCC16 = 16          // unused
-const midiUnusedCC17 = 17          // unused
-const midiUnusedCC18 = 18          // unused
+const midiFltSensitivityCC = 17    // filter sensitivity
+const midiFltCutoffCC = 18         // filter cutoff
 const midiUnusedCC19 = 19          // unused
-const midiUnusedCC20 = 20          // unused
-const midiUnusedCC21 = 21          // unused
-const midiUnusedCC22 = 22          // unused
-const midiUnusedC23 = 23           // unused
-const midiUnusedCC24 = 24          // unused
+const midiFltResonanceCC = 20      // filter resonance
+const midiFltAttackCC = 21         // filter attack
+const midiFltDecayCC = 22          // filter decay
+const midiFltSustainCC = 23        // filter sustain
+const midiFltReleaseCC = 24        // filter release
 
 // and keys turned into CCs
 const midiOscillatorModeCC = 25 // oscillator mode cc
@@ -124,6 +124,7 @@ func ctrlGoomReset(cm core.Module, e *core.Event) {
 	be := e.GetEventBool()
 	if be != nil && be.Val {
 		log.Info.Printf("")
+		// wave shape
 		core.EventOutMidiCC(m, "midi", midiWaveDutyCC, 64)
 		core.EventOutMidiCC(m, "midi", midiWaveSlopeCC, 64)
 		// amplitude envelope
@@ -131,6 +132,15 @@ func ctrlGoomReset(cm core.Module, e *core.Event) {
 		core.EventOutMidiCC(m, "midi", midiAmpDecayCC, 64)
 		core.EventOutMidiCC(m, "midi", midiAmpSustainCC, 64)
 		core.EventOutMidiCC(m, "midi", midiAmpReleaseCC, 64)
+		// filter controls
+		core.EventOutMidiCC(m, "midi", midiFltSensitivityCC, 64)
+		core.EventOutMidiCC(m, "midi", midiFltCutoffCC, 64)
+		core.EventOutMidiCC(m, "midi", midiFltResonanceCC, 64)
+		// filter envelope
+		core.EventOutMidiCC(m, "midi", midiFltAttackCC, 64)
+		core.EventOutMidiCC(m, "midi", midiFltDecayCC, 64)
+		core.EventOutMidiCC(m, "midi", midiFltSustainCC, 64)
+		core.EventOutMidiCC(m, "midi", midiFltReleaseCC, 64)
 		// output mixing
 		core.EventOutMidiCC(m, "midi", midiPanCC, 64)
 		core.EventOutMidiCC(m, "midi", midiPanVolCC, 64)
