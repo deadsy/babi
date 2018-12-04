@@ -137,11 +137,6 @@ func (n MidiNote) String() string {
 
 //-----------------------------------------------------------------------------
 
-// MIDIMap maps a 0..127 midi control value from a..b
-func MIDIMap(val uint8, a, b float32) float32 {
-	return a + ((b-a)/127.0)*float32(val&0x7f)
-}
-
 // MIDIPitchBend maps a pitch bend value onto a MIDI note offset.
 func MIDIPitchBend(val uint16) float32 {
 	// 0..8192..16383 maps to -/+ 2 semitones

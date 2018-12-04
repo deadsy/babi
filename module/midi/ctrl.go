@@ -67,9 +67,9 @@ func ctrlMidiIn(cm core.Module, e *core.Event) {
 	m := cm.(*ctrlMidi)
 	me := e.GetEventMIDIChannel(m.ch)
 	if me != nil {
-		if me.GetType() == core.EventMIDIControlChange && me.GetCtrlNum() == m.cc {
+		if me.GetType() == core.EventMIDIControlChange && me.GetCcNum() == m.cc {
 			// convert to a float value and output
-			core.EventOutFloat(m, "val", core.MIDIMap(me.GetCtrlVal(), 0, 1))
+			core.EventOutFloat(m, "val", me.GetCcFloat())
 		}
 	}
 }

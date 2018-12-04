@@ -113,9 +113,9 @@ func (e *EventMIDI) String() string {
 	descr := midiEventType2String[e.etype]
 	switch e.GetType() {
 	case EventMIDINoteOn, EventMIDINoteOff:
-		return fmt.Sprintf("%s ch %d note %d vel %d", descr, e.GetChannel(), e.GetNote(), e.GetVelocity())
+		return fmt.Sprintf("%s ch %d note %d vel %d", descr, e.GetChannel(), e.GetNote(), e.GetVelocityInt())
 	case EventMIDIControlChange:
-		return fmt.Sprintf("%s ch %d ctrl %d val %d", descr, e.GetChannel(), e.GetCtrlNum(), e.GetCtrlVal())
+		return fmt.Sprintf("%s ch %d ctrl %d val %d", descr, e.GetChannel(), e.GetCcNum(), e.GetCcInt())
 	case EventMIDIPitchWheel:
 		return fmt.Sprintf("%s ch %d val %d", descr, e.GetChannel(), e.GetPitchWheel())
 	case EventMIDIProgramChange:
@@ -123,7 +123,7 @@ func (e *EventMIDI) String() string {
 	case EventMIDIChannelAftertouch:
 		return fmt.Sprintf("%s ch %d pressure %d", descr, e.GetChannel(), e.GetPressure())
 	case EventMIDIPolyphonicAftertouch:
-		return fmt.Sprintf("%s ch %d note %d pressure %d", descr, e.GetChannel(), e.GetNote(), e.GetVelocity())
+		return fmt.Sprintf("%s ch %d note %d pressure %d", descr, e.GetChannel(), e.GetNote(), e.GetVelocityInt())
 	}
 	return fmt.Sprintf("%s status %02x arg0 %02x arg1 %02x", descr, e.status, e.arg0, e.arg1)
 }
@@ -160,19 +160,29 @@ func (e *EventMIDI) GetNote() uint8 {
 	return e.arg0
 }
 
-// GetCtrlNum returns the MIDI control number.
-func (e *EventMIDI) GetCtrlNum() uint8 {
+// GetCcNum returns the MIDI continuous controller number.
+func (e *EventMIDI) GetCcNum() uint8 {
 	return e.arg0
 }
 
-// GetCtrlVal returns the MIDI control value.
-func (e *EventMIDI) GetCtrlVal() uint8 {
+// GetCcInt returns the MIDI continuous controller value as an integer.
+func (e *EventMIDI) GetCcInt() uint8 {
 	return e.arg1
 }
 
-// GetVelocity returns the MIDI note velocity.
-func (e *EventMIDI) GetVelocity() uint8 {
+// GetCcFloat returns the MIDI continuous controller value as a float32 (0..1).
+func (e *EventMIDI) GetCcFloat() float32 {
+	return float32(e.arg1&0x7f) * (1.0 / 127.0)
+}
+
+// GetVelocityInt returns the MIDI note velocityas a uint8.
+func (e *EventMIDI) GetVelocityInt() uint8 {
 	return e.arg1
+}
+
+// GetVelocityFloat returns the MIDI note velocity as a float32 (0..1).
+func (e *EventMIDI) GetVelocityFloat() float32 {
+	return float32(e.arg1&0x7f) * (1.0 / 127.0)
 }
 
 // GetPitchWheel returns the MIDI pitch wheel value.

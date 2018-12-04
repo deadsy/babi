@@ -184,10 +184,10 @@ func voiceGoomMidiIn(cm core.Module, e *core.Event) {
 	if me != nil {
 		if me.GetType() == core.EventMIDIControlChange {
 
-			val := me.GetCtrlVal()
-			fval := core.MIDIMap(val, 0, 1)
+			val := me.GetCcInt()
+			fval := me.GetCcFloat()
 
-			switch me.GetCtrlNum() {
+			switch me.GetCcNum() {
 
 			case midiWaveDutyCC:
 				// wave oscillator duty cycle
@@ -211,7 +211,7 @@ func voiceGoomMidiIn(cm core.Module, e *core.Event) {
 
 			case midiAmpReleaseCC:
 				// amplitude release (secs)
-				core.EventInFloat(m.ampEnv, "release", core.MapLin(fval, 0.01, 2.0))
+				core.EventInFloat(m.ampEnv, "release", core.MapLin(fval, 0.02, 2.0))
 
 			case midiOscillatorModeCC:
 				// oscillator combine mode

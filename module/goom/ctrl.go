@@ -174,10 +174,10 @@ func ctrlGoomMidiIn(cm core.Module, e *core.Event) {
 			}
 		// Re-emit the CC events with higher CC numbers.
 		case core.EventMIDIControlChange:
-			ccNum := me.GetCtrlNum()
+			ccNum := me.GetCcNum()
 			if ccNum >= 1 && ccNum <= 8 {
 				ccNum += m.ccMode * nControls
-				core.EventOutMidiCC(m, "midi", ccNum, me.GetCtrlVal())
+				core.EventOutMidiCC(m, "midi", ccNum, me.GetCcInt())
 				return
 			}
 		}

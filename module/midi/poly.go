@@ -130,7 +130,7 @@ func polyMidiIn(cm core.Module, e *core.Event) {
 		switch me.GetType() {
 		case core.EventMIDINoteOn:
 			v := m.voiceLookup(me.GetNote())
-			vel := core.MIDIMap(me.GetVelocity(), 0, 1)
+			vel := me.GetVelocityFloat()
 			if v != nil {
 				// note: vel=0 is the same as note off (gate=0).
 				core.EventInFloat(v.module, "gate", vel)
@@ -163,7 +163,7 @@ func polyMidiIn(cm core.Module, e *core.Event) {
 			}
 		case core.EventMIDIControlChange:
 			// cache the cc value
-			m.ccCache[me.GetCtrlNum()&0x7f] = me.GetCtrlVal()
+			m.ccCache[me.GetCcNum()&0x7f] = me.GetCcInt()
 			// and pass the control change though to the voices...
 			fallthrough
 		default:

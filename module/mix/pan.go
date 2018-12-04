@@ -107,11 +107,11 @@ func panMixMidiIn(cm core.Module, e *core.Event) {
 	me := e.GetEventMIDIChannel(m.ch)
 	if me != nil {
 		if me.GetType() == core.EventMIDIControlChange {
-			switch me.GetCtrlNum() {
+			switch me.GetCcNum() {
 			case m.ccVol:
-				m.setVol(core.MIDIMap(me.GetCtrlVal(), 0, 1))
+				m.setVol(me.GetCcFloat())
 			case m.ccPan:
-				m.setPan(core.MIDIMap(me.GetCtrlVal(), 0, 1))
+				m.setPan(me.GetCcFloat())
 			default:
 				// ignore
 			}
