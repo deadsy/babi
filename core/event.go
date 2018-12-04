@@ -57,6 +57,17 @@ func EventOut(m Module, name string, e *Event) {
 	}
 }
 
+// EventPush sends a process time event from the named output port of a module.
+// The event will be sent to input ports connected to the output port.
+func EventPush(m Module, name string, e *Event) {
+	mi := m.Info()
+	if dstPorts, ok := mi.outMap[name]; ok {
+		for i := range dstPorts {
+			mi.Synth.pushEvent(dstPorts[i].module, dstPorts[i].name, e)
+		}
+	}
+}
+
 // EventIn sends an event to a named port on a module.
 func EventIn(m Module, name string, e *Event) {
 	portFunc := m.Info().getPortFunc(name)

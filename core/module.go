@@ -50,6 +50,7 @@ type PortSet []PortInfo
 type dstPort struct {
 	module   Module       // destination module
 	portFunc PortFuncType // destination port function
+	name     string       // destination port name
 }
 
 // ModuleInfo describes a modules ports and connectivity.
@@ -131,12 +132,12 @@ func Connect(s Module, sname string, d Module, dname string) {
 		panic(fmt.Sprintf("Connect() can only be used for event ports"))
 	}
 	// destination port function
-	pf := di.getPortFunc(dname)
-	if pf == nil {
+	dpf := di.getPortFunc(dname)
+	if dpf == nil {
 		return
 	}
 	// add it to the output port mapping for this source
-	si.outMap[sname] = append(si.outMap[sname], dstPort{d, pf})
+	si.outMap[sname] = append(si.outMap[sname], dstPort{d, dpf, dname})
 }
 
 //-----------------------------------------------------------------------------

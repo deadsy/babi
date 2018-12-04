@@ -27,8 +27,8 @@ type QueueEvent struct {
 	event *Event // event
 }
 
-// PushEvent pushes an event onto the synth event queue.
-func (s *Synth) PushEvent(m Module, name string, e *Event) {
+// pushEvent pushes an event onto the synth event queue.
+func (s *Synth) pushEvent(m Module, name string, e *Event) {
 	err := s.event.Write(&QueueEvent{m, name, e})
 	if err != nil {
 		log.Info.Printf("%s", err)
@@ -142,7 +142,7 @@ func (s *Synth) Register(m Module) Module {
 		if _, ok := mi.outMap[name]; ok {
 			panic(fmt.Sprintf("module \"%s\" must have only one output port with name \"%s\"", mi.Name, name))
 		}
-		mi.outMap[name] = []dstPort{}
+		mi.outMap[name] = nil
 	}
 	return m
 }
