@@ -1,6 +1,7 @@
 
 DIRS = poly \
        goom \
+       lfo \
        plots \
 
 all:
