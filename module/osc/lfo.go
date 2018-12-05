@@ -18,9 +18,10 @@ import (
 var lfoOscInfo = core.ModuleInfo{
 	Name: "lfoOsc",
 	In: []core.PortInfo{
-		{"frequency", "rate (0..99)", core.PortTypeFloat, lfoOscFrequency},
-		{"wave", "waveform (0..5)", core.PortTypeInt, lfoOscWave},
-		{"sync", "key sync (off/on)", core.PortTypeBool, lfoOscSync},
+		{"rate", "rate (Hz)", core.PortTypeFloat, lfoOscRate},
+		{"depth", "depth (>= 0)", core.PortTypeFloat, lfoOscDepth},
+		{"shape", "wave shape (0..5)", core.PortTypeInt, lfoOscShape},
+		{"sync", "reset the lfo phase", core.PortTypeBool, lfoOscSync},
 	},
 	Out: []core.PortInfo{
 		{"out", "output", core.PortTypeAudio, nil},
@@ -34,22 +35,22 @@ func (m *lfoOsc) Info() *core.ModuleInfo {
 
 //-----------------------------------------------------------------------------
 
-type lfoWaveType int
+type lfoWaveShape int
 
 // LFO waveforms.
 const (
-	LfoTriangle      lfoWaveType = 0
-	LfoSawDown                   = 1
-	LfoSawUp                     = 2
-	LfoSquare                    = 3
-	LfoSine                      = 4
-	LfoSampleAndHold             = 5
+	LfoTriangle      lfoWaveShape = 0
+	LfoSawDown                    = 1
+	LfoSawUp                      = 2
+	LfoSquare                     = 3
+	LfoSine                       = 4
+	LfoSampleAndHold              = 5
 )
 
 type lfoOsc struct {
 	info      core.ModuleInfo // module info
-	wave      lfoWaveType     // wave type
-	sync      bool            // key sync
+	shape     lfoWaveShape    // wave shape
+	depth     float32         // wave amplitude
 	x         uint32          // current x-value
 	xstep     uint32          // current x-step
 	randState uint32          // random state for s&h
@@ -76,21 +77,33 @@ func (m *lfoOsc) Stop() {
 //-----------------------------------------------------------------------------
 // Port Events
 
-func lfoOscFrequency(cm core.Module, e *core.Event) {
+func lfoOscRate(cm core.Module, e *core.Event) {
 	m := cm.(*lfoOsc)
-	frequency := core.ClampLo(e.GetEventFloat().Val, 0)
-	log.Info.Printf("set frequency %f Hz", frequency)
-	m.xstep = uint32(frequency * core.FrequencyScale)
+	rate := core.ClampLo(e.GetEventFloat().Val, 0)
+	log.Info.Printf("set rate %f Hz", rate)
+	m.xstep = uint32(rate * core.FrequencyScale)
 }
 
-func lfoOscWave(cm core.Module, e *core.Event) {
+func lfoOscShape(cm core.Module, e *core.Event) {
 	m := cm.(*lfoOsc)
-	m.wave = lfoWaveType(core.ClampInt(e.GetEventInt().Val, 0, 5))
+	shape := core.ClampInt(e.GetEventInt().Val, 0, 5)
+	log.Info.Printf("set wave shape %d", shape)
+	m.shape = lfoWaveShape(shape)
+}
+
+func lfoOscDepth(cm core.Module, e *core.Event) {
+	m := cm.(*lfoOsc)
+	depth := core.ClampLo(e.GetEventFloat().Val, 0)
+	log.Info.Printf("set depth %f", depth)
+	m.depth = depth
 }
 
 func lfoOscSync(cm core.Module, e *core.Event) {
 	m := cm.(*lfoOsc)
-	m.sync = e.GetEventBool().Val
+	if e.GetEventBool().Val {
+		log.Info.Printf("lfo sync")
+		m.x = 0
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -100,7 +113,7 @@ func lfoOscSync(cm core.Module, e *core.Event) {
 func (m *lfoOsc) sample() float32 {
 	// calculate samples as q8.24
 	var sample int32
-	switch m.wave {
+	switch m.shape {
 	case LfoTriangle:
 		x := m.x + (1 << 30)
 		sample = int32(x >> 6)
@@ -133,7 +146,7 @@ func (m *lfoOsc) Process(buf ...*core.Buf) {
 	out := buf[0]
 	for i := 0; i < len(out); i++ {
 		m.x += m.xstep
-		out[i] = m.sample()
+		out[i] = m.depth * m.sample()
 	}
 }
 
