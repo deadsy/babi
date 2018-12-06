@@ -17,8 +17,13 @@ import (
 
 //-----------------------------------------------------------------------------
 
-const midiLfoModeNote = 47 // note for lfo mode
+const nControls = 8 // cc controls per mode
 
+const midiLfoModeNote = 45  // note for LFO mode (am/fm)
+const midiLfoShapeNote = 46 // note for LFO wave shape
+const midiCCModeNote = 47   // note for CC mode
+
+// 1..8
 const midiWaveDutyCC = 1           // wave oscillator duty cycle
 const midiWaveSlopeCC = 2          // wave oscillator duty slope
 const midiPanCC = 3                // pan left/right
@@ -28,8 +33,13 @@ const midiAmpDecayCC = 6           // amplitude decay
 const midiAmpSustainCC = 7         // amplitude sustain
 const midiAmpReleaseCC = 8         // amplitude release
 
+// 9..16
+const midiLfoRateCC = 9   // lfo rate
+const midiLfoDepthCC = 10 // lfo depth
+
 // and keys turned into CCs
-const midiLfoModeCC = 25 // lfo mode
+const midiLfoShapeCC = 25 // lfo shape
+const midiLfoModeCC = 26  // lfo mode (am/fm)
 
 //-----------------------------------------------------------------------------
 
@@ -52,9 +62,11 @@ func (m *ctrlApp) Info() *core.ModuleInfo {
 //-----------------------------------------------------------------------------
 
 type ctrlApp struct {
-	info    core.ModuleInfo // module info
-	ch      uint8           // MIDI channel
-	lfoMode uint8           // lfo mode (0..5)
+	info     core.ModuleInfo // module info
+	ch       uint8           // MIDI channel
+	lfoShape uint8           // lfo shape (0..5)
+	lfoMode  uint8           // lfo mode (am/fm)
+	ccMode   uint8           // cc mode  (0,1)
 }
 
 // NewCtrl returns a goom voice MIDI controller.
@@ -95,8 +107,11 @@ func ctrlAppReset(cm core.Module, e *core.Event) {
 		// output mixing
 		core.EventOutMidiCC(m, "midi", midiPanCC, 64)
 		core.EventOutMidiCC(m, "midi", midiPanVolCC, 64)
-		// lfo mode
+		// lfo
+		core.EventOutMidiCC(m, "midi", midiLfoRateCC, 64)
+		core.EventOutMidiCC(m, "midi", midiLfoDepthCC, 64)
 		core.EventOutMidiCC(m, "midi", midiLfoModeCC, 0)
+		core.EventOutMidiCC(m, "midi", midiLfoShapeCC, 0)
 	}
 }
 
@@ -109,16 +124,35 @@ func ctrlAppMidiIn(cm core.Module, e *core.Event) {
 		case core.EventMIDINoteOn:
 			switch me.GetNote() {
 			case midiLfoModeNote:
-				m.lfoMode = (m.lfoMode + 1) % 6
-				log.Info.Printf("lfoMode %d", m.lfoMode)
+				m.lfoMode = (m.lfoMode + 1) % 2
+				log.Info.Printf("lfo mode %d", m.lfoMode)
 				core.EventOutMidiCC(m, "midi", midiLfoModeCC, m.lfoMode)
+				return
+			case midiLfoShapeNote:
+				m.lfoShape = (m.lfoShape + 1) % 6
+				log.Info.Printf("lfo shape %d", m.lfoShape)
+				core.EventOutMidiCC(m, "midi", midiLfoShapeCC, m.lfoShape)
+				return
+			case midiCCModeNote:
+				m.ccMode = (m.ccMode + 1) % 2
+				log.Info.Printf("ccmode %d", m.ccMode)
 				return
 			}
 		// Ignore the note off events for our special keys.
 		case core.EventMIDINoteOff:
 			switch me.GetNote() {
-			case midiLfoModeNote:
+			case midiLfoModeNote,
+				midiLfoShapeNote,
+				midiCCModeNote:
 				// filter out
+				return
+			}
+		// Re-emit the CC events with higher CC numbers.
+		case core.EventMIDIControlChange:
+			ccNum := me.GetCcNum()
+			if ccNum >= 1 && ccNum <= 8 {
+				ccNum += m.ccMode * nControls
+				core.EventOutMidiCC(m, "midi", ccNum, me.GetCcInt())
 				return
 			}
 		}

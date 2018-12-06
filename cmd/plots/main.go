@@ -114,10 +114,40 @@ func lfoDx() {
 
 //-----------------------------------------------------------------------------
 
+func lfoOsc() {
+
+	cfg := &view.PlotConfig{
+		Name:     "lfo",
+		Title:    "LFO Wave",
+		Y0:       "amplitude",
+		Duration: 2.0,
+	}
+
+	s := osc.NewLFO(nil)
+	core.EventInFloat(s, "rate", 20.0)
+	core.EventInFloat(s, "depth", 1.0)
+	core.EventInInt(s, "shape", int(osc.LfoSine))
+
+	p := view.NewPlot(nil, cfg)
+	core.EventInBool(p, "trigger", true)
+
+	for i := 0; i < 50; i++ {
+		var y core.Buf
+		s.Process(&y)
+		p.Process(nil, &y)
+	}
+
+	p.Stop()
+
+}
+
+//-----------------------------------------------------------------------------
+
 func main() {
 	//goom()
 	//envDx()
-	lfoDx()
+	//lfoDx()
+	lfoOsc()
 	os.Exit(0)
 }
 
