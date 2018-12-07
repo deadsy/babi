@@ -47,8 +47,18 @@ func (m *goomOsc) Info() *core.ModuleInfo {
 
 //-----------------------------------------------------------------------------
 
+type goomType int
+
+const (
+	goomTypeNull  goomType = iota
+	goomTypeBasic          // no feedback, no fm
+	goomTypeFM             // frequency modulation input
+	goomTypePM             // phase modulation input
+)
+
 type goomOsc struct {
 	info  core.ModuleInfo // module info
+	gtype goomType        // goom type
 	freq  float32         // base frequency
 	duty  float32         // wave duty cycle
 	slope float32         // wave slope
@@ -59,13 +69,24 @@ type goomOsc struct {
 	xstep uint32          // phase step per sample
 }
 
-// NewGoom returns a goom oscillator module.
-func NewGoom(s *core.Synth) core.Module {
+// newGoom returns a goom oscillator module.
+func newGoom(s *core.Synth, t goomType) core.Module {
 	log.Info.Printf("")
 	m := &goomOsc{
-		info: goomOscInfo,
+		info:  goomOscInfo,
+		gtype: t,
 	}
 	return s.Register(m)
+}
+
+// NewGoom returns a basic goom oscillator module.
+func NewGoom(s *core.Synth) core.Module {
+	return newGoom(s, goomTypeBasic)
+}
+
+// NewGoomFM returns a goom oscillator module with fm input.
+func NewGoomFM(s *core.Synth) core.Module {
+	return newGoom(s, goomTypeFM)
 }
 
 // Child returns the child modules of this module.
@@ -144,11 +165,31 @@ func (m *goomOsc) sample() float32 {
 
 // Process runs the module DSP.
 func (m *goomOsc) Process(buf ...*core.Buf) {
-	out := buf[0]
-	for i := 0; i < len(out); i++ {
-		out[i] = m.sample()
-		// step the phase
-		m.x += m.xstep
+
+	switch m.gtype {
+	case goomTypeBasic: // no feedback, no modulation
+		out := buf[0]
+		for i := 0; i < len(out); i++ {
+			out[i] = m.sample()
+			// step the phase
+			m.x += m.xstep
+		}
+	case goomTypeFM: // frequency modulation input
+		fm := buf[0]
+		out := buf[1]
+		for i := 0; i < len(out); i++ {
+			out[i] = m.sample()
+			// step the phase
+			m.x += uint32((m.freq + fm[i]) * core.FrequencyScale)
+		}
+	case goomTypePM: // phase modulation input
+		pm := buf[0]
+		out := buf[1]
+		for i := 0; i < len(out); i++ {
+			out[i] = m.sample()
+			// step the phase
+			m.x += uint32(float32(m.xstep) + (pm[i] * core.PhaseScale))
+		}
 	}
 }
 
