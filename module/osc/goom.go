@@ -22,6 +22,8 @@ The idea for goom waves comes from: https://www.quinapalus.com/goom.html
 package osc
 
 import (
+	"fmt"
+
 	"github.com/deadsy/babi/core"
 	"github.com/deadsy/babi/utils/log"
 )
@@ -34,6 +36,7 @@ var goomOscInfo = core.ModuleInfo{
 		{"frequency", "frequency (Hz)", core.PortTypeFloat, goomOscFrequency},
 		{"duty", "duty cycle (0..1)", core.PortTypeFloat, goomOscDuty},
 		{"slope", "slope (0..1)", core.PortTypeFloat, goomOscSlope},
+		{"mode", "oscillator mode", core.PortTypeInt, goomOscMode},
 	},
 	Out: []core.PortInfo{
 		{"out", "output", core.PortTypeAudio, nil},
@@ -47,18 +50,18 @@ func (m *goomOsc) Info() *core.ModuleInfo {
 
 //-----------------------------------------------------------------------------
 
-type goomType int
+type goomMode int
 
+// goom oscillator modes
 const (
-	goomTypeNull  goomType = iota
-	goomTypeBasic          // no feedback, no fm
-	goomTypeFM             // frequency modulation input
-	goomTypePM             // phase modulation input
+	GoomModeBasic goomMode = 0 // no feedback, no modulation
+	GoomModeFM             = 1 // frequency modulation input
+	GoomModePM             = 2 // phase modulation input
 )
 
 type goomOsc struct {
 	info  core.ModuleInfo // module info
-	gtype goomType        // goom type
+	mode  goomMode        // oscillator mode
 	freq  float32         // base frequency
 	duty  float32         // wave duty cycle
 	slope float32         // wave slope
@@ -69,24 +72,13 @@ type goomOsc struct {
 	xstep uint32          // phase step per sample
 }
 
-// newGoom returns a goom oscillator module.
-func newGoom(s *core.Synth, t goomType) core.Module {
+// NewGoom returns a goom oscillator module.
+func NewGoom(s *core.Synth) core.Module {
 	log.Info.Printf("")
 	m := &goomOsc{
-		info:  goomOscInfo,
-		gtype: t,
+		info: goomOscInfo,
 	}
 	return s.Register(m)
-}
-
-// NewGoom returns a basic goom oscillator module.
-func NewGoom(s *core.Synth) core.Module {
-	return newGoom(s, goomTypeBasic)
-}
-
-// NewGoomFM returns a goom oscillator module with fm input.
-func NewGoomFM(s *core.Synth) core.Module {
-	return newGoom(s, goomTypeFM)
 }
 
 // Child returns the child modules of this module.
@@ -125,6 +117,13 @@ func goomOscFrequency(cm core.Module, e *core.Event) {
 	frequency := core.ClampLo(e.GetEventFloat().Val, 0)
 	log.Info.Printf("set frequency %f Hz", frequency)
 	m.setFrequency(frequency)
+}
+
+func goomOscMode(cm core.Module, e *core.Event) {
+	m := cm.(*goomOsc)
+	mode := e.GetEventInt().Val
+	log.Info.Printf("set mode %d", mode)
+	m.mode = goomMode(mode)
 }
 
 func goomOscDuty(cm core.Module, e *core.Event) {
@@ -166,15 +165,15 @@ func (m *goomOsc) sample() float32 {
 // Process runs the module DSP.
 func (m *goomOsc) Process(buf ...*core.Buf) {
 
-	switch m.gtype {
-	case goomTypeBasic: // no feedback, no modulation
+	switch m.mode {
+	case GoomModeBasic: // no feedback, no modulation
 		out := buf[0]
 		for i := 0; i < len(out); i++ {
 			out[i] = m.sample()
 			// step the phase
 			m.x += m.xstep
 		}
-	case goomTypeFM: // frequency modulation input
+	case GoomModeFM: // frequency modulation input
 		fm := buf[0]
 		out := buf[1]
 		for i := 0; i < len(out); i++ {
@@ -182,7 +181,7 @@ func (m *goomOsc) Process(buf ...*core.Buf) {
 			// step the phase
 			m.x += uint32((m.freq + fm[i]) * core.FrequencyScale)
 		}
-	case goomTypePM: // phase modulation input
+	case GoomModePM: // phase modulation input
 		pm := buf[0]
 		out := buf[1]
 		for i := 0; i < len(out); i++ {
@@ -190,6 +189,8 @@ func (m *goomOsc) Process(buf ...*core.Buf) {
 			// step the phase
 			m.x += uint32(float32(m.xstep) + (pm[i] * core.PhaseScale))
 		}
+	default:
+		panic(fmt.Sprintf("bad mode %d", m.mode))
 	}
 }
 

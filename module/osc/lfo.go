@@ -35,21 +35,36 @@ func (m *lfoOsc) Info() *core.ModuleInfo {
 
 //-----------------------------------------------------------------------------
 
-type lfoWaveShape int
+type LfoWaveShape int
 
-// LFO waveforms.
+// LFO waveform shapes.
 const (
-	LfoTriangle      lfoWaveShape = 0
-	LfoSawDown                    = 1
-	LfoSawUp                      = 2
-	LfoSquare                     = 3
-	LfoSine                       = 4
-	LfoSampleAndHold              = 5
+	LfoTriangle      LfoWaveShape = iota // triangle
+	LfoSawDown                           // falling sawtooth
+	LfoSawUp                             // rising sawtooth
+	LfoSquare                            // square
+	LfoSine                              // sine
+	LfoSampleAndHold                     // random sample and hold
 )
+
+var lfoWaveShapeToString = map[LfoWaveShape]string{
+	LfoTriangle:      "tri",
+	LfoSawDown:       "saw-",
+	LfoSawUp:         "saw+",
+	LfoSquare:        "sqr",
+	LfoSine:          "sin",
+	LfoSampleAndHold: "s&h",
+}
+
+func (s LfoWaveShape) String() string {
+	return lfoWaveShapeToString[s]
+}
+
+//-----------------------------------------------------------------------------
 
 type lfoOsc struct {
 	info      core.ModuleInfo // module info
-	shape     lfoWaveShape    // wave shape
+	shape     LfoWaveShape    // wave shape
 	depth     float32         // wave amplitude
 	x         uint32          // current x-value
 	xstep     uint32          // current x-step
@@ -88,7 +103,7 @@ func lfoOscShape(cm core.Module, e *core.Event) {
 	m := cm.(*lfoOsc)
 	shape := core.ClampInt(e.GetEventInt().Val, 0, 5)
 	log.Info.Printf("set wave shape %d", shape)
-	m.shape = lfoWaveShape(shape)
+	m.shape = LfoWaveShape(shape)
 }
 
 func lfoOscDepth(cm core.Module, e *core.Event) {

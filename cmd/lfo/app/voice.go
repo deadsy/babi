@@ -9,6 +9,8 @@ LFO test voice
 package app
 
 import (
+	"fmt"
+
 	"github.com/deadsy/babi/core"
 	"github.com/deadsy/babi/module/env"
 	"github.com/deadsy/babi/module/osc"
@@ -36,13 +38,37 @@ func (m *voiceApp) Info() *core.ModuleInfo {
 }
 
 //-----------------------------------------------------------------------------
+// modulation modes
+
+type modMode int
+
+// modulation modes
+const (
+	modModeOff modMode = iota // none
+	modModeAM                 // amplitude modulation
+	modModeFM                 // frequency modulation
+	modModePM                 // phase modulation
+)
+
+var modModeToString = map[modMode]string{
+	modModeOff: "off",
+	modModeAM:  "am",
+	modModeFM:  "fm",
+	modModePM:  "pm",
+}
+
+func (m modMode) String() string {
+	return modModeToString[m]
+}
+
+//-----------------------------------------------------------------------------
 
 type voiceApp struct {
 	info     core.ModuleInfo // module info
 	lfo      core.Module     // LFO
 	wav      core.Module     // wave oscillator
 	env      core.Module     // amplitude envelope generator
-	lfoMode  int             // lfo mode (am/fm)
+	mode     modMode         // modulation mode
 	velocity float32         // note velocity
 }
 
@@ -122,8 +148,19 @@ func voiceAppMidiIn(cm core.Module, e *core.Event) {
 				core.EventInFloat(m.lfo, "depth", core.MapLin(fval, 0, 0.3))
 			case midiLfoShapeCC: // lfo wave shape
 				core.EventInInt(m.lfo, "shape", int(val))
-			case midiLfoModeCC: // lfo mode (am/fm)
-				m.lfoMode = int(val)
+			case midiModModeCC: // modulation mode (am/fm/pm)
+				m.mode = modMode(val)
+				// set the goom oscillator mode
+				switch m.mode {
+				case modModeOff, modModeAM:
+					core.EventInInt(m.wav, "mode", int(osc.GoomModeBasic))
+				case modModeFM:
+					core.EventInInt(m.wav, "mode", int(osc.GoomModeFM))
+				case modModePM:
+					core.EventInInt(m.wav, "mode", int(osc.GoomModePM))
+				default:
+					panic(fmt.Sprintf("bad mode %d", m.mode))
+				}
 			default:
 				// ignore
 			}
@@ -137,8 +174,24 @@ func voiceAppMidiIn(cm core.Module, e *core.Event) {
 func (m *voiceApp) Process(buf ...*core.Buf) {
 	out := buf[0]
 
-	// generate wave
-	m.wav.Process(out)
+	if m.mode != modModeOff {
+		// generate the modulating lfo
+		var mod core.Buf
+		m.lfo.Process(&mod)
+		switch m.mode {
+		case modModeAM:
+			m.wav.Process(out)
+			out.Mul(&mod)
+		case modModeFM:
+			m.wav.Process(&mod, out)
+		case modModePM:
+			m.wav.Process(&mod, out)
+		default:
+			panic(fmt.Sprintf("bad mode %d", m.mode))
+		}
+	} else {
+		m.wav.Process(out)
+	}
 
 	// generate envelope
 	var env core.Buf

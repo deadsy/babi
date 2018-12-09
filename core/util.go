@@ -10,7 +10,6 @@ package core
 
 import (
 	"fmt"
-	"math"
 	"strings"
 )
 
@@ -84,6 +83,8 @@ func MapLin(x, a, b float32) float32 {
 	return ((b - a) * x) + a
 }
 
+/*
+
 // MapLog returns a logarithmic mapping from x = 0..1 to y = a..b.
 func MapLog(x, a, b float32) float32 {
 	if x == 0 {
@@ -106,6 +107,8 @@ func MapExp(x, a, b float32) float32 {
 	k := float32(math.Log2(float64(b / a)))
 	return a * Pow2(k*x)
 }
+
+*/
 
 //-----------------------------------------------------------------------------
 

@@ -12,6 +12,7 @@ package app
 
 import (
 	"github.com/deadsy/babi/core"
+	"github.com/deadsy/babi/module/osc"
 	"github.com/deadsy/babi/utils/log"
 )
 
@@ -19,7 +20,7 @@ import (
 
 const nControls = 8 // cc controls per mode
 
-const midiLfoModeNote = 45  // note for LFO mode (am/fm)
+const midiModModeNote = 45  // note for modulation mode (am/fm/pm)
 const midiLfoShapeNote = 46 // note for LFO wave shape
 const midiCCModeNote = 47   // note for CC mode
 
@@ -39,7 +40,7 @@ const midiLfoDepthCC = 10 // lfo depth
 
 // and keys turned into CCs
 const midiLfoShapeCC = 25 // lfo shape
-const midiLfoModeCC = 26  // lfo mode (am/fm)
+const midiModModeCC = 26  // modulation mode (am/fm/pm)
 
 //-----------------------------------------------------------------------------
 
@@ -64,8 +65,8 @@ func (m *ctrlApp) Info() *core.ModuleInfo {
 type ctrlApp struct {
 	info     core.ModuleInfo // module info
 	ch       uint8           // MIDI channel
-	lfoShape uint8           // lfo shape (0..5)
-	lfoMode  uint8           // lfo mode (am/fm)
+	lfoShape uint8           // lfo shape
+	modMode  uint8           // modulation mode
 	ccMode   uint8           // cc mode  (0,1)
 }
 
@@ -110,8 +111,8 @@ func ctrlAppReset(cm core.Module, e *core.Event) {
 		// lfo
 		core.EventOutMidiCC(m, "midi", midiLfoRateCC, 64)
 		core.EventOutMidiCC(m, "midi", midiLfoDepthCC, 64)
-		core.EventOutMidiCC(m, "midi", midiLfoModeCC, 0)
-		core.EventOutMidiCC(m, "midi", midiLfoShapeCC, 0)
+		core.EventOutMidiCC(m, "midi", midiModModeCC, 2)  // fm
+		core.EventOutMidiCC(m, "midi", midiLfoShapeCC, 0) // triangle
 	}
 }
 
@@ -123,14 +124,14 @@ func ctrlAppMidiIn(cm core.Module, e *core.Event) {
 		// Use the special key note on events to modulo increment the mode variables.
 		case core.EventMIDINoteOn:
 			switch me.GetNote() {
-			case midiLfoModeNote:
-				m.lfoMode = (m.lfoMode + 1) % 2
-				log.Info.Printf("lfo mode %d", m.lfoMode)
-				core.EventOutMidiCC(m, "midi", midiLfoModeCC, m.lfoMode)
+			case midiModModeNote:
+				m.modMode = (m.modMode + 1) % 4
+				log.Info.Printf("modulation mode %s", modMode(m.modMode))
+				core.EventOutMidiCC(m, "midi", midiModModeCC, m.modMode)
 				return
 			case midiLfoShapeNote:
 				m.lfoShape = (m.lfoShape + 1) % 6
-				log.Info.Printf("lfo shape %d", m.lfoShape)
+				log.Info.Printf("lfo shape %s", osc.LfoWaveShape(m.lfoShape))
 				core.EventOutMidiCC(m, "midi", midiLfoShapeCC, m.lfoShape)
 				return
 			case midiCCModeNote:
@@ -141,7 +142,7 @@ func ctrlAppMidiIn(cm core.Module, e *core.Event) {
 		// Ignore the note off events for our special keys.
 		case core.EventMIDINoteOff:
 			switch me.GetNote() {
-			case midiLfoModeNote,
+			case midiModModeNote,
 				midiLfoShapeNote,
 				midiCCModeNote:
 				// filter out
