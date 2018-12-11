@@ -69,6 +69,8 @@ type voiceApp struct {
 	wav      core.Module     // wave oscillator
 	env      core.Module     // amplitude envelope generator
 	mode     modMode         // modulation mode
+	note     float32         // midi note (as a float)
+	depth    float32         // unscaled lfo depth
 	velocity float32         // note velocity
 }
 
@@ -97,11 +99,30 @@ func (m *voiceApp) Stop() {
 //-----------------------------------------------------------------------------
 // Port Events
 
+// The LFO depth is set by the CC value but it's scaling depends on the
+// note pitch and the modulation type.
+func (m *voiceApp) setDepth() {
+	var scale float32
+	switch m.mode {
+	case modModeAM:
+		scale = 1.0
+	case modModeFM:
+		scale = core.MIDIToFrequency(m.note * 0.25)
+	case modModePM:
+		scale = core.Pi * 0.15
+	default:
+	}
+	core.EventInFloat(m.lfo, "depth", core.MapLin(m.depth, 0, scale))
+}
+
 func voiceAppNote(cm core.Module, e *core.Event) {
 	m := cm.(*voiceApp)
 	note := e.GetEventFloat().Val
+	m.note = note
 	// set the wave oscillator frequency
 	core.EventInFloat(m.wav, "frequency", core.MIDIToFrequency(note))
+	// re-set the LFO depth since it is a function of the note
+	m.setDepth()
 }
 
 func voiceAppGate(cm core.Module, e *core.Event) {
@@ -143,9 +164,10 @@ func voiceAppMidiIn(cm core.Module, e *core.Event) {
 				core.EventInFloat(m.env, "release", core.MapLin(fval, 0.02, 2.0))
 			// lfo
 			case midiLfoRateCC: // lfo rate (Hz)
-				core.EventInFloat(m.lfo, "rate", core.MapLin(fval, 0.5, 40.0))
+				core.EventInFloat(m.lfo, "rate", core.MapLin(fval, 0.5, 20.0))
 			case midiLfoDepthCC: // lfo depth
-				core.EventInFloat(m.lfo, "depth", core.MapLin(fval, 0, 0.3))
+				m.depth = fval
+				m.setDepth()
 			case midiLfoShapeCC: // lfo wave shape
 				core.EventInInt(m.lfo, "shape", int(val))
 			case midiModModeCC: // modulation mode (am/fm/pm)
@@ -161,6 +183,8 @@ func voiceAppMidiIn(cm core.Module, e *core.Event) {
 				default:
 					panic(fmt.Sprintf("bad mode %d", m.mode))
 				}
+				// re-set the lfo depth since it is a function of mode
+				m.setDepth()
 			default:
 				// ignore
 			}
