@@ -83,32 +83,19 @@ func MapLin(x, a, b float32) float32 {
 	return ((b - a) * x) + a
 }
 
-/*
-
-// MapLog returns a logarithmic mapping from x = 0..1 to y = a..b.
-func MapLog(x, a, b float32) float32 {
-	if x == 0 {
-		return a
+// MapExp returns an exponential mapping from x = 0..1 to y = y0..y1.
+// k < 0 and y1 > y0 gives y'' < 0 (downwards curve).
+// k > 0 and y1 > y0 gives y'' > 0 (upwards curve).
+// k != 0 and abs(k) is typically 3..5.
+func MapExp(x, y0, y1, k float32) float32 {
+	if k == 0 {
+		panic("k == 0, use MapLin")
 	}
-	if x == 1 {
-		return b
-	}
-	panic("todo")
+	k0 := 1.0 / (1.0 - Pow2(k))
+	a := (y0 - y1) * k0
+	b := y0 - a
+	return (a * Pow2(k*x)) + b
 }
-
-// MapExp returns an exponential mapping from x = 0..1 to y = a..b.
-func MapExp(x, a, b float32) float32 {
-	if x == 0 {
-		return a
-	}
-	if x == 1 {
-		return b
-	}
-	k := float32(math.Log2(float64(b / a)))
-	return a * Pow2(k*x)
-}
-
-*/
 
 //-----------------------------------------------------------------------------
 
