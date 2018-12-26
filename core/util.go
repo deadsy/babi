@@ -91,8 +91,7 @@ func MapExp(x, y0, y1, k float32) float32 {
 	if k == 0 {
 		panic("k == 0, use MapLin")
 	}
-	k0 := 1.0 / (1.0 - Pow2(k))
-	a := (y0 - y1) * k0
+	a := (y0 - y1) / (1.0 - Pow2(k))
 	b := y0 - a
 	return (a * Pow2(k*x)) + b
 }

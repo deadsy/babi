@@ -35,6 +35,7 @@ func (m *lfoOsc) Info() *core.ModuleInfo {
 
 //-----------------------------------------------------------------------------
 
+// LfoWaveShape is the shape of the LFO waveform.
 type LfoWaveShape int
 
 // LFO waveform shapes.
