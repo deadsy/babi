@@ -77,12 +77,8 @@ func ctrlMidiIn(cm core.Module, e *core.Event) {
 //-----------------------------------------------------------------------------
 
 // Process runs the module DSP.
-func (m *ctrlMidi) Process(buf ...*core.Buf) {
+func (m *ctrlMidi) Process(buf ...*core.Buf) bool {
 	// do nothing
-}
-
-// Active return true if the module has non-zero output.
-func (m *ctrlMidi) Active() bool {
 	return false
 }
 

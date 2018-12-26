@@ -158,16 +158,12 @@ func (m *lfoOsc) sample() float32 {
 }
 
 // Process runs the module DSP.
-func (m *lfoOsc) Process(buf ...*core.Buf) {
+func (m *lfoOsc) Process(buf ...*core.Buf) bool {
 	out := buf[0]
 	for i := 0; i < len(out); i++ {
 		m.x += m.xstep
 		out[i] = m.depth * m.sample()
 	}
-}
-
-// Active returns true if the module has non-zero output.
-func (m *lfoOsc) Active() bool {
 	return true
 }
 

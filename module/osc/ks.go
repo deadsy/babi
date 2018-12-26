@@ -127,7 +127,7 @@ func ksPortFrequency(cm core.Module, e *core.Event) {
 //-----------------------------------------------------------------------------
 
 // Process runs the module DSP.
-func (m *ksOsc) Process(buf ...*core.Buf) {
+func (m *ksOsc) Process(buf ...*core.Buf) bool {
 	out := buf[0]
 	for i := 0; i < len(out); i++ {
 		x0 := m.x >> ksFracBits
@@ -144,10 +144,6 @@ func (m *ksOsc) Process(buf ...*core.Buf) {
 			m.delay[x0] = m.k * (y0 + y1)
 		}
 	}
-}
-
-// Active return true if the module has non-zero output.
-func (m *ksOsc) Active() bool {
 	return true
 }
 

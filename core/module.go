@@ -145,11 +145,10 @@ func Connect(s Module, sname string, d Module, dname string) {
 
 // Module is the interface for an audio/event processing module.
 type Module interface {
-	Process(buf ...*Buf) // run the module dsp
-	Active() bool        // return true if the module should be run for dsp output
-	Stop()               // stop the module
-	Info() *ModuleInfo   // return module information
-	Child() []Module     // return the child modules
+	Process(buf ...*Buf) bool // run the module dsp
+	Stop()                    // stop the module
+	Info() *ModuleInfo        // return module information
+	Child() []Module          // return the child modules
 }
 
 // ModuleString returns a string for a tree of modules.

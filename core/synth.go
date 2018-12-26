@@ -107,7 +107,7 @@ func (s *Synth) Loop() {
 		s.audio[i].Zero()
 	}
 	// process the root module
-	if s.root != nil && s.root.Active() {
+	if s.root != nil {
 		s.root.Process(s.audio...)
 	}
 }

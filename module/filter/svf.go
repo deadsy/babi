@@ -166,7 +166,7 @@ func (m *svFilter) filterTrapezoidal(in, out *core.Buf) {
 }
 
 // Process runs the module DSP.
-func (m *svFilter) Process(buf ...*core.Buf) {
+func (m *svFilter) Process(buf ...*core.Buf) bool {
 	in := buf[0]
 	out := buf[1]
 	switch m.ftype {
@@ -177,10 +177,6 @@ func (m *svFilter) Process(buf ...*core.Buf) {
 	default:
 		panic(fmt.Sprintf("bad filter type %d", m.ftype))
 	}
-}
-
-// Active returns true if the module has non-zero output.
-func (m *svFilter) Active() bool {
 	return true
 }
 

@@ -70,11 +70,7 @@ func monitorMidiIn(cm core.Module, e *core.Event) {
 //-----------------------------------------------------------------------------
 
 // Process runs the module DSP.
-func (m *monitorMidi) Process(buf ...*core.Buf) {
-}
-
-// Active returns true if the module has non-zero output.
-func (m *monitorMidi) Active() bool {
+func (m *monitorMidi) Process(buf ...*core.Buf) bool {
 	return false
 }
 

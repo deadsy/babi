@@ -91,13 +91,9 @@ func seqtestPortMidiIn(cm core.Module, e *core.Event) {
 //-----------------------------------------------------------------------------
 
 // Process runs the module DSP.
-func (m *seqPatch) Process(buf ...*core.Buf) {
+func (m *seqPatch) Process(buf ...*core.Buf) bool {
 	m.seq.Process(nil)
-}
-
-// Active returns true if the module has non-zero output.
-func (m *seqPatch) Active() bool {
-	return true
+	return false
 }
 
 //-----------------------------------------------------------------------------

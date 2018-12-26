@@ -163,7 +163,7 @@ func (m *goomOsc) sample() float32 {
 }
 
 // Process runs the module DSP.
-func (m *goomOsc) Process(buf ...*core.Buf) {
+func (m *goomOsc) Process(buf ...*core.Buf) bool {
 
 	switch m.mode {
 	case GoomModeBasic: // no feedback, no modulation
@@ -192,10 +192,7 @@ func (m *goomOsc) Process(buf ...*core.Buf) {
 	default:
 		panic(fmt.Sprintf("bad mode %d", m.mode))
 	}
-}
 
-// Active returns true if the module has non-zero output.
-func (m *goomOsc) Active() bool {
 	return true
 }
 

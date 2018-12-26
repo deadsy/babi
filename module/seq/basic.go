@@ -201,7 +201,7 @@ func seqPortCtrl(cm core.Module, e *core.Event) {
 //-----------------------------------------------------------------------------
 
 // Process runs the module DSP.
-func (m *basicSeq) Process(buf ...*core.Buf) {
+func (m *basicSeq) Process(buf ...*core.Buf) bool {
 	// This routine is being used as a periodic call for timed event generation.
 	// The sequencer does not process audio buffers.
 
@@ -215,11 +215,7 @@ func (m *basicSeq) Process(buf ...*core.Buf) {
 		// tick the state machine
 		m.tick(m.sm)
 	}
-}
-
-// Active returns true if the module has non-zero output.
-func (m *basicSeq) Active() bool {
-	return true
+	return false
 }
 
 //-----------------------------------------------------------------------------

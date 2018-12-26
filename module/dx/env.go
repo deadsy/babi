@@ -213,16 +213,15 @@ func (m *envDx) sample() float32 {
 }
 
 // Process runs the module DSP.
-func (m *envDx) Process(buf ...*core.Buf) {
+func (m *envDx) Process(buf ...*core.Buf) bool {
+	if m.state >= 4 {
+		return false
+	}
 	out := buf[0]
 	for i := range out {
 		out[i] = m.sample()
 	}
-}
-
-// Active returns true if the module has non-zero output.
-func (m *envDx) Active() bool {
-	return m.state != 4
+	return true
 }
 
 //-----------------------------------------------------------------------------

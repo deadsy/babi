@@ -59,16 +59,12 @@ func (m *timeView) Stop() {
 //-----------------------------------------------------------------------------
 
 // Process runs the module DSP.
-func (m *timeView) Process(buf ...*core.Buf) {
+func (m *timeView) Process(buf ...*core.Buf) bool {
 	out := buf[0]
 	for i := range out {
 		out[i] = float32(m.x) * core.AudioSamplePeriod
 		m.x++
 	}
-}
-
-// Active returns true if the module has non-zero output.
-func (m *timeView) Active() bool {
 	return true
 }
 

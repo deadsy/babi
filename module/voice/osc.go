@@ -92,20 +92,19 @@ func oscVoiceNote(cm core.Module, e *core.Event) {
 //-----------------------------------------------------------------------------
 
 // Process runs the module DSP.
-func (m *oscVoice) Process(buf ...*core.Buf) {
+func (m *oscVoice) Process(buf ...*core.Buf) bool {
+	// generate envelope
+	var env core.Buf
+	active := m.adsr.Process(&env)
+	if !active {
+		return false
+	}
 	out := buf[0]
 	// generate wave
 	m.osc.Process(out)
-	// generate envelope
-	var env core.Buf
-	m.adsr.Process(&env)
 	// apply envelope
 	out.Mul(&env)
-}
-
-// Active returns true if the module has non-zero output.
-func (m *oscVoice) Active() bool {
-	return m.adsr.Active()
+	return true
 }
 
 //-----------------------------------------------------------------------------

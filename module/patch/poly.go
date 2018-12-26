@@ -86,7 +86,7 @@ func polyPatchMidiIn(cm core.Module, e *core.Event) {
 //-----------------------------------------------------------------------------
 
 // Process runs the module DSP.
-func (m *polyPatch) Process(buf ...*core.Buf) {
+func (m *polyPatch) Process(buf ...*core.Buf) bool {
 	out0 := buf[0]
 	out1 := buf[1]
 	// polyphony
@@ -94,10 +94,6 @@ func (m *polyPatch) Process(buf ...*core.Buf) {
 	m.poly.Process(&out)
 	// pan left/right
 	m.pan.Process(&out, out0, out1)
-}
-
-// Active returns true if the module has non-zero output.
-func (m *polyPatch) Active() bool {
 	return true
 }
 

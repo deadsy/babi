@@ -105,7 +105,7 @@ func (m *sawOsc) generateBLEP(out *core.Buf) {
 }
 
 // Process runs the module DSP.
-func (m *sawOsc) Process(buf ...*core.Buf) {
+func (m *sawOsc) Process(buf ...*core.Buf) bool {
 	out := buf[0]
 	switch m.stype {
 	case sawTypeBasic:
@@ -115,10 +115,6 @@ func (m *sawOsc) Process(buf ...*core.Buf) {
 	default:
 		panic(fmt.Sprintf("bad sawtooth type %d", m.stype))
 	}
-}
-
-// Active returns true if the module has non-zero output.
-func (m *sawOsc) Active() bool {
 	return true
 }
 

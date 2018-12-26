@@ -62,13 +62,9 @@ func xModuleMidiIn(cm core.Module, e *core.Event) {
 
 //-----------------------------------------------------------------------------
 
-// Process runs the module DSP.
-func (m *xModule) Process(buf ...*core.Buf) {
-}
-
-// Active returns true if the module has non-zero output.
-func (m *xModule) Active() bool {
-	return true
+// Process runs the module DSP. Return true for non-zero output.
+func (m *xModule) Process(buf ...*core.Buf) bool {
+	return false
 }
 
 //-----------------------------------------------------------------------------

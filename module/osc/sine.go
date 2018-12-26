@@ -71,16 +71,12 @@ func sinePortFrequency(cm core.Module, e *core.Event) {
 //-----------------------------------------------------------------------------
 
 // Process runs the module DSP.
-func (m *sineOsc) Process(buf ...*core.Buf) {
+func (m *sineOsc) Process(buf ...*core.Buf) bool {
 	out := buf[0]
 	for i := 0; i < len(out); i++ {
 		out[i] = core.CosLookup(m.x)
 		m.x += m.xstep
 	}
-}
-
-// Active return true if the module has non-zero output.
-func (m *sineOsc) Active() bool {
 	return true
 }
 

@@ -134,7 +134,7 @@ func plotViewTrigger(cm core.Module, e *core.Event) {
 //-----------------------------------------------------------------------------
 
 // Process runs the module DSP.
-func (m *plotView) Process(buf ...*core.Buf) {
+func (m *plotView) Process(buf ...*core.Buf) bool {
 
 	if m.triggered {
 		x := buf[0]
@@ -169,12 +169,7 @@ func (m *plotView) Process(buf ...*core.Buf) {
 
 	// increment the internal time base
 	m.x += core.AudioBufferSize
-
-}
-
-// Active returns true if the module has non-zero output.
-func (m *plotView) Active() bool {
-	return m.triggered
+	return false
 }
 
 //-----------------------------------------------------------------------------

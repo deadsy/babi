@@ -170,7 +170,7 @@ func (m *noiseOsc) generatePink2(out *core.Buf) {
 }
 
 // Process runs the module DSP.
-func (m *noiseOsc) Process(buf ...*core.Buf) {
+func (m *noiseOsc) Process(buf ...*core.Buf) bool {
 	out := buf[0]
 	switch m.ntype {
 	case noiseTypeWhite:
@@ -184,10 +184,6 @@ func (m *noiseOsc) Process(buf ...*core.Buf) {
 	default:
 		panic(fmt.Sprintf("bad noise type %d", m.ntype))
 	}
-}
-
-// Active return true if the module has non-zero output.
-func (m *noiseOsc) Active() bool {
 	return true
 }
 

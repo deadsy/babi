@@ -195,7 +195,7 @@ func voiceAppMidiIn(cm core.Module, e *core.Event) {
 //-----------------------------------------------------------------------------
 
 // Process runs the module DSP.
-func (m *voiceApp) Process(buf ...*core.Buf) {
+func (m *voiceApp) Process(buf ...*core.Buf) bool {
 	out := buf[0]
 
 	if m.mode != modModeOff {
@@ -223,11 +223,8 @@ func (m *voiceApp) Process(buf ...*core.Buf) {
 
 	// apply the envelope
 	out.Mul(&env)
-}
 
-// Active returns true if the module has non-zero output.
-func (m *voiceApp) Active() bool {
-	return m.env.Active()
+	return true
 }
 
 //-----------------------------------------------------------------------------

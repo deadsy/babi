@@ -82,13 +82,9 @@ func ksVoiceNote(cm core.Module, e *core.Event) {
 //-----------------------------------------------------------------------------
 
 // Process runs the module DSP.
-func (m *ksVoice) Process(buf ...*core.Buf) {
+func (m *ksVoice) Process(buf ...*core.Buf) bool {
 	out := buf[0]
 	m.ks.Process(out)
-}
-
-// Active returns true if the module has non-zero output.
-func (m *ksVoice) Active() bool {
 	return true
 }
 

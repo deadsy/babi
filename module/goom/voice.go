@@ -298,7 +298,15 @@ func goomPortFilterCutoff(cm core.Module, e *core.Event) {
 //-----------------------------------------------------------------------------
 
 // Process runs the module DSP.
-func (m *voiceGoom) Process(buf ...*core.Buf) {
+func (m *voiceGoom) Process(buf ...*core.Buf) bool {
+
+	// generate envelope
+	var env core.Buf
+	active := m.ampEnv.Process(&env)
+	if !active {
+		return false
+	}
+
 	out := buf[0]
 
 	// generate wave
@@ -308,17 +316,10 @@ func (m *voiceGoom) Process(buf ...*core.Buf) {
 	// apply the low pass filter
 	m.lpf.Process(&wave, out)
 
-	// generate envelope
-	var env core.Buf
-	m.ampEnv.Process(&env)
-
 	// apply the envelope
 	out.Mul(&env)
-}
 
-// Active returns true if the module has non-zero output.
-func (m *voiceGoom) Active() bool {
-	return m.ampEnv.Active()
+	return true
 }
 
 //-----------------------------------------------------------------------------

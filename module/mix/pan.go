@@ -122,7 +122,7 @@ func panMixMidiIn(cm core.Module, e *core.Event) {
 //-----------------------------------------------------------------------------
 
 // Process runs the module DSP.
-func (m *panMix) Process(buf ...*core.Buf) {
+func (m *panMix) Process(buf ...*core.Buf) bool {
 	in := buf[0]
 	out0 := buf[1]
 	out1 := buf[2]
@@ -132,10 +132,6 @@ func (m *panMix) Process(buf ...*core.Buf) {
 	// right
 	out1.Copy(in)
 	out1.MulScalar(m.volR)
-}
-
-// Active return true if the module has non-zero output.
-func (m *panMix) Active() bool {
 	return true
 }
 

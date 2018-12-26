@@ -181,23 +181,19 @@ func polyMidiIn(cm core.Module, e *core.Event) {
 //-----------------------------------------------------------------------------
 
 // Process runs the module DSP.
-func (m *polyMidi) Process(buf ...*core.Buf) {
+func (m *polyMidi) Process(buf ...*core.Buf) bool {
 	out := buf[0]
 	var vout core.Buf
 	// run each voice
 	for i := range m.voice {
 		vm := m.voice[i].module
-		if vm != nil && vm.Active() {
+		if vm != nil {
 			// get the voice output
 			vm.Process(&vout)
 			// accumulate in the output buffer
 			out.Add(&vout)
 		}
 	}
-}
-
-// Active return true if the module has non-zero output.
-func (m *polyMidi) Active() bool {
 	return true
 }
 

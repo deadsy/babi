@@ -152,12 +152,17 @@ func adsrEnvRelease(cm core.Module, e *core.Event) {
 //-----------------------------------------------------------------------------
 
 // Process runs the module DSP.
-func (m *adsrEnv) Process(buf ...*core.Buf) {
+func (m *adsrEnv) Process(buf ...*core.Buf) bool {
+
+	if m.state == stateIdle {
+		// zero output
+		return false
+	}
+
 	out := buf[0]
+
 	for i := 0; i < len(out); i++ {
 		switch m.state {
-		case stateIdle:
-			// idle - do nothing
 		case stateAttack:
 			// attack until 1.0 level
 			if m.val < m.dTrigger {
@@ -199,11 +204,8 @@ func (m *adsrEnv) Process(buf ...*core.Buf) {
 		}
 		out[i] = m.val
 	}
-}
 
-// Active return true if the module has non-zero output.
-func (m *adsrEnv) Active() bool {
-	return m.state != stateIdle
+	return true
 }
 
 //-----------------------------------------------------------------------------

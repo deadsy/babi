@@ -119,7 +119,7 @@ func (m *sqrOsc) generateBLEP(out *core.Buf) {
 }
 
 // Process runs the module DSP.
-func (m *sqrOsc) Process(buf ...*core.Buf) {
+func (m *sqrOsc) Process(buf ...*core.Buf) bool {
 	out := buf[0]
 	switch m.stype {
 	case sqrTypeBasic:
@@ -129,10 +129,6 @@ func (m *sqrOsc) Process(buf ...*core.Buf) {
 	default:
 		panic(fmt.Sprintf("bad square type %d", m.stype))
 	}
-}
-
-// Active returns true if the module has non-zero output.
-func (m *sqrOsc) Active() bool {
 	return true
 }
 
