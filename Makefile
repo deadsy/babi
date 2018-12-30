@@ -2,6 +2,7 @@
 DIRS = poly \
        goom \
        lfo \
+       metro \
        plots \
 
 all:
