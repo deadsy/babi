@@ -250,7 +250,7 @@ type MIDIEvent struct {
 	Data []byte
 }
 
-//type MidiBuffer *[]byte
+type MidiBuffer *[]byte
 
 // GetMIDIEvents returns a slice of MIDI events for this port.
 func (p *Port) GetMIDIEvents(nframes uint32) []MIDIEvent {
@@ -266,17 +266,19 @@ func (p *Port) GetMIDIEvents(nframes uint32) []MIDIEvent {
 	return events
 }
 
-/*
-
-func (port *Port) MidiClearBuffer(nframes uint32) MidiBuffer {
-	buffer := C.jack_port_get_buffer(port.handler, C.jack_nframes_t(nframes))
-	C.jack_midi_clear_buffer(buffer)
-	return MidiBuffer(buffer)
+// MidiGetBuffer gets (and clears) a MIDI event buffer.
+func (p *Port) MidiGetBuffer(nframes uint32) MidiBuffer {
+	buf := C.jack_port_get_buffer(p.ptr, C.jack_nframes_t(nframes))
+	C.jack_midi_clear_buffer(buf)
+	return MidiBuffer(buf)
 }
 
-func (port *Port) MidiEventWrite(event *MidiData, buffer MidiBuffer) int {
+/*
+
+// MidiEventWrite writes a MIDI event into a MIDI event port buffer.
+func (p *Port) MidiEventWrite(event *MidiData, buf MidiBuffer) int {
 	return int(C.jack_midi_event_write(
-		unsafe.Pointer(buffer),                  // port_buffer
+		unsafe.Pointer(buf),                  // port_buffer
 		C.jack_nframes_t(event.Time),            // time
 		(*C.jack_midi_data_t)(&event.Buffer[0]), // data
 		C.size_t(len(event.Buffer)),             // data_size
