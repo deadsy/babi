@@ -24,7 +24,7 @@ func (j *Jack) process(nframes uint32) int {
 
 	// read MIDI input events
 	for _, p := range j.midiIn {
-		event := p.GetMIDIEvents(nframes)
+		event := p.GetMidiEvents(nframes)
 		for k := range event {
 			e := &event[k]
 			midiEvent := convertToMIDIEvent(e.Data)

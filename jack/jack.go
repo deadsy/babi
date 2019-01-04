@@ -244,19 +244,17 @@ func (p *Port) GetBuffer(nframes uint32) []float32 {
 	return (*[(1 << 29) - 1]float32)(samples)[:nframes:nframes]
 }
 
-// MIDIEvent is a JACK MIDI event.
-type MIDIEvent struct {
+// MidiEvent is a JACK MIDI event.
+type MidiEvent struct {
 	Time uint32
 	Data []byte
 }
 
-type MidiBuffer *[]byte
-
-// GetMIDIEvents returns a slice of MIDI events for this port.
-func (p *Port) GetMIDIEvents(nframes uint32) []MIDIEvent {
+// GetMidiEvents returns a slice of MIDI events for this port.
+func (p *Port) GetMidiEvents(nframes uint32) []MidiEvent {
 	buf := C.jack_port_get_buffer(p.ptr, C.jack_nframes_t(nframes))
 	n := int(C.jack_midi_get_event_count(buf))
-	events := make([]MIDIEvent, n)
+	events := make([]MidiEvent, n)
 	var event C.jack_midi_event_t
 	for i := range events {
 		C.jack_midi_event_get(&event, buf, C.uint32_t(i))
@@ -266,6 +264,9 @@ func (p *Port) GetMIDIEvents(nframes uint32) []MIDIEvent {
 	return events
 }
 
+// MidiBuffer is a buffer for MIDI events.
+type MidiBuffer *[]byte
+
 // MidiGetBuffer gets (and clears) a MIDI event buffer.
 func (p *Port) MidiGetBuffer(nframes uint32) MidiBuffer {
 	buf := C.jack_port_get_buffer(p.ptr, C.jack_nframes_t(nframes))
@@ -273,19 +274,15 @@ func (p *Port) MidiGetBuffer(nframes uint32) MidiBuffer {
 	return MidiBuffer(buf)
 }
 
-/*
-
 // MidiEventWrite writes a MIDI event into a MIDI event port buffer.
-func (p *Port) MidiEventWrite(event *MidiData, buf MidiBuffer) int {
+func (p *Port) MidiEventWrite(event *MidiEvent, buf MidiBuffer) int {
 	return int(C.jack_midi_event_write(
-		unsafe.Pointer(buf),                  // port_buffer
-		C.jack_nframes_t(event.Time),            // time
-		(*C.jack_midi_data_t)(&event.Buffer[0]), // data
-		C.size_t(len(event.Buffer)),             // data_size
+		unsafe.Pointer(buf),                   // port_buffer
+		C.jack_nframes_t(event.Time),          // time
+		(*C.jack_midi_data_t)(&event.Data[0]), // data
+		C.size_t(len(event.Data)),             // data_size
 	))
 }
-
-*/
 
 //-----------------------------------------------------------------------------
 
